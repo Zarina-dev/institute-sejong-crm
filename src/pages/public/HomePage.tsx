@@ -14,8 +14,8 @@ import { Link } from 'react-router-dom'
 
 import { usePreferences, type TranslationKey } from '../../app/preferences'
 import { usePublishedNews } from '../../features/news/queries'
-import { useSchedule } from '../../features/schedule/queries'
-import { startOfWeek, toIsoDate, weekRange } from '../../features/schedule/week'
+import { useTimetable } from '../../features/courses/queries'
+import { startOfWeek, toIsoDate, weekRange } from '../../features/courses/week'
 import { formatDate } from '../../shared/format'
 
 const { Title, Paragraph, Text } = Typography
@@ -59,7 +59,7 @@ function SectionHeading({ kicker, title, aside }: { kicker: string; title: strin
 export function HomePage() {
   const { t, language } = usePreferences()
   const news = usePublishedNews(3)
-  const week = useSchedule(useMemo(() => weekRange(startOfWeek(new Date())), []))
+  const week = useTimetable(useMemo(() => weekRange(startOfWeek(new Date())), []))
 
   // First class today or later this week — what "next class" means on a landing page.
   const nextClass = useMemo(() => {

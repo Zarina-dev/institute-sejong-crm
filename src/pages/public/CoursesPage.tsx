@@ -39,7 +39,11 @@ export function CoursesPage() {
       return
     }
 
-    const values = await form.validateFields()
+    const values = await form.validateFields().catch(() => null)
+
+    if (!values) {
+      return
+    }
 
     try {
       await createApplication.mutateAsync({ courseId: applyingTo.id, ...values })

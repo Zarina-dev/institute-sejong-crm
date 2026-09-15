@@ -3,9 +3,9 @@ import { Button, Card, Col, Empty, Row, Select, Skeleton, Space, Tag, Typography
 import { useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
-import { useSchedule } from '../../features/schedule/queries'
-import type { ScheduleEntry } from '../../features/schedule/types'
-import { addDays, formatWeekLabel, startOfWeek, weekRange } from '../../features/schedule/week'
+import { useTimetable } from '../../features/courses/queries'
+import type { TimetableEntry } from '../../features/courses/types'
+import { addDays, formatWeekLabel, startOfWeek, weekRange } from '../../features/courses/week'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { PageHeader } from '../../shared/PageHeader'
 
@@ -14,7 +14,7 @@ const { Title, Text } = Typography
 const TONES = ['blue', 'violet', 'orange'] as const
 
 /** Stable fallback so `useMemo` deps do not see a fresh `[]` every render. */
-const NO_ENTRIES: ScheduleEntry[] = []
+const NO_ENTRIES: TimetableEntry[] = []
 
 /** Stable colour per subject within a week — same subject, same stripe. */
 function toneFor(subject: string, subjects: string[]) {
@@ -30,7 +30,7 @@ export function SchedulePage() {
   const range = useMemo(() => weekRange(monday), [monday])
   // Filters are applied client-side on the week's data, so the option lists
   // always reflect what exists that week and one query serves every combination.
-  const schedule = useSchedule(range)
+  const schedule = useTimetable(range)
   const entries = schedule.data ?? NO_ENTRIES
 
   const { groups, subjects } = useMemo(() => {
@@ -49,7 +49,7 @@ export function SchedulePage() {
   )
 
   const byDay = useMemo(() => {
-    const map = new Map<string, ScheduleEntry[]>()
+    const map = new Map<string, TimetableEntry[]>()
     for (const item of filtered) {
       map.set(item.date, [...(map.get(item.date) ?? []), item])
     }

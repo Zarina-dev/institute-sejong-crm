@@ -1,3 +1,14 @@
+/** ISO weekday: 1 = Monday … 7 = Sunday. Times are HH:mm. */
+export type Weekday = 1 | 2 | 3 | 4 | 5 | 6 | 7
+
+export type CourseSession = {
+  weekday: Weekday
+  startTime: string
+  endTime: string
+  /** Overrides the course's default classroom for this slot. */
+  classroom?: string | null
+}
+
 export type CourseRecord = {
   id: string
   title: string
@@ -5,7 +16,8 @@ export type CourseRecord = {
   subject: string
   level?: string | null
   teacherName?: string | null
-  schedule?: string | null
+  /** Weekly meeting pattern; the public timetable is generated from it. */
+  sessions: CourseSession[]
   classroom?: string | null
   courseCode?: string | null
   startDate?: string | null
@@ -14,6 +26,27 @@ export type CourseRecord = {
   isPublished: boolean
   createdAt: string
   updatedAt: string
+}
+
+/** One generated class on a concrete date — what `GET /schedule` returns. */
+export type TimetableEntry = {
+  id: string
+  courseId: string
+  date: string
+  startTime: string
+  endTime: string
+  subject: string
+  title: string
+  teacher: string | null
+  classroom: string | null
+  courseGroup: string
+}
+
+export type TimetableFilters = {
+  from: string
+  to: string
+  courseGroup?: string
+  subject?: string
 }
 
 export type ApplicationStatus = 'pending' | 'approved' | 'rejected' | 'enrolled'

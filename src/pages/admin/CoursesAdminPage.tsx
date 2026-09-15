@@ -6,6 +6,8 @@ import { useCallback, useMemo, useState } from 'react'
 import { usePreferences } from '../../app/preferences'
 import { statusLabelKey } from '../../features/courses/applicationStatus'
 import { ApplicationsTable } from '../../features/courses/ApplicationsTable'
+import { SessionsEditor } from '../../features/courses/SessionsEditor'
+import { formatSessions } from '../../features/courses/sessions'
 import {
   useApplications,
   useCourses,
@@ -15,7 +17,7 @@ import {
   useSetCoursePublished,
   useUpdateCourse,
 } from '../../features/courses/queries'
-import type { ApplicationStatus, CourseApplicationRecord, CourseRecord } from '../../features/courses/types'
+import type { ApplicationStatus, CourseApplicationRecord, CourseRecord, CourseSession } from '../../features/courses/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { PageHeader } from '../../shared/PageHeader'
@@ -29,7 +31,7 @@ type CourseFormValues = {
   description?: string
   subject: string
   teacherName?: string
-  schedule?: string
+  sessions: CourseSession[]
   classroom?: string
   startDate?: string
   endDate?: string
@@ -41,7 +43,7 @@ type CourseStats = Record<ApplicationStatus, number> & { total: number }
 const emptyStats: CourseStats = { total: 0, pending: 0, approved: 0, rejected: 0, enrolled: 0 }
 
 export function CoursesAdminPage() {
-  const { t } = usePreferences()
+  const { t, language } = usePreferences()
   const { message } = App.useApp()
   const confirmDelete = useConfirmDelete()
   const { pinActions, compactActions } = useTableLayout()
@@ -106,7 +108,7 @@ export function CoursesAdminPage() {
         description: record.description ?? undefined,
         subject: record.subject,
         teacherName: record.teacherName ?? undefined,
-        schedule: record.schedule ?? undefined,
+        sessions: record.sessions ?? [],
         classroom: record.classroom ?? undefined,
         startDate: record.startDate ?? undefined,
         endDate: record.endDate ?? undefined,
@@ -118,7 +120,11 @@ export function CoursesAdminPage() {
   )
 
   const submitForm = async () => {
-    const values = await form.validateFields()
+    const values = await form.validateFields().catch(() => null)
+
+    if (!values) {
+      return
+    }
 
     try {
       if (editingId) {
@@ -201,9 +207,9 @@ export function CoursesAdminPage() {
         render: (_, record) => (
           <div className="cell-stack">
             <Text>{record.teacherName || '-'}</Text>
-            <Text type="secondary">
-              {record.schedule || '-'} · {record.classroom || '-'}
-            </Text>
+            {formatSessions(record.sessions, language, record.classroom).map((line) => (
+              <Text type="secondary" key={line}>{line}</Text>
+            ))}
             <Text type="secondary">
               {record.startDate || '-'} ~ {record.endDate || '-'}
             </Text>
@@ -264,7 +270,7 @@ export function CoursesAdminPage() {
         ),
       },
     ],
-    [compactActions, handleDelete, handleTogglePublished, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, statsByCourse, t],
+    [compactActions, handleDelete, handleTogglePublished, language, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, statsByCourse, t],
   )
 
   const expandedRowRender = useCallback(
@@ -345,7 +351,7 @@ export function CoursesAdminPage() {
         forceRender
         width={760}
       >
-        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false }}>
+        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false, sessions: [] }}>
           <Form.Item name="title" label={t('courses.form.title')} rules={[{ required: true, message: t('courses.form.titleRequired') }]}>
             <Input maxLength={255} />
           </Form.Item>
@@ -364,18 +370,12 @@ export function CoursesAdminPage() {
               </Form.Item>
             </Col>
           </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name="schedule" label={t('courses.form.schedule')}>
-                <Input placeholder={t('courses.form.schedulePlaceholder')} maxLength={150} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="classroom" label={t('courses.form.classroom')}>
-                <Input maxLength={120} />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.Item name="classroom" label={t('courses.form.classroom')}>
+            <Input maxLength={120} />
+          </Form.Item>
+          <Form.Item label={t('courses.sessions.label')} extra={t('courses.sessions.hint')}>
+            <SessionsEditor disabled={saving} />
+          </Form.Item>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="startDate" label={t('courses.form.startDate')}>

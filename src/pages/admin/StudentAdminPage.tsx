@@ -163,7 +163,11 @@ export function StudentAdminPage() {
   )
 
   const handleSubmit = async () => {
-    const values = await form.validateFields()
+    const values = await form.validateFields().catch(() => null)
+
+    if (!values) {
+      return
+    }
     const password = values.password?.trim()
 
     const payload = {

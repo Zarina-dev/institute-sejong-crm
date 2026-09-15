@@ -1017,6 +1017,26 @@
   overflow-wrap: anywhere;
 }
 
+/* "Time" spans both columns: a course can meet on several distinct slots. */
+.course-fact--wide {
+  grid-column: 1 / -1;
+}
+
+/* --- Weekly sessions editor (course form) --- */
+
+.sessions-editor {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.sessions-row .ant-form-item {
+  margin-bottom: 0;
+}
+
+.sessions-row + .sessions-row {
+  margin-top: var(--space-1);
+}
+
 .course-card-footer {
   margin-top: auto;
   padding-top: var(--space-3);

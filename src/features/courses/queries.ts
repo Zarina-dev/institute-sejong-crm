@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { studentKeys } from '../students/queries'
+import type { TimetableFilters } from './types'
 import {
   approveApplication,
   createApplication,
@@ -11,6 +12,7 @@ import {
   getCourses,
   getEnrollments,
   getStudentEnrollments,
+  getTimetable,
   publishCourse,
   rejectApplication,
   unpublishCourse,
@@ -20,6 +22,11 @@ import {
 export const courseKeys = {
   all: ['courses'] as const,
   list: (publishedOnly: boolean) => [...courseKeys.all, 'list', { publishedOnly }] as const,
+}
+
+export const timetableKeys = {
+  all: ['timetable'] as const,
+  list: (filters: TimetableFilters) => [...timetableKeys.all, filters] as const,
 }
 
 export const applicationKeys = {
@@ -39,6 +46,15 @@ export function useCourses(publishedOnly: boolean) {
   return useQuery({
     queryKey: courseKeys.list(publishedOnly),
     queryFn: () => getCourses(publishedOnly),
+  })
+}
+
+/** The timetable is a view over courses, so every course mutation below also invalidates it. */
+export function useTimetable(filters: TimetableFilters) {
+  return useQuery({
+    queryKey: timetableKeys.list(filters),
+    queryFn: () => getTimetable(filters),
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -68,7 +84,11 @@ export function useStudentEnrollments(studentId: string | undefined) {
 
 function useInvalidateCourses() {
   const queryClient = useQueryClient()
-  return () => queryClient.invalidateQueries({ queryKey: courseKeys.all })
+  return () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: courseKeys.all }),
+      queryClient.invalidateQueries({ queryKey: timetableKeys.all }),
+    ])
 }
 
 export function useCreateCourse() {
@@ -99,6 +119,7 @@ export function useDeleteCourse() {
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: courseKeys.all }),
+        queryClient.invalidateQueries({ queryKey: timetableKeys.all }),
         queryClient.invalidateQueries({ queryKey: applicationKeys.all }),
         queryClient.invalidateQueries({ queryKey: enrollmentKeys.all }),
       ]),

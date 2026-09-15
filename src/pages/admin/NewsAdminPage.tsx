@@ -67,7 +67,11 @@ export function NewsAdminPage() {
   )
 
   const submitForm = async () => {
-    const values = await form.validateFields()
+    const values = await form.validateFields().catch(() => null)
+
+    if (!values) {
+      return
+    }
 
     try {
       if (editingId) {

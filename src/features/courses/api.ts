@@ -1,5 +1,5 @@
 import { apiDelete, apiGet, apiPatch, apiPost } from '../../api/client'
-import type { CourseApplicationRecord, CourseRecord, EnrollmentRecord } from './types'
+import type { CourseApplicationRecord, CourseRecord, EnrollmentRecord, TimetableEntry, TimetableFilters } from './types'
 
 export async function getCourses(publishedOnly = false) {
   return apiGet<CourseRecord[]>(`/courses`, {
@@ -58,3 +58,6 @@ export async function getStudentEnrollments(studentId: string) {
 export async function createEnrollment(payload: Record<string, unknown>) {
   return apiPost<EnrollmentRecord>('/courses/enrollments', payload)
 }
+
+/** Generated timetable for a date range — read-only, derived from published courses' sessions. */
+export const getTimetable = (filters: TimetableFilters) => apiGet<TimetableEntry[]>('/schedule', filters)
