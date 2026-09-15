@@ -1,8 +1,9 @@
 import { App, Card, Segmented, Space, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
+import { usePreferences } from '../../app/preferences'
+import { statusLabelKey } from '../../features/courses/applicationStatus'
 import { ApplicationsTable } from '../../features/courses/ApplicationsTable'
-import { applicationStatusMeta } from '../../features/courses/applicationStatus'
 import { useApplications, useSetApplicationStatus } from '../../features/courses/queries'
 import type { ApplicationStatus, CourseApplicationRecord } from '../../features/courses/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
@@ -14,6 +15,7 @@ const { Text } = Typography
 type StatusFilter = ApplicationStatus | 'all'
 
 export function ApplicationsAdminPage() {
+  const { t } = usePreferences()
   const { message } = App.useApp()
   const applications = useApplications()
   const setStatus = useSetApplicationStatus()
@@ -40,46 +42,43 @@ export function ApplicationsAdminPage() {
       setStatus.mutate(
         { id: application.id, status },
         {
-          onSuccess: () => message.success(`${application.applicantName} — ${applicationStatusMeta[status].label} 처리되었습니다.`),
-          onError: (err) => message.error(getErrorMessage(err, '상태 변경에 실패했습니다.')),
+          onSuccess: () =>
+            message.success(t('courses.statusChanged', { name: application.applicantName, status: t(statusLabelKey(status)) })),
+          onError: (err) => message.error(getErrorMessage(err, t('courses.statusChangeFailed'))),
         },
       )
     },
-    [message, setStatus],
+    [message, setStatus, t],
   )
 
-  const handleApprove = useCallback((application: CourseApplicationRecord) => change(application, 'approved'), [change])
-  const handleReject = useCallback((application: CourseApplicationRecord) => change(application, 'rejected'), [change])
+  const handleApprove = useCallback((a: CourseApplicationRecord) => change(a, 'approved'), [change])
+  const handleReject = useCallback((a: CourseApplicationRecord) => change(a, 'rejected'), [change])
 
   const filterOptions = useMemo(
     (): Array<{ value: StatusFilter; label: string }> => [
-      { value: 'all', label: `전체 ${counts.all}` },
-      { value: 'pending', label: `대기 ${counts.pending}` },
-      { value: 'approved', label: `승인 ${counts.approved}` },
-      { value: 'enrolled', label: `수강 등록 ${counts.enrolled}` },
-      { value: 'rejected', label: `반려 ${counts.rejected}` },
+      { value: 'all', label: `${t('common.all')} ${counts.all}` },
+      { value: 'pending', label: `${t('courses.appStatus.pending')} ${counts.pending}` },
+      { value: 'approved', label: `${t('courses.appStatus.approved')} ${counts.approved}` },
+      { value: 'enrolled', label: `${t('courses.appStatus.enrolled')} ${counts.enrolled}` },
+      { value: 'rejected', label: `${t('courses.appStatus.rejected')} ${counts.rejected}` },
     ],
-    [counts],
+    [counts, t],
   )
 
   return (
     <div className="page-layout">
-      <PageHeader
-        kicker="ADMIN"
-        title="수강 신청 관리"
-        description="학생의 수강 신청을 검토하고 승인/반려 상태를 관리할 수 있습니다."
-      />
+      <PageHeader kicker={t('common.admin')} title={t('courses.applicationsTitle')} description={t('courses.applicationsSubtitle')} />
 
       <Card className="surface-card filter-card">
         <Space wrap size="middle" className="filter-row">
           <Segmented<StatusFilter> options={filterOptions} value={statusFilter} onChange={setStatusFilter} />
           <Text type="secondary">
-            {counts.pending > 0 ? `${counts.pending}건이 검토를 기다리고 있습니다.` : '대기 중인 신청이 없습니다.'}
+            {counts.pending > 0 ? t('courses.waitingReview', { count: counts.pending }) : t('courses.noWaiting')}
           </Text>
         </Space>
       </Card>
 
-      <ErrorAlert error={applications.error} fallback="수강 신청 정보를 불러오지 못했습니다." />
+      <ErrorAlert error={applications.error} fallback={t('courses.loadFailed')} />
 
       <Card className="surface-card">
         <ApplicationsTable
@@ -88,7 +87,7 @@ export function ApplicationsAdminPage() {
           busyId={setStatus.isPending ? setStatus.variables?.id : null}
           onApprove={handleApprove}
           onReject={handleReject}
-          emptyText={statusFilter === 'all' ? '신청 내역이 없습니다.' : '이 상태의 신청이 없습니다.'}
+          emptyText={statusFilter === 'all' ? t('courses.appsEmpty') : t('courses.appsEmptyFiltered')}
         />
       </Card>
     </div>

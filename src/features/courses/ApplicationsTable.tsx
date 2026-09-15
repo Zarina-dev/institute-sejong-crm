@@ -3,6 +3,7 @@ import type { TableProps } from 'antd'
 import { Button, Space, Table } from 'antd'
 import { memo, useMemo } from 'react'
 
+import { usePreferences } from '../../app/preferences'
 import { useTableLayout } from '../../shared/useTableLayout'
 import { ApplicationStatusTag } from './ApplicationStatusTag'
 import type { CourseApplicationRecord } from './types'
@@ -21,9 +22,9 @@ type ApplicationsTableProps = {
 }
 
 /**
- * The applications grid, shared by the 수강 신청 page and the expandable rows
- * of the 수강 관리 table. Columns are memoised on the callbacks so the table
- * does not rebuild its column model on every parent render.
+ * The applications grid, shared by the applications page and the expandable
+ * rows of the course table. Columns are memoised on the callbacks so the
+ * table does not rebuild its column model on every parent render.
  */
 export const ApplicationsTable = memo(function ApplicationsTable({
   applications,
@@ -33,39 +34,37 @@ export const ApplicationsTable = memo(function ApplicationsTable({
   onReject,
   showCourse = true,
   size = 'middle',
-  emptyText = '신청 내역이 없습니다.',
+  emptyText,
 }: ApplicationsTableProps) {
+  const { t } = usePreferences()
   const { pinActions, compactActions } = useTableLayout()
+
   const columns = useMemo<NonNullable<TableProps<CourseApplicationRecord>['columns']>>(() => {
     const base: NonNullable<TableProps<CourseApplicationRecord>['columns']> = [
-      { title: '신청자', dataIndex: 'applicantName', key: 'applicantName' },
-      {
-        title: '학생 ID',
-        key: 'studentId',
-        render: (_, record) => record.student?.studentId ?? '-',
-      },
-      { title: '이메일', dataIndex: 'applicantEmail', key: 'applicantEmail', responsive: ['lg'] },
-      { title: '연락처', dataIndex: 'phone', key: 'phone', responsive: ['lg'], render: (value?: string | null) => value || '-' },
+      { title: t('courses.applicant'), dataIndex: 'applicantName', key: 'applicantName' },
+      { title: t('courses.studentId'), key: 'studentId', render: (_, record) => record.student?.studentId ?? '-' },
+      { title: t('courses.email'), dataIndex: 'applicantEmail', key: 'applicantEmail', responsive: ['lg'] },
+      { title: t('courses.phone'), dataIndex: 'phone', key: 'phone', responsive: ['lg'], render: (value?: string | null) => value || '-' },
     ]
 
     if (showCourse) {
-      base.push({ title: '희망 과정', key: 'course', render: (_, record) => record.course?.title ?? '-' })
-      base.push({ title: '목적', dataIndex: 'goal', key: 'goal', responsive: ['xl'], render: (value?: string | null) => value || '-' })
+      base.push({ title: t('courses.desiredCourse'), key: 'course', render: (_, record) => record.course?.title ?? '-' })
+      base.push({ title: t('courses.purpose'), dataIndex: 'goal', key: 'goal', responsive: ['xl'], render: (value?: string | null) => value || '-' })
     }
 
     base.push(
       {
-        title: '상태',
+        title: t('common.status'),
         dataIndex: 'status',
         key: 'status',
-        width: 100,
+        width: 110,
         render: (_, record) => <ApplicationStatusTag status={record.status} />,
       },
       {
-        title: '관리',
+        title: t('common.actions'),
         key: 'actions',
         fixed: pinActions,
-        width: compactActions ? 90 : 170,
+        width: compactActions ? 90 : 190,
         render: (_, record) => {
           const busy = busyId === record.id
 
@@ -77,9 +76,9 @@ export const ApplicationsTable = memo(function ApplicationsTable({
                 loading={busy}
                 disabled={record.status === 'approved' || record.status === 'enrolled'}
                 onClick={() => onApprove(record)}
-                aria-label="승인"
+                aria-label={t('common.approve')}
               >
-                {compactActions ? null : '승인'}
+                {compactActions ? null : t('common.approve')}
               </Button>
               <Button
                 size="small"
@@ -87,9 +86,9 @@ export const ApplicationsTable = memo(function ApplicationsTable({
                 icon={<CloseOutlined />}
                 disabled={busy || record.status === 'rejected'}
                 onClick={() => onReject(record)}
-                aria-label="반려"
+                aria-label={t('common.reject')}
               >
-                {compactActions ? null : '반려'}
+                {compactActions ? null : t('common.reject')}
               </Button>
             </Space>
           )
@@ -98,7 +97,7 @@ export const ApplicationsTable = memo(function ApplicationsTable({
     )
 
     return base
-  }, [busyId, compactActions, onApprove, onReject, pinActions, showCourse])
+  }, [busyId, compactActions, onApprove, onReject, pinActions, showCourse, t])
 
   return (
     <Table
@@ -110,7 +109,7 @@ export const ApplicationsTable = memo(function ApplicationsTable({
       loading={loading}
       pagination={applications.length > 10 ? { pageSize: 10, showSizeChanger: false } : false}
       scroll={{ x: 'max-content' }}
-      locale={{ emptyText }}
+      locale={{ emptyText: emptyText ?? t('courses.appsEmpty') }}
     />
   )
 })

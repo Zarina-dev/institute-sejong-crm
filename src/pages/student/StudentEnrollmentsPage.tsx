@@ -1,5 +1,6 @@
 import { Card, Empty, List, Skeleton, Tag, Typography } from 'antd'
 
+import { usePreferences } from '../../app/preferences'
 import { useCurrentStudent } from '../../auth/useCurrentStudent'
 import { useStudentEnrollments } from '../../features/courses/queries'
 import type { EnrollmentRecord } from '../../features/courses/types'
@@ -9,26 +10,23 @@ import { PageHeader } from '../../shared/PageHeader'
 
 const { Text } = Typography
 
-const statusMeta: Record<NonNullable<EnrollmentRecord['status']>, { label: string; color: string }> = {
-  active: { label: '수강 중', color: 'green' },
-  completed: { label: '수료', color: 'blue' },
-  paused: { label: '휴학', color: 'gold' },
+const statusColor: Record<NonNullable<EnrollmentRecord['status']>, string> = {
+  active: 'green',
+  completed: 'blue',
+  paused: 'gold',
 }
 
 export function StudentEnrollmentsPage() {
+  const { t, language } = usePreferences()
   const { session, student } = useCurrentStudent()
   const studentId = student?.id ?? session?.studentId
   const enrollments = useStudentEnrollments(studentId)
 
   return (
     <div className="page-layout">
-      <PageHeader
-        level={2}
-        title="수강 등록 정보"
-        description="관리자 승인 완료 후 등록된 과정과 현재 수강 상태를 확인할 수 있습니다."
-      />
+      <PageHeader level={2} title={t('enrollments.title')} description={t('enrollments.subtitle')} />
 
-      <ErrorAlert error={enrollments.error} fallback="수강 등록 정보를 불러오지 못했습니다." />
+      <ErrorAlert error={enrollments.error} fallback={t('enrollments.loadFailed')} />
 
       <Card className="surface-card">
         {enrollments.isPending && studentId ? (
@@ -37,26 +35,26 @@ export function StudentEnrollmentsPage() {
           <List
             dataSource={enrollments.data}
             renderItem={(enrollment) => {
-              const meta = statusMeta[enrollment.status ?? 'active']
+              const status = enrollment.status ?? 'active'
 
               return (
                 <List.Item key={enrollment.id}>
                   <List.Item.Meta
-                    title={enrollment.course?.title ?? '과정명 미확인'}
+                    title={enrollment.course?.title ?? t('enrollments.unknownCourse')}
                     description={
                       <>
                         {enrollment.course?.subject ? <Text type="secondary">{enrollment.course.subject} · </Text> : null}
-                        <Text type="secondary">등록일 {formatDate(enrollment.createdAt)}</Text>
+                        <Text type="secondary">{t('enrollments.enrolledOn', { date: formatDate(enrollment.createdAt, language) })}</Text>
                       </>
                     }
                   />
-                  <Tag color={meta.color}>{meta.label}</Tag>
+                  <Tag color={statusColor[status]}>{t(`enrollments.status.${status}`)}</Tag>
                 </List.Item>
               )
             }}
           />
         ) : (
-          <Empty description="등록된 과정이 아직 없습니다." />
+          <Empty description={t('enrollments.empty')} />
         )}
       </Card>
     </div>

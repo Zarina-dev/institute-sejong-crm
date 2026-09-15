@@ -39,38 +39,38 @@ export function MaterialsPage() {
 
   return (
     <div className="page-layout">
-      <PageHeader kicker={t('materials')} title={t('materialsTitle')} description={t('materialsSubtitle')} />
+      <PageHeader kicker={t('nav.materials')} title={t('materials.title')} description={t('materials.subtitle')} />
 
       <Card className="surface-card filter-card">
         <Row gutter={[16, 16]}>
           <Col xs={24} lg={12}>
-            <Text>검색</Text>
+            <Text>{t('common.search')}</Text>
             <Input
               size="large"
               allowClear
               value={filters.search ?? ''}
               onChange={(event) => patchFilters({ search: event.target.value })}
-              placeholder="자료를 검색하세요..."
+              placeholder={t('materials.searchPlaceholder')}
               prefix={<SearchOutlined />}
             />
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Text>과목</Text>
+            <Text>{t('materials.subject')}</Text>
             <Select
               size="large"
               allowClear
-              placeholder="과목"
+              placeholder={t('materials.subject')}
               value={filters.subject}
               onChange={(value) => patchFilters({ subject: value })}
               options={catalog.subjects}
             />
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Text>과정</Text>
+            <Text>{t('materials.course')}</Text>
             <Select
               size="large"
               allowClear
-              placeholder="과정"
+              placeholder={t('materials.course')}
               value={filters.course}
               onChange={(value) => patchFilters({ course: value })}
               options={catalog.courses}
@@ -79,16 +79,16 @@ export function MaterialsPage() {
         </Row>
 
         <div className="filter-footer">
-          <Text>{data ? `${data.total}개의 자료` : '자료를 불러오는 중입니다.'}</Text>
+          <Text>{data ? t('materials.count', { count: data.total }) : t('materials.loadingCount')}</Text>
           {filtersActive ? (
             <Button type="link" icon={<SyncOutlined />} onClick={() => setFilters(defaultFilters)}>
-              필터 초기화
+              {t('common.resetFilters')}
             </Button>
           ) : null}
         </div>
       </Card>
 
-      <ErrorAlert error={materials.error} title="자료를 불러오지 못했습니다." fallback="잠시 후 다시 시도해 주세요." />
+      <ErrorAlert error={materials.error} title={t('materials.loadFailed')} fallback={t('materials.loadFailedHint')} />
 
       {materials.isPending ? (
         <Row gutter={[16, 16]}>
@@ -125,7 +125,7 @@ export function MaterialsPage() {
         </>
       ) : (
         <Card className="surface-card empty-card">
-          <Empty description="검색 조건에 맞는 자료가 없습니다." />
+          <Empty description={filtersActive ? t('materials.emptyFiltered') : t('materials.empty')} />
         </Card>
       )}
     </div>

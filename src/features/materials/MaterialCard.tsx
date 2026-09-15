@@ -3,6 +3,7 @@ import { Button, Card, Tag, Typography } from 'antd'
 import { memo } from 'react'
 
 import { apiUrl } from '../../api/client'
+import { usePreferences } from '../../app/preferences'
 import { formatDate, formatFileSize } from '../../shared/format'
 import type { MaterialItem } from './types'
 
@@ -13,6 +14,8 @@ const { Title, Paragraph, Text } = Typography
  * re-render on every keystroke in the filter bar above it.
  */
 export const MaterialCard = memo(function MaterialCard({ item }: { item: MaterialItem }) {
+  const { t, language } = usePreferences()
+
   return (
     <Card className="surface-card material-card">
       <div className="file-icon blue" aria-hidden="true">
@@ -21,16 +24,16 @@ export const MaterialCard = memo(function MaterialCard({ item }: { item: Materia
       <Tag>{item.subject}</Tag>
       <Title level={4}>{item.title}</Title>
       <Paragraph type="secondary" ellipsis={{ rows: 3, tooltip: item.description ?? undefined }}>
-        {item.description || '자료 설명이 없습니다.'}
+        {item.description || t('materials.noDescription')}
       </Paragraph>
       <div className="material-meta">
         <Tag>{item.course}</Tag>
-        <Text type="secondary">{formatDate(item.createdAt)}</Text>
+        <Text type="secondary">{formatDate(item.createdAt, language)}</Text>
         <Text type="secondary">{formatFileSize(item.fileSize)}</Text>
       </div>
       <div className="material-footer">
         <Text type="secondary" ellipsis={{ tooltip: item.originalFileName ?? undefined }}>
-          {item.originalFileName ?? '파일 없음'}
+          {item.originalFileName ?? t('materials.noFile')}
         </Text>
         <Button
           type="primary"
@@ -41,7 +44,7 @@ export const MaterialCard = memo(function MaterialCard({ item }: { item: Materia
           target="_blank"
           rel="noopener noreferrer"
         >
-          다운로드
+          {t('materials.download')}
         </Button>
       </div>
     </Card>

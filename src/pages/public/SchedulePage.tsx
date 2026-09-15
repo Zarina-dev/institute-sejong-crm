@@ -26,7 +26,7 @@ export function SchedulePage() {
   const resetFilters = () => { setGroup('all'); setSubject('all') }
 
   return <div className="page-layout">
-    <header className="page-heading"><Text className="section-kicker">STUDENT TOOLS</Text><Title level={1}>{t('scheduleTitle')}</Title><Text>{t('scheduleSubtitle')}</Text></header>
+    <header className="page-heading"><Text className="section-kicker">STUDENT TOOLS</Text><Title level={1}>{t('pages.scheduleTitle')}</Title><Text>{t('pages.scheduleSubtitle')}</Text></header>
     <Card className="surface-card filter-card"><Row gutter={[16, 16]} align="bottom">
       <Col xs={24} md={8}><Text strong>Course / group</Text><Select value={group} onChange={setGroup} options={[{ value: 'all', label: 'All groups' }, { value: 'Group A', label: 'Group A' }, { value: 'Group B', label: 'Group B' }]} /></Col>
       <Col xs={24} md={8}><Text strong>Week</Text><Select defaultValue="current" options={[{ value: 'current', label: '14-18 September 2026' }]} /></Col>

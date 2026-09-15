@@ -23,9 +23,7 @@ export function CoursesPage() {
   const courses = useCourses(true)
   const createApplication = useCreateApplication()
 
-  // The course being applied for; null = modal closed. Replaces a chain of
-  // window.prompt() calls that could not be styled, validated or cancelled
-  // half-way without losing what was typed.
+  // The course being applied for; null = modal closed.
   const [applyingTo, setApplyingTo] = useState<CourseRecord | null>(null)
   const [form] = Form.useForm<ApplyFormValues>()
 
@@ -45,18 +43,18 @@ export function CoursesPage() {
 
     try {
       await createApplication.mutateAsync({ courseId: applyingTo.id, ...values })
-      message.success(`"${applyingTo.title}" 수강 신청이 접수되었습니다.`)
+      message.success(t('courses.applied', { course: applyingTo.title }))
       closeApply()
     } catch (err) {
-      message.error(getErrorMessage(err, '신청 처리에 실패했습니다.'))
+      message.error(getErrorMessage(err, t('courses.applyFailed')))
     }
   }
 
   return (
     <div className="page-layout">
-      <PageHeader kicker={t('courses')} title="수강" description="공개 중인 수강 과정을 확인하고 신청할 수 있습니다." />
+      <PageHeader kicker={t('nav.courses')} title={t('courses.publicTitle')} description={t('courses.publicSubtitle')} />
 
-      <ErrorAlert error={courses.error} fallback="과정을 불러오지 못했습니다." />
+      <ErrorAlert error={courses.error} fallback={t('courses.loadFailed')} />
 
       {courses.isPending ? (
         <Row gutter={[16, 16]}>
@@ -76,7 +74,7 @@ export function CoursesPage() {
                 course={course}
                 footer={
                   <Button type="primary" icon={<SendOutlined />} block onClick={() => openApply(course)}>
-                    수강 신청
+                    {t('courses.apply')}
                   </Button>
                 }
               />
@@ -85,38 +83,38 @@ export function CoursesPage() {
         </Row>
       ) : (
         <Card className="surface-card empty-card">
-          <Empty description="공개된 과정이 없습니다." />
+          <Empty description={t('courses.empty')} />
         </Card>
       )}
 
       <Modal
-        title={applyingTo ? `수강 신청 — ${applyingTo.title}` : '수강 신청'}
+        title={applyingTo ? t('courses.applyTitle', { course: applyingTo.title }) : t('courses.apply')}
         open={Boolean(applyingTo)}
         onOk={submitApplication}
         onCancel={closeApply}
-        okText="신청하기"
-        cancelText="취소"
+        okText={t('courses.applySubmit')}
+        cancelText={t('common.cancel')}
         confirmLoading={createApplication.isPending}
-        destroyOnHidden
+        forceRender
       >
         <Form form={form} layout="vertical" disabled={createApplication.isPending}>
-          <Form.Item name="applicantName" label="이름" rules={[{ required: true, message: '이름을 입력하세요.' }]}>
-            <Input autoComplete="name" />
+          <Form.Item name="applicantName" label={t('courses.applyForm.name')} rules={[{ required: true, message: t('courses.applyForm.nameRequired') }]}>
+            <Input autoComplete="name" maxLength={120} />
           </Form.Item>
           <Form.Item
             name="applicantEmail"
-            label="이메일"
+            label={t('courses.applyForm.email')}
             rules={[
-              { required: true, message: '이메일을 입력하세요.' },
-              { type: 'email', message: '올바른 이메일 형식이 아닙니다.' },
+              { required: true, message: t('courses.applyForm.emailRequired') },
+              { type: 'email', message: t('courses.applyForm.emailInvalid') },
             ]}
           >
-            <Input autoComplete="email" inputMode="email" />
+            <Input autoComplete="email" inputMode="email" maxLength={120} />
           </Form.Item>
-          <Form.Item name="phone" label="연락처">
-            <Input autoComplete="tel" inputMode="tel" />
+          <Form.Item name="phone" label={t('courses.applyForm.phone')}>
+            <Input autoComplete="tel" inputMode="tel" maxLength={120} />
           </Form.Item>
-          <Form.Item name="goal" label="수강 목적">
+          <Form.Item name="goal" label={t('courses.applyForm.goal')}>
             <Input.TextArea rows={3} maxLength={120} showCount />
           </Form.Item>
         </Form>

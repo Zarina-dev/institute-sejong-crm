@@ -22,15 +22,15 @@ import { useSession } from '../auth/useSession'
 const { Header, Content, Footer } = Layout
 const { Text } = Typography
 
-type NavItem = { to: string; labelKey: 'home' | 'schedule' | 'materials' | 'news' | 'courses' | 'about'; icon: ReactNode }
+type NavItem = { to: string; labelKey: 'nav.home' | 'nav.schedule' | 'nav.materials' | 'nav.news' | 'nav.courses' | 'nav.about'; icon: ReactNode }
 
 const navigation: NavItem[] = [
-  { to: '/', labelKey: 'home', icon: <HomeOutlined /> },
-  { to: '/courses', labelKey: 'courses', icon: <SolutionOutlined /> },
-  { to: '/schedule', labelKey: 'schedule', icon: <CalendarOutlined /> },
-  { to: '/materials', labelKey: 'materials', icon: <ReadOutlined /> },
-  { to: '/news', labelKey: 'news', icon: <BookOutlined /> },
-  { to: '/about', labelKey: 'about', icon: <InfoCircleOutlined /> },
+  { to: '/', labelKey: 'nav.home', icon: <HomeOutlined /> },
+  { to: '/courses', labelKey: 'nav.courses', icon: <SolutionOutlined /> },
+  { to: '/schedule', labelKey: 'nav.schedule', icon: <CalendarOutlined /> },
+  { to: '/materials', labelKey: 'nav.materials', icon: <ReadOutlined /> },
+  { to: '/news', labelKey: 'nav.news', icon: <BookOutlined /> },
+  { to: '/about', labelKey: 'nav.about', icon: <InfoCircleOutlined /> },
 ]
 
 export function PublicLayout() {
@@ -41,7 +41,7 @@ export function PublicLayout() {
   const closeMenu = () => setMenuOpen(false)
 
   const renderNav = (variant: 'desktop' | 'mobile') => (
-    <nav className={variant === 'mobile' ? 'mobile-nav' : 'site-nav'} aria-label={t('navigation')}>
+    <nav className={variant === 'mobile' ? 'mobile-nav' : 'site-nav'} aria-label={t('nav.navigation')}>
       {/* NavLink already applies `.active` and aria-current="page". */}
       {navigation.map((item) => (
         <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={closeMenu}>
@@ -60,11 +60,11 @@ export function PublicLayout() {
   const portal = session
     ? {
         to: session.role === 'admin' ? '/admin' : '/student',
-        label: t(session.role === 'admin' ? 'roleAdmin' : 'roleStudent'),
+        label: t(session.role === 'admin' ? 'session.roleAdmin' : 'session.roleStudent'),
         icon: session.role === 'admin' ? <TeamOutlined /> : <UserOutlined />,
         newTab: true,
       }
-    : { to: '/login', label: t('portal'), icon: <LoginOutlined />, newTab: false }
+    : { to: '/login', label: t('nav.portal'), icon: <LoginOutlined />, newTab: false }
 
   const portalLinkProps = portal.newTab
     ? { target: '_blank' as const, rel: 'noreferrer' }
@@ -73,35 +73,35 @@ export function PublicLayout() {
   return (
     <Layout className="app-shell">
       <a className="skip-link" href="#main-content">
-        {t('skipToContent')}
+        {t('nav.skipToContent')}
       </a>
 
       <Header className="site-header">
         <div className="header-inner">
-          <NavLink to="/" className="brand" aria-label={t('siteName')}>
+          <NavLink to="/" className="brand" aria-label={t('brand.name')}>
             <span className="brand-mark" aria-hidden="true">
               I
             </span>
             <span>
               <strong>INSTITUT</strong>
-              <small>{t('learningSpace')}</small>
+              <small>{t('brand.tagline')}</small>
             </span>
           </NavLink>
 
           {renderNav('desktop')}
 
           <div className="header-actions">
-            <Tooltip title={t(theme === 'light' ? 'dark' : 'light')}>
+            <Tooltip title={t(theme === 'light' ? 'theme.dark' : 'theme.light')}>
               <Button
                 className="icon-button"
-                aria-label={t('theme')}
+                aria-label={t('theme.label')}
                 icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
                 onClick={toggleTheme}
               />
             </Tooltip>
 
             <Select
-              aria-label={t('language')}
+              aria-label={t('language.label')}
               className="language-select"
               value={language}
               onChange={setLanguage}
@@ -116,7 +116,7 @@ export function PublicLayout() {
 
             <Button
               className="menu-button icon-button"
-              aria-label={t('menu')}
+              aria-label={t('nav.menu')}
               aria-expanded={menuOpen}
               icon={<MenuOutlined />}
               onClick={() => setMenuOpen(true)}
@@ -125,7 +125,7 @@ export function PublicLayout() {
         </div>
       </Header>
 
-      <Drawer title={t('navigation')} placement="right" open={menuOpen} onClose={closeMenu}>
+      <Drawer title={t('nav.navigation')} placement="right" open={menuOpen} onClose={closeMenu}>
         {renderNav('mobile')}
         <NavLink to={portal.to} onClick={closeMenu} {...portalLinkProps}>
           <Button type="primary" block icon={portal.icon}>
@@ -139,10 +139,10 @@ export function PublicLayout() {
             icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
             onClick={toggleTheme}
           >
-            {t(theme === 'light' ? 'dark' : 'light')}
+            {t(theme === 'light' ? 'theme.dark' : 'theme.light')}
           </Button>
           <Select
-            aria-label={t('language')}
+            aria-label={t('language.label')}
             value={language}
             onChange={setLanguage}
             options={languages.map(({ value, title }) => ({ value, label: title }))}
@@ -156,7 +156,7 @@ export function PublicLayout() {
 
       <Footer className="site-footer">
         <Text type="secondary">
-          {t('siteName')} · {new Date().getFullYear()} · {t('footer')}
+          {t('brand.name')} · {new Date().getFullYear()} · {t('brand.footer')}
         </Text>
       </Footer>
     </Layout>

@@ -12,73 +12,32 @@ import { Button, Card, Col, Row, Tag, Typography } from 'antd'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
+import { usePreferences, type TranslationKey } from '../../app/preferences'
+
 const { Title, Paragraph, Text } = Typography
 
 type Audience = {
   tone: 'applicant' | 'student' | 'teacher'
   icon: ReactNode
-  label: string
-  title: string
-  description: string
-  linkLabel: string
+  label: TranslationKey
+  title: TranslationKey
+  copy: TranslationKey
+  linkLabel: TranslationKey
   link: string
   /** Admin/student areas are standalone apps — open them in their own tab. */
   newTab?: boolean
 }
 
 const audiences: Audience[] = [
-  {
-    tone: 'applicant',
-    icon: <SolutionOutlined />,
-    label: 'Future students',
-    title: 'Applicants',
-    description:
-      'Explore programmes, admissions support, campus life, and what your next chapter can look like.',
-    linkLabel: 'Discover Institut',
-    link: '/about',
-  },
-  {
-    tone: 'student',
-    icon: <UserOutlined />,
-    label: 'Current students',
-    title: 'Students',
-    description:
-      'Find your classes, study resources, personal results, and the services you need today.',
-    linkLabel: 'Go to student tools',
-    link: '/schedule',
-  },
-  {
-    tone: 'teacher',
-    icon: <TeamOutlined />,
-    label: 'Faculty and staff',
-    title: 'Teachers',
-    description:
-      'Review academic activity, publish resources, and keep your courses moving forward.',
-    linkLabel: 'Open staff overview',
-    link: '/admin',
-    newTab: true,
-  },
+  { tone: 'applicant', icon: <SolutionOutlined />, label: 'home.applicantsLabel', title: 'home.applicantsTitle', copy: 'home.applicantsCopy', linkLabel: 'home.applicantsLink', link: '/about' },
+  { tone: 'student', icon: <UserOutlined />, label: 'home.studentsLabel', title: 'home.studentsTitle', copy: 'home.studentsCopy', linkLabel: 'home.studentsLink', link: '/schedule' },
+  { tone: 'teacher', icon: <TeamOutlined />, label: 'home.teachersLabel', title: 'home.teachersTitle', copy: 'home.teachersCopy', linkLabel: 'home.teachersLink', link: '/admin', newTab: true },
 ]
 
-const quickLinks = [
-  {
-    icon: <CalendarOutlined />,
-    title: 'Class schedule',
-    description: 'Know exactly where to be and when.',
-    link: '/schedule',
-  },
-  {
-    icon: <FileTextOutlined />,
-    title: 'Course materials',
-    description: 'Notes and files for every subject.',
-    link: '/materials',
-  },
-  {
-    icon: <UserOutlined />,
-    title: 'Student portal',
-    description: 'Your results and protected data.',
-    link: '/login',
-  },
+const quickLinks: Array<{ icon: ReactNode; title: TranslationKey; copy: TranslationKey; link: string }> = [
+  { icon: <CalendarOutlined />, title: 'home.quickSchedule', copy: 'home.quickScheduleCopy', link: '/schedule' },
+  { icon: <FileTextOutlined />, title: 'home.quickMaterials', copy: 'home.quickMaterialsCopy', link: '/materials' },
+  { icon: <UserOutlined />, title: 'home.quickPortal', copy: 'home.quickPortalCopy', link: '/login' },
 ]
 
 const newsPreview = [
@@ -100,28 +59,27 @@ function SectionHeading({ kicker, title, aside }: { kicker: string; title: strin
 }
 
 export function HomePage() {
+  const { t } = usePreferences()
+
   return (
     <div className="home-page">
       <section className="hero-panel">
         <Row gutter={[24, 24]} align="middle">
           <Col xs={24} lg={14}>
-            <Tag className="hero-tag">2026 / 2027 academic year</Tag>
+            <Tag className="hero-tag">{t('home.heroTag')}</Tag>
             <Title level={1} className="hero-title">
-              A university experience built around your next step.
+              {t('home.heroTitle')}
             </Title>
-            <Paragraph className="hero-copy">
-              Programmes, academic life, learning tools, and campus updates in one clear place for
-              every member of our community.
-            </Paragraph>
+            <Paragraph className="hero-copy">{t('home.heroCopy')}</Paragraph>
             <div className="hero-actions">
               <Link to="/courses">
                 <Button type="primary" size="large" icon={<SolutionOutlined />}>
-                  Explore programmes
+                  {t('home.explore')}
                 </Button>
               </Link>
               <Link to="/schedule">
                 <Button className="hero-secondary" size="large" icon={<CalendarOutlined />}>
-                  Academic calendar
+                  {t('home.calendar')}
                 </Button>
               </Link>
             </div>
@@ -132,14 +90,11 @@ export function HomePage() {
               <div className="update-icon" aria-hidden="true">
                 <ClockCircleOutlined />
               </div>
-              <Text className="update-label">Admissions 2026</Text>
-              <Title level={3}>Applications are now open</Title>
-              <Paragraph>
-                Start your application, learn about our programmes, and speak with our admissions
-                team.
-              </Paragraph>
+              <Text className="update-label">{t('home.admissions')}</Text>
+              <Title level={3}>{t('home.admissionsTitle')}</Title>
+              <Paragraph>{t('home.admissionsCopy')}</Paragraph>
               <Link to="/about">
-                Plan your visit <ArrowRightOutlined />
+                {t('home.planVisit')} <ArrowRightOutlined />
               </Link>
             </Card>
           </Col>
@@ -147,24 +102,17 @@ export function HomePage() {
       </section>
 
       <section className="audience-section">
-        <SectionHeading
-          kicker="Find your path"
-          title="Who are you visiting as?"
-          aside={<Text type="secondary">Start with the information made for you</Text>}
-        />
+        <SectionHeading kicker={t('home.findPath')} title={t('home.whoTitle')} aside={<Text type="secondary">{t('home.whoAside')}</Text>} />
         <Row gutter={[18, 18]}>
           {audiences.map((audience) => (
             <Col xs={24} md={8} key={audience.tone}>
               <Card className={`surface-card audience-card ${audience.tone}`}>
                 <span className="audience-icon" aria-hidden="true">{audience.icon}</span>
-                <Text className="audience-label">{audience.label}</Text>
-                <Title level={3}>{audience.title}</Title>
-                <Paragraph>{audience.description}</Paragraph>
-                <Link
-                  to={audience.link}
-                  {...(audience.newTab ? { target: '_blank', rel: 'noreferrer' } : {})}
-                >
-                  {audience.linkLabel} <ArrowRightOutlined />
+                <Text className="audience-label">{t(audience.label)}</Text>
+                <Title level={3}>{t(audience.title)}</Title>
+                <Paragraph>{t(audience.copy)}</Paragraph>
+                <Link to={audience.link} {...(audience.newTab ? { target: '_blank', rel: 'noreferrer' } : {})}>
+                  {t(audience.linkLabel)} <ArrowRightOutlined />
                 </Link>
               </Card>
             </Col>
@@ -173,22 +121,16 @@ export function HomePage() {
       </section>
 
       <section className="quick-section">
-        <SectionHeading
-          kicker="Most visited"
-          title="Essential university services"
-          aside={<Text type="secondary">The places our community uses most</Text>}
-        />
+        <SectionHeading kicker={t('home.mostVisited')} title={t('home.servicesTitle')} aside={<Text type="secondary">{t('home.servicesAside')}</Text>} />
         <Row gutter={[16, 16]}>
           {quickLinks.map((item) => (
-            <Col xs={24} md={8} key={item.title}>
+            <Col xs={24} md={8} key={item.link}>
               <Card className="surface-card quick-card">
-                <span className="quick-icon" aria-hidden="true">
-                  {item.icon}
-                </span>
-                <Title level={4}>{item.title}</Title>
-                <Paragraph type="secondary">{item.description}</Paragraph>
+                <span className="quick-icon" aria-hidden="true">{item.icon}</span>
+                <Title level={4}>{t(item.title)}</Title>
+                <Paragraph type="secondary">{t(item.copy)}</Paragraph>
                 <Link to={item.link}>
-                  Open <ArrowRightOutlined />
+                  {t('common.open')} <ArrowRightOutlined />
                 </Link>
               </Card>
             </Col>
@@ -198,12 +140,12 @@ export function HomePage() {
 
       <section className="today-section">
         <SectionHeading
-          kicker="Academic calendar"
-          title="What's happening this week"
+          kicker={t('home.academicCalendar')}
+          title={t('home.weekTitle')}
           aside={
             <Link to="/schedule">
               <Button type="link" icon={<CalendarOutlined />}>
-                Full schedule
+                {t('home.fullSchedule')}
               </Button>
             </Link>
           }
@@ -215,7 +157,7 @@ export function HomePage() {
             <small>SEP</small>
           </div>
           <div className="next-class">
-            <Text type="secondary">NEXT CLASS</Text>
+            <Text type="secondary">{t('home.nextClass')}</Text>
             <Title level={4}>Mathematics</Title>
             <span>
               <ClockCircleOutlined /> 09:00 – 10:30 · Room A-101
@@ -223,8 +165,8 @@ export function HomePage() {
           </div>
           <div className="today-progress">
             <div>
-              <Text type="secondary">THIS WEEK</Text>
-              <strong>3 classes planned</strong>
+              <Text type="secondary">{t('home.thisWeek')}</Text>
+              <strong>{t('home.classesPlanned', { count: 3 })}</strong>
             </div>
             <div className="progress-track" role="presentation">
               <i />
@@ -232,19 +174,19 @@ export function HomePage() {
           </div>
           <div className="today-status">
             <CheckCircleFilled />
-            <span>Registration open</span>
+            <span>{t('home.registrationOpen')}</span>
           </div>
         </Card>
       </section>
 
       <section className="news-preview">
         <SectionHeading
-          kicker="Campus news"
-          title="Latest news and events"
+          kicker={t('home.campusNews')}
+          title={t('home.newsTitle')}
           aside={
             <Link to="/news">
               <Button type="link" icon={<ArrowRightOutlined />}>
-                View all news
+                {t('common.viewAll')}
               </Button>
             </Link>
           }
@@ -252,16 +194,9 @@ export function HomePage() {
         <Row gutter={[16, 16]}>
           {newsPreview.map((item) => (
             <Col xs={24} md={8} key={item.id}>
-              <Card
-                className="surface-card news-card"
-                title={item.title}
-                extra={<Text type="secondary">{item.date}</Text>}
-              >
-                <Paragraph type="secondary">
-                  A concise update on institute events, upcoming opportunities, and student
-                  activities.
-                </Paragraph>
-                <Link to="/news">Read more</Link>
+              <Card className="surface-card news-card" title={item.title} extra={<Text type="secondary">{item.date}</Text>}>
+                <Paragraph type="secondary">{t('home.newsCopy')}</Paragraph>
+                <Link to="/news">{t('common.readMore')}</Link>
               </Card>
             </Col>
           ))}

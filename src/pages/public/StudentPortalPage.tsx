@@ -31,7 +31,7 @@ export function StudentPortalPage() {
     setLocalError(null)
 
     if (!username) {
-      setLocalError(t('loginIdRequired'))
+      setLocalError(t('login.idRequired'))
       return
     }
 
@@ -39,7 +39,7 @@ export function StudentPortalPage() {
     // against the API.
     if (username === demoUsers.admin.username) {
       if (password !== demoUsers.admin.password) {
-        setLocalError(t('loginInvalidCredentials'))
+        setLocalError(t('login.invalidCredentials'))
         return
       }
 
@@ -52,7 +52,7 @@ export function StudentPortalPage() {
       const result = await login.mutateAsync({ studentId: username, password })
 
       if (!result.valid || !result.student) {
-        setLocalError(result.reason ?? t('loginInvalidCredentials'))
+        setLocalError(result.reason ?? t('login.invalidCredentials'))
         return
       }
 
@@ -81,11 +81,11 @@ export function StudentPortalPage() {
         <span className="brand-mark" aria-hidden="true">
           I
         </span>
-        <Text className="section-kicker">{t('studentPortal')}</Text>
-        <Title level={1}>{t('portalTitle')}</Title>
-        <Paragraph>{t('portalSubtitle')}</Paragraph>
+        <Text className="section-kicker">{t('session.studentPortal')}</Text>
+        <Title level={1}>{t('login.portalTitle')}</Title>
+        <Paragraph>{t('login.portalSubtitle')}</Paragraph>
         <div>
-          <SafetyCertificateOutlined /> {t('loginDataProtected')}
+          <SafetyCertificateOutlined /> {t('login.dataProtected')}
         </div>
       </section>
 
@@ -94,47 +94,47 @@ export function StudentPortalPage() {
           <>
             <Title level={2}>{session.displayName}</Title>
             <Paragraph type="secondary">
-              {t('signedInAs')} · {t(session.role === 'admin' ? 'roleAdmin' : 'roleStudent')}
+              {t('session.signedInAs')} · {t(session.role === 'admin' ? 'session.roleAdmin' : 'session.roleStudent')}
             </Paragraph>
             <Space wrap>
               {/* Opens in its own tab, matching the portal button in the
                   header; the sign-in page stays where it was. */}
               <Link to={homeFor(session.role)} target="_blank" rel="noreferrer">
                 <Button type="primary" icon={<UserOutlined />}>
-                  {t('loginContinue')}
+                  {t('login.continue')}
                 </Button>
               </Link>
-              <Button onClick={handleLogout}>{t('logout')}</Button>
+              <Button onClick={handleLogout}>{t('session.logout')}</Button>
             </Space>
           </>
         ) : (
           <>
-            <Title level={2}>{t('loginWelcome')}</Title>
-            <Paragraph type="secondary">{t('loginSubtitle')}</Paragraph>
+            <Title level={2}>{t('login.welcome')}</Title>
+            <Paragraph type="secondary">{t('login.subtitle')}</Paragraph>
 
             <div className="login-feedback">
-              <ErrorAlert error={localError ?? login.error} fallback={t('loginError')} />
+              <ErrorAlert error={localError ?? login.error} fallback={t('login.error')} />
             </div>
 
             <Form<LoginValues> layout="vertical" requiredMark={false} onFinish={onFinish} disabled={login.isPending}>
-              <Form.Item label={t('loginIdLabel')} name="username" rules={[{ required: true, message: t('loginIdRequired') }]}>
-                <Input size="large" autoComplete="username" autoFocus placeholder={t('loginIdPlaceholder')} />
+              <Form.Item label={t('login.idLabel')} name="username" rules={[{ required: true, message: t('login.idRequired') }]}>
+                <Input size="large" autoComplete="username" autoFocus placeholder={t('login.idPlaceholder')} />
               </Form.Item>
-              <Form.Item label={t('loginPasswordLabel')} name="password">
-                <Input.Password size="large" autoComplete="current-password" placeholder={t('loginPasswordPlaceholder')} />
+              <Form.Item label={t('login.passwordLabel')} name="password">
+                <Input.Password size="large" autoComplete="current-password" placeholder={t('login.passwordPlaceholder')} />
               </Form.Item>
               <div className="login-options">
-                <Checkbox>{t('loginRemember')}</Checkbox>
-                <a href="#help">{t('loginNeedHelp')}</a>
+                <Checkbox>{t('login.remember')}</Checkbox>
+                <a href="#help">{t('login.needHelp')}</a>
               </div>
               <Button type="primary" size="large" block icon={<LockOutlined />} htmlType="submit" loading={login.isPending}>
-                {t('loginSubmit')}
+                {t('login.submit')}
               </Button>
             </Form>
           </>
         )}
 
-        <Text className="login-help">{t('loginHint')}</Text>
+        <Text className="login-help">{t('login.hint')}</Text>
       </Card>
     </div>
   )

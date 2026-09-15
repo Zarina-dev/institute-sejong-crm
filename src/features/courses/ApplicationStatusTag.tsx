@@ -1,7 +1,8 @@
 import { Tag } from 'antd'
 import { memo } from 'react'
 
-import { applicationStatusMeta } from './applicationStatus'
+import { usePreferences } from '../../app/preferences'
+import { applicationStatusColor, statusLabelKey } from './applicationStatus'
 import type { ApplicationStatus } from './types'
 
 export const ApplicationStatusTag = memo(function ApplicationStatusTag({
@@ -9,6 +10,7 @@ export const ApplicationStatusTag = memo(function ApplicationStatusTag({
 }: {
   status: ApplicationStatus | null | undefined
 }) {
-  const meta = applicationStatusMeta[status ?? 'pending']
-  return <Tag color={meta.color}>{meta.label}</Tag>
+  const { t } = usePreferences()
+  const resolved = status ?? 'pending'
+  return <Tag color={applicationStatusColor[resolved]}>{t(statusLabelKey(resolved))}</Tag>
 })

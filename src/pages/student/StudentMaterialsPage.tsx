@@ -1,5 +1,6 @@
 import { Card, Col, Empty, Row, Skeleton, Typography } from 'antd'
 
+import { usePreferences } from '../../app/preferences'
 import { useCurrentStudent } from '../../auth/useCurrentStudent'
 import { MaterialCard } from '../../features/materials/MaterialCard'
 import { useMaterials } from '../../features/materials/queries'
@@ -9,11 +10,10 @@ import { PageHeader } from '../../shared/PageHeader'
 const { Paragraph, Text } = Typography
 
 export function StudentMaterialsPage() {
+  const { t } = usePreferences()
   const { student } = useCurrentStudent()
   const studentCourse = student?.course
 
-  // `enabled` skips the request for students without an approved course
-  // instead of firing a query we would throw away.
   const materials = useMaterials(
     { course: studentCourse, published: 'true', limit: 20, page: 1 },
     { enabled: Boolean(studentCourse) },
@@ -22,9 +22,9 @@ export function StudentMaterialsPage() {
   if (!studentCourse) {
     return (
       <div className="page-layout">
-        <PageHeader level={2} title="자료실" description="승인된 과정에 속한 자료를 확인하고 다운로드할 수 있습니다." />
+        <PageHeader level={2} title={t('materials.student.title')} description={t('materials.student.subtitle')} />
         <Card className="surface-card empty-card">
-          <Empty description="현재 승인된 과정이 없어 자료실에 접근할 수 없습니다. 관리자 승인 후 해당 과정 자료가 표시됩니다." />
+          <Empty description={t('materials.student.locked')} />
         </Card>
       </div>
     )
@@ -34,15 +34,15 @@ export function StudentMaterialsPage() {
     <div className="page-layout">
       <PageHeader
         level={2}
-        title="자료실"
+        title={t('materials.student.title')}
         description={
           <>
-            현재 접근 가능한 과정: <Text strong>{studentCourse}</Text>
+            {t('materials.student.currentCourse')}: <Text strong>{studentCourse}</Text>
           </>
         }
       />
 
-      <ErrorAlert error={materials.error} fallback="자료를 불러오지 못했습니다." />
+      <ErrorAlert error={materials.error} fallback={t('materials.loadFailed')} />
 
       {materials.isPending ? (
         <Row gutter={[16, 16]}>
@@ -64,9 +64,9 @@ export function StudentMaterialsPage() {
         </Row>
       ) : (
         <Card className="surface-card empty-card">
-          <Empty description="해당 과정에 공개된 자료가 없습니다." />
+          <Empty description={t('materials.student.empty')} />
           <Paragraph type="secondary" style={{ textAlign: 'center', marginTop: 8 }}>
-            선생님이 자료를 올리면 여기에 표시됩니다.
+            {t('materials.student.emptyHint')}
           </Paragraph>
         </Card>
       )}

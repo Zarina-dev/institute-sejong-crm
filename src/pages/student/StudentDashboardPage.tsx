@@ -1,7 +1,8 @@
-import { BookOutlined, FolderOpenOutlined, IdcardOutlined, CalendarOutlined } from '@ant-design/icons'
+import { BookOutlined, CalendarOutlined, FolderOpenOutlined, IdcardOutlined } from '@ant-design/icons'
 import { Card, Col, Row, Tag, Typography } from 'antd'
 import { Link } from 'react-router-dom'
 
+import { usePreferences } from '../../app/preferences'
 import { useCurrentStudent } from '../../auth/useCurrentStudent'
 import { useStudentEnrollments } from '../../features/courses/queries'
 import { useMaterials } from '../../features/materials/queries'
@@ -10,11 +11,11 @@ import { PageHeader } from '../../shared/PageHeader'
 const { Text, Paragraph } = Typography
 
 export function StudentDashboardPage() {
+  const { t } = usePreferences()
   const { session, student } = useCurrentStudent()
   const studentId = student?.id ?? session?.studentId
 
-  // Both are cheap head-counts and share the cache with their own pages, so
-  // opening 수강 등록 or 자료실 afterwards is instant.
+  // Cheap head-counts that share the cache with their own pages.
   const enrollments = useStudentEnrollments(studentId)
   const materials = useMaterials(
     { course: student?.course, published: 'true', limit: 1, page: 1 },
@@ -25,48 +26,53 @@ export function StudentDashboardPage() {
     <div className="page-layout">
       <PageHeader
         level={2}
-        title={`안녕하세요, ${student?.name || session?.displayName || '학생'}님`}
-        description="기본 정보, 현재 수강 상태, 자료실 접근 권한을 한눈에 확인할 수 있습니다."
+        title={t('dashboard.greeting', { name: student?.name || session?.displayName || t('session.roleStudent') })}
+        description={t('dashboard.subtitle')}
       />
 
       <Row gutter={[16, 16]}>
         <Col xs={24} md={12}>
-          <Card className="surface-card dash-card" title={<><BookOutlined /> 현재 수강 과정</>} extra={<Link to="/student/enrollments">자세히</Link>}>
+          <Card className="surface-card dash-card" title={<><BookOutlined /> {t('dashboard.currentCourse')}</>} extra={<Link to="/student/enrollments">{t('common.details')}</Link>}>
             {student?.course ? (
               <>
                 <Text strong>{student.course}</Text>
                 <Paragraph type="secondary">
-                  등록된 과정 {enrollments.data?.length ?? '…'}개 · <Tag color="green">정상 진행 중</Tag>
+                  {enrollments.data ? t('dashboard.enrolledCount', { count: enrollments.data.length }) : '…'} ·{' '}
+                  <Tag color="green">{t('dashboard.inProgress')}</Tag>
                 </Paragraph>
               </>
             ) : (
-              <Paragraph type="secondary">승인 대기 중인 과정이 없습니다. 수강 정보에서 과정을 신청하세요.</Paragraph>
+              <Paragraph type="secondary">{t('dashboard.noCourse')}</Paragraph>
             )}
           </Card>
         </Col>
 
         <Col xs={24} md={12}>
-          <Card className="surface-card dash-card" title={<><FolderOpenOutlined /> 자료실 접근</>} extra={<Link to="/student/materials">열기</Link>}>
-            {student?.course ? (
-              <Paragraph type="secondary">
-                <Text strong>{student.course}</Text> 자료 {materials.data?.total ?? '…'}개를 다운로드할 수 있습니다.
-              </Paragraph>
-            ) : (
-              <Paragraph type="secondary">관리자 승인 후 자료실이 열립니다.</Paragraph>
-            )}
+          <Card className="surface-card dash-card" title={<><FolderOpenOutlined /> {t('dashboard.materialsAccess')}</>} extra={<Link to="/student/materials">{t('common.open')}</Link>}>
+            <Paragraph type="secondary">
+              {student?.course
+                ? materials.data
+                  ? t('dashboard.materialsCount', { count: materials.data.total, course: student.course })
+                  : '…'
+                : t('dashboard.materialsLocked')}
+            </Paragraph>
           </Card>
         </Col>
 
         <Col xs={24} md={12}>
-          <Card className="surface-card dash-card" title={<><IdcardOutlined /> 내 정보</>} extra={<Link to="/student/profile">전체 보기</Link>}>
-            <Paragraph>학생 ID: <Text strong>{student?.studentId || session?.studentId || '-'}</Text></Paragraph>
-            <Paragraph>레벨: <Text strong>{student?.level || '-'}</Text></Paragraph>
+          <Card className="surface-card dash-card" title={<><IdcardOutlined /> {t('dashboard.myInfo')}</>} extra={<Link to="/student/profile">{t('common.viewAll')}</Link>}>
+            <Paragraph>
+              {t('dashboard.studentId')}: <Text strong>{student?.studentId || session?.studentId || '-'}</Text>
+            </Paragraph>
+            <Paragraph>
+              {t('dashboard.level')}: <Text strong>{student?.level || '-'}</Text>
+            </Paragraph>
           </Card>
         </Col>
 
         <Col xs={24} md={12}>
-          <Card className="surface-card dash-card" title={<><CalendarOutlined /> 다가오는 행사</>} extra={<Link to="/student/events">모두</Link>}>
-            <Paragraph>학기 초 오리엔테이션</Paragraph>
+          <Card className="surface-card dash-card" title={<><CalendarOutlined /> {t('dashboard.upcomingEvents')}</>} extra={<Link to="/student/events">{t('common.all')}</Link>}>
+            <Paragraph>{t('dashboard.orientation')}</Paragraph>
           </Card>
         </Col>
       </Row>

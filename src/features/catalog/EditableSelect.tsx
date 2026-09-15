@@ -2,6 +2,7 @@ import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { App, Button, Divider, Input, Select, Tooltip } from 'antd'
 import { memo, useState, type MouseEvent } from 'react'
 
+import { usePreferences } from '../../app/preferences'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import {
   addCatalogItem,
@@ -17,8 +18,10 @@ type EditableSelectProps = {
   /** Supplied by Form.Item when used inside a form. */
   value?: string
   onChange?: (value: string | undefined) => void
+  /** Also injected by Form.Item — wires the label's `for` and the error state. */
+  id?: string
+  status?: 'error' | 'warning'
   placeholder?: string
-  addPlaceholder: string
   size?: 'small' | 'middle' | 'large'
   allowClear?: boolean
   /** Select the item right after adding it — wanted in the create/edit form,
@@ -47,15 +50,19 @@ export const EditableSelect = memo(function EditableSelect({
   options,
   value,
   onChange,
+  id,
+  status,
   placeholder,
-  addPlaceholder,
   size,
   allowClear,
   selectOnAdd = false,
 }: EditableSelectProps) {
   const { message } = App.useApp()
+  const { t } = usePreferences()
   const confirmDelete = useConfirmDelete()
   const [draft, setDraft] = useState('')
+
+  const addPlaceholder = t(kind === 'subjects' ? 'catalog.newSubject' : 'catalog.newCourse')
 
   const handleAdd = () => {
     const next = draft.trim()
@@ -63,16 +70,16 @@ export const EditableSelect = memo(function EditableSelect({
 
     if (!result.ok) {
       if (result.reason === 'duplicate') {
-        message.warning(`이미 등록된 항목입니다: ${next}`)
+        message.warning(t('catalog.duplicate', { value: next }))
       } else if (result.reason === 'tooLong') {
-        message.warning(`${MAX_CATALOG_ITEM_LENGTH}자 이내로 입력하세요.`)
+        message.warning(t('catalog.tooLong', { max: MAX_CATALOG_ITEM_LENGTH }))
       }
       // `empty` needs no message — the button is disabled in that case.
       return
     }
 
     setDraft('')
-    message.success(`추가되었습니다: ${next}`)
+    message.success(t('catalog.added', { value: next }))
 
     if (selectOnAdd) {
       onChange?.(next)
@@ -84,9 +91,7 @@ export const EditableSelect = memo(function EditableSelect({
 
     confirmDelete({
       target: item,
-      // Only the pick-list entry goes away; materials already saved with this
-      // value keep it, and the entry can simply be typed in again.
-      note: '목록에서만 제거되며, 이미 저장된 자료의 값은 그대로 유지됩니다.',
+      note: t('catalog.removeNote'),
       onConfirm: () => {
         removeCatalogItem(kind, item)
 
@@ -96,27 +101,29 @@ export const EditableSelect = memo(function EditableSelect({
           onChange?.(undefined)
         }
 
-        message.success(`삭제되었습니다: ${item}`)
+        message.success(t('catalog.removed', { value: item }))
       },
     })
   }
 
   return (
     <Select
+      id={id}
+      status={status}
       value={value}
       onChange={onChange}
       options={options}
-      placeholder={placeholder}
+      placeholder={placeholder ?? t(kind === 'subjects' ? 'catalog.selectSubject' : 'catalog.selectCourse')}
       size={size}
       allowClear={allowClear}
       optionRender={(option) => (
         <div className="catalog-option">
           <span>{option.label}</span>
-          <Tooltip title="삭제">
+          <Tooltip title={t('catalog.remove')}>
             <Button
               type="text"
               size="small"
-              aria-label={`${String(option.value)} 삭제`}
+              aria-label={`${t('catalog.remove')}: ${String(option.value)}`}
               icon={<DeleteOutlined />}
               onMouseDown={swallow}
               onClick={(event) => handleRemove(event, String(option.value))}
@@ -145,13 +152,8 @@ export const EditableSelect = memo(function EditableSelect({
                 }
               }}
             />
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              disabled={!draft.trim()}
-              onClick={handleAdd}
-            >
-              추가
+            <Button type="primary" icon={<PlusOutlined />} disabled={!draft.trim()} onClick={handleAdd}>
+              {t('catalog.add')}
             </Button>
           </div>
         </>

@@ -11,6 +11,8 @@ export type StudentApiRecord = {
   admissionDate: string
   status: 'active' | 'inactive'
   password?: string
+  /** Admin-only memo; absent from the public `/students/:id` response. */
+  notes?: string | null
   topikFiles: Array<{
     id: string
     name: string
@@ -27,7 +29,7 @@ export async function getStudents() {
 
 /** Password-free copy of one student, by login id. */
 export async function getStudent(studentId: string) {
-  return apiGet<Omit<StudentApiRecord, 'password'>>(`/students/${encodeURIComponent(studentId)}`)
+  return apiGet<Omit<StudentApiRecord, 'password' | 'notes'>>(`/students/${encodeURIComponent(studentId)}`)
 }
 
 export async function createStudent(payload: Record<string, unknown>) {

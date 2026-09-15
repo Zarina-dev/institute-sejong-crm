@@ -2,6 +2,8 @@ import { ExclamationCircleFilled } from '@ant-design/icons'
 import { App } from 'antd'
 import { useCallback, type ReactNode } from 'react'
 
+import { usePreferences } from '../app/preferences'
+
 type ConfirmDeleteOptions = {
   /** What is about to be deleted — shown in bold inside the dialog. */
   target: string
@@ -18,30 +20,29 @@ type ConfirmDeleteOptions = {
  * interruption a destructive action deserves, and it works from inside another
  * popup — the 과목/과정 delete buttons live in a Select dropdown, where a
  * nested Popconfirm fights the dropdown's own click-outside handling.
- *
- * Requires an <App> from antd above it in the tree (see main.tsx).
  */
 export function useConfirmDelete() {
   const { modal } = App.useApp()
+  const { t } = usePreferences()
 
   return useCallback(
     ({ target, note, onConfirm }: ConfirmDeleteOptions) => {
       modal.confirm({
-        title: '삭제 확인',
+        title: t('confirm.title'),
         icon: <ExclamationCircleFilled />,
         content: (
           <div className="confirm-delete">
-            <p>정말 삭제하시겠습니까?</p>
+            <p>{t('confirm.question')}</p>
             <strong>{target}</strong>
-            <p>{note ?? '이 작업은 되돌릴 수 없습니다.'}</p>
+            <p>{note ?? t('confirm.irreversible')}</p>
           </div>
         ),
-        okText: '삭제',
+        okText: t('confirm.ok'),
         okButtonProps: { danger: true },
-        cancelText: '취소',
+        cancelText: t('confirm.cancel'),
         onOk: onConfirm,
       })
     },
-    [modal],
+    [modal, t],
   )
 }

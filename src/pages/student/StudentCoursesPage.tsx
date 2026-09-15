@@ -2,8 +2,8 @@ import { SendOutlined } from '@ant-design/icons'
 import { App, Button, Card, Col, Descriptions, Empty, Row, Skeleton, Typography } from 'antd'
 import { useCallback, useMemo } from 'react'
 
+import { usePreferences } from '../../app/preferences'
 import { useCurrentStudent } from '../../auth/useCurrentStudent'
-import { applicationStatusMeta } from '../../features/courses/applicationStatus'
 import { ApplicationStatusTag } from '../../features/courses/ApplicationStatusTag'
 import { CourseCard } from '../../features/courses/CourseCard'
 import { useApplications, useCourses, useCreateApplication } from '../../features/courses/queries'
@@ -16,6 +16,7 @@ import { PageHeader } from '../../shared/PageHeader'
 const { Text } = Typography
 
 export function StudentCoursesPage() {
+  const { t, language } = usePreferences()
   const { message } = App.useApp()
   const { session, student } = useCurrentStudent()
 
@@ -23,11 +24,6 @@ export function StudentCoursesPage() {
   const applications = useApplications()
   const createApplication = useCreateApplication()
 
-  /**
-   * The API returns every application; only this student's matter here.
-   * Recomputed only when the list or the identity keys change — not on the
-   * re-render caused by pressing "apply" on a card.
-   */
   const myApplicationsByCourse = useMemo(() => {
     const map = new Map<string, CourseApplicationRecord>()
 
@@ -47,8 +43,8 @@ export function StudentCoursesPage() {
 
   const handleApply = useCallback(
     (courseId: string) => {
-      if (!student) {
-        message.error('로그인된 학생 정보를 찾을 수 없습니다.')
+      if (!student?.id) {
+        message.error(t('courses.student.noStudentInfo'))
         return
       }
 
@@ -61,20 +57,20 @@ export function StudentCoursesPage() {
           phone: student.phone,
         },
         {
-          onSuccess: () => message.success('수강 신청이 접수되었습니다.'),
-          onError: (err) => message.error(getErrorMessage(err, '수강 신청에 실패했습니다.')),
+          onSuccess: () => message.success(t('courses.appliedShort')),
+          onError: (err) => message.error(getErrorMessage(err, t('courses.applyFailed'))),
         },
       )
     },
-    [createApplication, message, student],
+    [createApplication, message, student, t],
   )
 
   if (!student?.studentId) {
     return (
       <div className="page-layout">
-        <PageHeader level={2} title="수강 정보/신청" />
+        <PageHeader level={2} title={t('courses.student.title')} />
         <Card className="surface-card empty-card">
-          <Empty description="로그인된 학생 정보가 없어 수강 신청 목록을 볼 수 없습니다." />
+          <Empty description={t('courses.student.notLoggedIn')} />
         </Card>
       </div>
     )
@@ -84,23 +80,21 @@ export function StudentCoursesPage() {
 
   return (
     <div className="page-layout">
-      <PageHeader
-        level={2}
-        title="수강 정보/신청"
-        description="공개된 과정 목록을 확인하고, 신청 상태와 승인 결과를 바로 확인할 수 있습니다."
-      />
+      <PageHeader level={2} title={t('courses.student.title')} description={t('courses.student.subtitle')} />
 
       <Card className="surface-card">
         <Descriptions column={{ xs: 1, md: 3 }} size="small">
-          <Descriptions.Item label="현재 수강 중인 과정">{student.course || '아직 승인된 수강 과정이 없습니다.'}</Descriptions.Item>
-          <Descriptions.Item label="학생 ID">{student.studentId}</Descriptions.Item>
-          <Descriptions.Item label="신청 내역">
-            {myApplicationsByCourse.size > 0 ? `${myApplicationsByCourse.size}건` : '없음'}
+          <Descriptions.Item label={t('courses.student.currentCourse')}>
+            {student.course || t('courses.student.noCurrentCourse')}
+          </Descriptions.Item>
+          <Descriptions.Item label={t('courses.studentId')}>{student.studentId}</Descriptions.Item>
+          <Descriptions.Item label={t('courses.student.myApplications')}>
+            {myApplicationsByCourse.size > 0 ? t('courses.applications', { count: myApplicationsByCourse.size }) : t('common.none')}
           </Descriptions.Item>
         </Descriptions>
       </Card>
 
-      <ErrorAlert error={courses.error ?? applications.error} fallback="수강 정보를 불러오지 못했습니다." />
+      <ErrorAlert error={courses.error ?? applications.error} fallback={t('courses.loadFailed')} />
 
       {isPending ? (
         <Row gutter={[16, 16]}>
@@ -116,7 +110,6 @@ export function StudentCoursesPage() {
         <Row gutter={[16, 16]}>
           {courses.data.map((course) => {
             const application = myApplicationsByCourse.get(course.id)
-            const status = application?.status ?? null
             const submitting = createApplication.isPending && createApplication.variables?.courseId === course.id
 
             return (
@@ -126,9 +119,9 @@ export function StudentCoursesPage() {
                   footer={
                     application ? (
                       <div className="application-state">
-                        <ApplicationStatusTag status={status} />
+                        <ApplicationStatusTag status={application.status} />
                         <Text type="secondary">
-                          {status ? applicationStatusMeta[status].label : '신청됨'} · 신청일 {formatDate(application.createdAt)}
+                          {t('courses.student.appliedOn', { date: formatDate(application.createdAt, language) })}
                         </Text>
                       </div>
                     ) : (
@@ -140,7 +133,7 @@ export function StudentCoursesPage() {
                         disabled={createApplication.isPending && !submitting}
                         onClick={() => handleApply(course.id)}
                       >
-                        수강 신청
+                        {t('courses.apply')}
                       </Button>
                     )
                   }
@@ -151,7 +144,7 @@ export function StudentCoursesPage() {
         </Row>
       ) : (
         <Card className="surface-card empty-card">
-          <Empty description="공개된 과정이 없습니다." />
+          <Empty description={t('courses.empty')} />
         </Card>
       )}
     </div>

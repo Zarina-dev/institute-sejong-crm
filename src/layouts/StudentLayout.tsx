@@ -15,20 +15,20 @@ export function StudentLayout() {
   const { t } = usePreferences()
 
   const navItems: ShellNavItem[] = [
-    { to: '/student', label: t('navStudentHome'), icon: <DashboardOutlined />, end: true },
-    { to: '/student/profile', label: t('navProfile'), icon: <IdcardOutlined /> },
-    { to: '/student/courses', label: t('navCourses'), icon: <AppstoreOutlined /> },
-    { to: '/student/enrollments', label: t('navEnrollments'), icon: <CheckSquareOutlined /> },
-    { to: '/student/materials', label: t('navMaterials'), icon: <FolderOpenOutlined /> },
-    { to: '/student/exam-results', label: t('navExamResults'), icon: <FileDoneOutlined /> },
-    { to: '/student/events', label: t('navEvents'), icon: <CalendarOutlined /> },
+    { to: '/student', label: t('studentNav.home'), icon: <DashboardOutlined />, end: true },
+    { to: '/student/profile', label: t('studentNav.profile'), icon: <IdcardOutlined /> },
+    { to: '/student/courses', label: t('studentNav.courses'), icon: <AppstoreOutlined /> },
+    { to: '/student/enrollments', label: t('studentNav.enrollments'), icon: <CheckSquareOutlined /> },
+    { to: '/student/materials', label: t('studentNav.materials'), icon: <FolderOpenOutlined /> },
+    { to: '/student/exam-results', label: t('studentNav.examResults'), icon: <FileDoneOutlined /> },
+    { to: '/student/events', label: t('studentNav.events'), icon: <CalendarOutlined /> },
   ]
 
   return (
     <ShellLayout
       role="student"
-      railSubtitle={t('studentPortal')}
-      title={t('studentPortal')}
+      railSubtitle={t('session.studentPortal')}
+      title={t('session.studentPortal')}
       navItems={navItems}
     />
   )

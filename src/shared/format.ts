@@ -1,13 +1,27 @@
-const koDate = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+import type { Language } from '../i18n'
 
-/** ISO string → "2026년 9월 15일". Invalid input renders as "-". */
-export function formatDate(value: string | Date | null | undefined): string {
+const dateFormatters = new Map<Language, Intl.DateTimeFormat>()
+
+/** ISO string → localized long date ("2026년 9월 15일", "15 сентября 2026 г."). */
+export function formatDate(value: string | Date | null | undefined, language: Language = 'en'): string {
   if (!value) {
     return '-'
   }
 
   const date = value instanceof Date ? value : new Date(value)
-  return Number.isNaN(date.getTime()) ? '-' : koDate.format(date)
+
+  if (Number.isNaN(date.getTime())) {
+    return '-'
+  }
+
+  let formatter = dateFormatters.get(language)
+
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(language, { year: 'numeric', month: 'long', day: 'numeric' })
+    dateFormatters.set(language, formatter)
+  }
+
+  return formatter.format(date)
 }
 
 export function formatFileSize(size?: number | null): string {

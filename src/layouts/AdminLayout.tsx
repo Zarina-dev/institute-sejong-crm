@@ -19,18 +19,18 @@ export function AdminLayout() {
    * catch-all route and bounced the admin back to the public home page.
    */
   const navItems: ShellNavItem[] = [
-    { to: '/admin', label: t('navDashboard'), icon: <DashboardOutlined />, end: true },
-    { to: '/admin/applications', label: t('navApplications'), icon: <SolutionOutlined /> },
-    { to: '/admin/courses', label: t('navCourses'), icon: <AppstoreOutlined /> },
-    { to: '/admin/materials', label: t('navMaterials'), icon: <FolderOpenOutlined /> },
-    { to: '/admin/students', label: t('navStudents'), icon: <TeamOutlined /> },
+    { to: '/admin', label: t('adminNav.dashboard'), icon: <DashboardOutlined />, end: true },
+    { to: '/admin/applications', label: t('adminNav.applications'), icon: <SolutionOutlined /> },
+    { to: '/admin/courses', label: t('adminNav.courses'), icon: <AppstoreOutlined /> },
+    { to: '/admin/materials', label: t('adminNav.materials'), icon: <FolderOpenOutlined /> },
+    { to: '/admin/students', label: t('adminNav.students'), icon: <TeamOutlined /> },
   ]
 
   return (
     <ShellLayout
       role="admin"
-      railSubtitle={t('adminPanel')}
-      title={t('adminPanel')}
+      railSubtitle={t('session.adminPanel')}
+      title={t('session.adminPanel')}
       navItems={navItems}
     />
   )

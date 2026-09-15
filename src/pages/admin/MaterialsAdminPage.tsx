@@ -29,6 +29,7 @@ import {
 } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
+import { usePreferences } from '../../app/preferences'
 import { EditableSelect } from '../../features/catalog/EditableSelect'
 import { useCatalog } from '../../features/catalog/useCatalog'
 import {
@@ -39,8 +40,15 @@ import {
   useUpdateMaterial,
 } from '../../features/materials/queries'
 import type { MaterialItem, MaterialsFilters } from '../../features/materials/types'
+import {
+  ALLOWED_MATERIAL_EXTENSIONS,
+  MATERIAL_ACCEPT,
+  MAX_MATERIAL_FILE_SIZE,
+  validateMaterialFile,
+} from '../../features/materials/upload'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
+import { formatFileSize } from '../../shared/format'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
@@ -65,6 +73,7 @@ type MaterialFormValues = {
 
 export function MaterialsAdminPage() {
   const { message } = App.useApp()
+  const { t } = usePreferences()
   const catalog = useCatalog()
   const confirmDelete = useConfirmDelete()
   const { pinActions, compactActions } = useTableLayout()
@@ -86,14 +95,12 @@ export function MaterialsAdminPage() {
 
   /* ------------------------------ filters ------------------------------ */
 
-  // Every filter change resets to page 1; only paging keeps the page.
   const patchFilters = useCallback((patch: Partial<MaterialsFilters>) => {
     setFilters((current) => ({ ...current, ...patch, page: patch.page ?? 1 }))
   }, [])
 
   const setSubject = useCallback((value?: string) => patchFilters({ subject: value }), [patchFilters])
   const setCourse = useCallback((value?: string) => patchFilters({ course: value }), [patchFilters])
-
   const filtersActive = Boolean(filters.search || filters.subject || filters.course)
 
   /* ------------------------------- modal ------------------------------- */
@@ -125,13 +132,43 @@ export function MaterialsAdminPage() {
     setFile(null)
   }, [])
 
+  /**
+   * Refuse a wrong file before it is even attached — with the same rules
+   * the server enforces — so the user gets a message instead of a failed
+   * upload after the fact.
+   */
+  const handleBeforeUpload = useCallback(
+    (candidate: File) => {
+      const rejection = validateMaterialFile(candidate)
+
+      if (rejection) {
+        message.error(
+          rejection.reason === 'type'
+            ? t('materials.fileRejectedType', {
+                ext: rejection.ext || '?',
+                allowed: ALLOWED_MATERIAL_EXTENSIONS.map((e) => `.${e}`).join(', '),
+              })
+            : t('materials.fileRejectedSize', {
+                size: formatFileSize(rejection.size),
+                max: formatFileSize(MAX_MATERIAL_FILE_SIZE),
+              }),
+        )
+        return Upload.LIST_IGNORE
+      }
+
+      setFile(candidate)
+      return false // keep it local; the form submit sends it
+    },
+    [message, t],
+  )
+
   const submitForm = async () => {
     const values = await form.validateFields()
 
     try {
       if (editingId) {
         await updateMaterial.mutateAsync({ id: editingId, payload: values })
-        message.success('자료가 수정되었습니다.')
+        message.success(t('materials.updated'))
       } else {
         const formData = new FormData()
 
@@ -146,13 +183,13 @@ export function MaterialsAdminPage() {
         }
 
         await createMaterial.mutateAsync(formData)
-        message.success('자료가 추가되었습니다.')
+        message.success(t('materials.created'))
       }
 
       closeModal()
       form.resetFields()
     } catch (err) {
-      message.error(getErrorMessage(err, '자료 저장에 실패했습니다.'))
+      message.error(getErrorMessage(err, t('materials.saveFailed')))
     }
   }
 
@@ -162,10 +199,10 @@ export function MaterialsAdminPage() {
     (record: MaterialItem) => {
       setPublished.mutate(
         { id: record.id, published: !record.isPublished },
-        { onError: (err) => message.error(getErrorMessage(err, '공개 상태 변경에 실패했습니다.')) },
+        { onError: (err) => message.error(getErrorMessage(err, t('materials.publishFailed'))) },
       )
     },
-    [message, setPublished],
+    [message, setPublished, t],
   )
 
   const handleDelete = useCallback(
@@ -174,123 +211,103 @@ export function MaterialsAdminPage() {
         target: record.title,
         onConfirm: () =>
           deleteMaterial.mutateAsync(record.id).then(
-            () => message.success('삭제되었습니다.'),
-            (err) => message.error(getErrorMessage(err, '자료 삭제에 실패했습니다.')),
+            () => message.success(t('materials.deleted')),
+            (err) => message.error(getErrorMessage(err, t('materials.deleteFailed'))),
           ),
       })
     },
-    [confirmDelete, deleteMaterial, message],
+    [confirmDelete, deleteMaterial, message, t],
   )
 
   /* ------------------------------ columns ------------------------------ */
 
-  // AntD Table re-derives its internal column model whenever this array's
-  // identity changes, so it is built once per handler set, not per render.
   const columns = useMemo<NonNullable<TableProps<MaterialItem>['columns']>>(
     () => [
-      { title: '제목', dataIndex: 'title', key: 'title', render: (value: string) => <strong>{value}</strong> },
-      { title: '과목', dataIndex: 'subject', key: 'subject', width: 140 },
-      { title: '과정', dataIndex: 'course', key: 'course', width: 160 },
+      { title: t('materials.form.title'), dataIndex: 'title', key: 'title', render: (value: string) => <strong>{value}</strong> },
+      { title: t('materials.subject'), dataIndex: 'subject', key: 'subject', width: 140 },
+      { title: t('materials.course'), dataIndex: 'course', key: 'course', width: 160 },
       {
-        title: '공개 상태',
+        title: t('common.status'),
         dataIndex: 'isPublished',
         key: 'isPublished',
-        width: 110,
-        render: (value: boolean) => <Tag color={value ? 'green' : 'gold'}>{value ? '공개' : '비공개'}</Tag>,
+        width: 120,
+        render: (value: boolean) => (
+          <Tag color={value ? 'green' : 'gold'}>{value ? t('common.published') : t('common.unpublished')}</Tag>
+        ),
       },
       {
-        title: '관리',
+        title: t('common.actions'),
         key: 'actions',
         fixed: pinActions,
         width: compactActions ? 120 : 260,
         render: (_, record) => (
           <Space>
-            <Button size="small" icon={<EditOutlined />} aria-label="수정" onClick={() => openEditModal(record)}>
-              {compactActions ? null : '수정'}
+            <Button size="small" icon={<EditOutlined />} aria-label={t('common.edit')} onClick={() => openEditModal(record)}>
+              {compactActions ? null : t('common.edit')}
             </Button>
             <Button
               size="small"
               icon={record.isPublished ? <EyeInvisibleOutlined /> : <EyeOutlined />}
               onClick={() => handleTogglePublished(record)}
               loading={setPublished.isPending && setPublished.variables?.id === record.id}
-              aria-label={record.isPublished ? '숨김' : '공개'}
+              aria-label={record.isPublished ? t('common.unpublish') : t('common.publish')}
             >
-              {compactActions ? null : record.isPublished ? '숨김' : '공개'}
+              {compactActions ? null : record.isPublished ? t('common.unpublish') : t('common.publish')}
             </Button>
-            <Button size="small" danger icon={<DeleteOutlined />} aria-label="삭제" onClick={() => handleDelete(record)}>
-              {compactActions ? null : '삭제'}
+            <Button size="small" danger icon={<DeleteOutlined />} aria-label={t('common.delete')} onClick={() => handleDelete(record)}>
+              {compactActions ? null : t('common.delete')}
             </Button>
           </Space>
         ),
       },
     ],
-    [compactActions, handleDelete, handleTogglePublished, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id],
+    [compactActions, handleDelete, handleTogglePublished, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, t],
   )
 
   /* ------------------------------- render ------------------------------ */
 
   return (
     <div className="page-layout">
-      <PageHeader
-        kicker="ADMIN"
-        title="자료실 관리"
-        description="관리자가 자료를 업로드하고 공개 상태를 제어할 수 있는 관리 화면입니다."
-      />
+      <PageHeader kicker={t('common.admin')} title={t('materials.adminTitle')} description={t('materials.adminSubtitle')} />
 
       <Card className="surface-card filter-card">
         <Row gutter={[16, 16]}>
           <Col xs={24} lg={12}>
-            <Text>검색</Text>
+            <Text>{t('common.search')}</Text>
             <Input
               allowClear
               value={filters.search ?? ''}
               onChange={(event) => patchFilters({ search: event.target.value })}
-              placeholder="자료 제목/설명 검색"
+              placeholder={t('materials.searchPlaceholder')}
               prefix={<SearchOutlined />}
             />
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Text>과목</Text>
-            <EditableSelect
-              kind="subjects"
-              options={catalog.subjects}
-              allowClear
-              placeholder="과목"
-              addPlaceholder="새 과목 이름"
-              value={filters.subject}
-              onChange={setSubject}
-            />
+            <Text>{t('materials.subject')}</Text>
+            <EditableSelect kind="subjects" options={catalog.subjects} allowClear placeholder={t('materials.subject')} value={filters.subject} onChange={setSubject} />
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Text>과정</Text>
-            <EditableSelect
-              kind="courses"
-              options={catalog.courses}
-              allowClear
-              placeholder="과정"
-              addPlaceholder="새 과정 이름"
-              value={filters.course}
-              onChange={setCourse}
-            />
+            <Text>{t('materials.course')}</Text>
+            <EditableSelect kind="courses" options={catalog.courses} allowClear placeholder={t('materials.course')} value={filters.course} onChange={setCourse} />
           </Col>
         </Row>
 
         <div className="filter-footer">
-          <Text>{data ? `${data.total}개의 자료` : '자료를 불러오는 중입니다.'}</Text>
+          <Text>{data ? t('materials.count', { count: data.total }) : t('materials.loadingCount')}</Text>
           <Space>
             {filtersActive ? (
               <Button type="link" icon={<ReloadOutlined />} onClick={() => setFilters(defaultFilters)}>
-                필터 초기화
+                {t('common.resetFilters')}
               </Button>
             ) : null}
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
-              자료 추가
+              {t('materials.add')}
             </Button>
           </Space>
         </div>
       </Card>
 
-      <ErrorAlert error={materials.error} fallback="자료를 불러오지 못했습니다." />
+      <ErrorAlert error={materials.error} fallback={t('materials.loadFailed')} />
 
       <Card className="surface-card">
         <Table
@@ -300,75 +317,64 @@ export function MaterialsAdminPage() {
           rowKey="id"
           pagination={false}
           scroll={{ x: 'max-content' }}
-          // isFetching (not isPending) also dims the table during background
-          // refetches after a mutation, so the stale row is visibly "in flight".
           loading={materials.isFetching}
-          locale={{ emptyText: <Empty description="등록된 자료가 없습니다." /> }}
+          locale={{ emptyText: <Empty description={filtersActive ? t('materials.emptyFiltered') : t('materials.empty')} /> }}
         />
         {data && data.total > data.limit ? (
           <div className="table-pagination">
-            <Pagination
-              current={data.page}
-              pageSize={data.limit}
-              total={data.total}
-              showSizeChanger={false}
-              onChange={(page) => patchFilters({ page })}
-            />
+            <Pagination current={data.page} pageSize={data.limit} total={data.total} showSizeChanger={false} onChange={(page) => patchFilters({ page })} />
           </div>
         ) : null}
       </Card>
 
       <Modal
-        title={editingId ? '자료 수정' : '자료 추가'}
+        title={editingId ? t('materials.editTitle') : t('materials.addTitle')}
         open={modalOpen}
         onOk={submitForm}
         onCancel={closeModal}
-        okText={editingId ? '저장' : '업로드'}
-        cancelText="취소"
+        okText={editingId ? t('common.save') : t('materials.upload')}
+        cancelText={t('common.cancel')}
         confirmLoading={saving}
-        destroyOnHidden
+        forceRender
         width={720}
       >
-        <Form form={form} layout="vertical" disabled={saving}>
-          <Form.Item name="title" label="자료 제목" rules={[{ required: true, message: '자료 제목을 입력하세요.' }]}>
-            <Input />
+        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false }}>
+          <Form.Item name="title" label={t('materials.form.title')} rules={[{ required: true, message: t('materials.form.titleRequired') }]}>
+            <Input maxLength={255} />
           </Form.Item>
-          <Form.Item name="description" label="설명">
-            <Input.TextArea rows={4} />
+          <Form.Item name="description" label={t('materials.form.description')}>
+            <Input.TextArea rows={4} maxLength={4000} showCount />
           </Form.Item>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="subject" label="과목" rules={[{ required: true, message: '과목을 선택하세요.' }]}>
-                <EditableSelect kind="subjects" options={catalog.subjects} placeholder="과목 선택" addPlaceholder="새 과목 이름" selectOnAdd />
+              <Form.Item name="subject" label={t('materials.subject')} rules={[{ required: true, message: t('materials.form.subjectRequired') }]}>
+                <EditableSelect kind="subjects" options={catalog.subjects} selectOnAdd />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="course" label="과정" rules={[{ required: true, message: '과정을 선택하세요.' }]}>
-                <EditableSelect kind="courses" options={catalog.courses} placeholder="과정 선택" addPlaceholder="새 과정 이름" selectOnAdd />
+              <Form.Item name="course" label={t('materials.course')} rules={[{ required: true, message: t('materials.form.courseRequired') }]}>
+                <EditableSelect kind="courses" options={catalog.courses} selectOnAdd />
               </Form.Item>
             </Col>
           </Row>
           {!editingId ? (
-            <Form.Item label="파일 업로드" extra="PDF, Office 문서, 이미지, 동영상, 텍스트 · 최대 10MB">
+            <Form.Item label={t('materials.form.file')} extra={t('materials.form.fileHint', { max: formatFileSize(MAX_MATERIAL_FILE_SIZE) })}>
               <Upload
-                beforeUpload={(fileItem) => {
-                  setFile(fileItem)
-                  return false
-                }}
+                beforeUpload={handleBeforeUpload}
                 onRemove={() => setFile(null)}
                 maxCount={1}
-                fileList={file ? [{ uid: '1', name: file.name, status: 'done' }] : []}
-                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.mp4,.webm,.txt"
+                fileList={file ? [{ uid: '1', name: file.name, status: 'done', size: file.size }] : []}
+                accept={MATERIAL_ACCEPT}
               >
-                <Button icon={<UploadOutlined />}>파일 선택</Button>
+                <Button icon={<UploadOutlined />}>{t('materials.form.chooseFile')}</Button>
               </Upload>
             </Form.Item>
           ) : null}
-          <Form.Item name="isPublished" label="공개 여부" initialValue={false}>
+          <Form.Item name="isPublished" label={t('materials.form.visibility')}>
             <Select
               options={[
-                { value: true, label: '공개' },
-                { value: false, label: '비공개' },
+                { value: true, label: t('common.published') },
+                { value: false, label: t('common.unpublished') },
               ]}
             />
           </Form.Item>

@@ -59,14 +59,14 @@ export function ShellLayout({ role, railSubtitle, title, navItems }: ShellLayout
     navigate('/login', { replace: true })
   }
 
-  const roleLabel = t(role === 'admin' ? 'roleAdmin' : 'roleStudent')
+  const roleLabel = t(role === 'admin' ? 'session.roleAdmin' : 'session.roleStudent')
 
   return (
     <Layout className="admin-shell" hasSider>
       {/* These shells render standalone now, so they need their own skip
           link — the public header's is no longer above them. */}
       <a className="skip-link" href="#main-content">
-        {t('skipToContent')}
+        {t('nav.skipToContent')}
       </a>
 
       <Sider
@@ -89,7 +89,7 @@ export function ShellLayout({ role, railSubtitle, title, navItems }: ShellLayout
             </span>
           </Link>
 
-          <nav className="rail-nav" aria-label={t('navigation')}>
+          <nav className="rail-nav" aria-label={t('nav.navigation')}>
             {navItems.map((item) => (
               <NavLink key={item.to} to={item.to} end={item.end}>
                 {item.icon}
@@ -115,7 +115,7 @@ export function ShellLayout({ role, railSubtitle, title, navItems }: ShellLayout
                 back to the navigation on small screens. */}
             <Button
               className="icon-button"
-              aria-label={t(collapsed ? 'expandMenu' : 'collapseMenu')}
+              aria-label={t(collapsed ? 'session.expandMenu' : 'session.collapseMenu')}
               aria-expanded={!collapsed}
               icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               onClick={() => setCollapsed((value) => !value)}
@@ -124,23 +124,23 @@ export function ShellLayout({ role, railSubtitle, title, navItems }: ShellLayout
           </div>
 
           <div className="admin-header-actions">
-            <Tooltip title={t('backToSite')}>
+            <Tooltip title={t('session.backToSite')}>
               <Link to="/">
-                <Button className="icon-button" aria-label={t('backToSite')} icon={<HomeOutlined />} />
+                <Button className="icon-button" aria-label={t('session.backToSite')} icon={<HomeOutlined />} />
               </Link>
             </Tooltip>
 
-            <Tooltip title={t(theme === 'light' ? 'dark' : 'light')}>
+            <Tooltip title={t(theme === 'light' ? 'theme.dark' : 'theme.light')}>
               <Button
                 className="icon-button"
-                aria-label={t('theme')}
+                aria-label={t('theme.label')}
                 icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
                 onClick={toggleTheme}
               />
             </Tooltip>
 
             <Select
-              aria-label={t('language')}
+              aria-label={t('language.label')}
               className="language-select"
               value={language}
               onChange={setLanguage}
@@ -152,7 +152,7 @@ export function ShellLayout({ role, railSubtitle, title, navItems }: ShellLayout
             />
 
             <Button icon={<LogoutOutlined />} onClick={handleLogout} className="logout-button">
-              <span>{t('logout')}</span>
+              <span>{t('session.logout')}</span>
             </Button>
           </div>
         </Header>

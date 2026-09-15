@@ -1,33 +1,37 @@
 import { Card, Descriptions, Tag } from 'antd'
 
+import { usePreferences } from '../../app/preferences'
 import { useCurrentStudent } from '../../auth/useCurrentStudent'
 import { PageHeader } from '../../shared/PageHeader'
 
 export function StudentProfilePage() {
+  const { t } = usePreferences()
   const { session, student } = useCurrentStudent()
 
   return (
     <div className="page-layout">
-      <PageHeader
-        level={2}
-        title="내 정보"
-        description="학생의 기본 정보, 현재 과정, 활동 상태, TOPIK 첨부 파일 정보를 확인하는 화면입니다."
-      />
+      <PageHeader level={2} title={t('profile.title')} description={t('profile.subtitle')} />
 
       <Card className="surface-card">
         <Descriptions column={{ xs: 1, md: 2 }} bordered size="middle">
-          <Descriptions.Item label="이름">{student?.name ?? session?.displayName ?? '-'}</Descriptions.Item>
-          <Descriptions.Item label="학번">{student?.studentId ?? session?.studentId ?? '-'}</Descriptions.Item>
-          <Descriptions.Item label="이메일">{student?.email ?? '-'}</Descriptions.Item>
-          <Descriptions.Item label="전화번호">{student?.phone ?? '-'}</Descriptions.Item>
-          <Descriptions.Item label="과정">{student?.course ?? '-'}</Descriptions.Item>
-          <Descriptions.Item label="TOPIK 레벨">{student?.level ?? '-'}</Descriptions.Item>
-          <Descriptions.Item label="입학 날짜">{student?.admissionDate ?? '-'}</Descriptions.Item>
-          <Descriptions.Item label="상태">
-            {student?.status === 'active' ? <Tag color="green">활동 중</Tag> : student?.status === 'inactive' ? <Tag>비활동</Tag> : '-'}
+          <Descriptions.Item label={t('profile.name')}>{student?.name ?? session?.displayName ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label={t('profile.studentId')}>{student?.studentId ?? session?.studentId ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label={t('profile.email')}>{student?.email ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label={t('profile.phone')}>{student?.phone ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label={t('profile.course')}>{student?.course ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label={t('profile.level')}>{student?.level ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label={t('profile.admissionDate')}>{student?.admissionDate ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label={t('profile.status')}>
+            {student?.status === 'active' ? (
+              <Tag color="green">{t('students.statusActive')}</Tag>
+            ) : student?.status === 'inactive' ? (
+              <Tag>{t('students.statusInactive')}</Tag>
+            ) : (
+              '-'
+            )}
           </Descriptions.Item>
-          <Descriptions.Item label="TOPIK 파일" span={2}>
-            {student?.topikFiles?.length ? student.topikFiles.map((file) => <Tag key={file.id}>{file.name}</Tag>) : '첨부 없음'}
+          <Descriptions.Item label={t('profile.topikFiles')} span={2}>
+            {student?.topikFiles?.length ? student.topikFiles.map((file) => <Tag key={file.id}>{file.name}</Tag>) : t('profile.noFiles')}
           </Descriptions.Item>
         </Descriptions>
       </Card>

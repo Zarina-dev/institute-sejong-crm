@@ -1,16 +1,11 @@
-import {
-  DeleteOutlined,
-  EditOutlined,
-  EyeInvisibleOutlined,
-  EyeOutlined,
-  PlusOutlined,
-} from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
 import { App, Badge, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
+import { usePreferences } from '../../app/preferences'
+import { statusLabelKey } from '../../features/courses/applicationStatus'
 import { ApplicationsTable } from '../../features/courses/ApplicationsTable'
-import { applicationStatusMeta } from '../../features/courses/applicationStatus'
 import {
   useApplications,
   useCourses,
@@ -46,6 +41,7 @@ type CourseStats = Record<ApplicationStatus, number> & { total: number }
 const emptyStats: CourseStats = { total: 0, pending: 0, approved: 0, rejected: 0, enrolled: 0 }
 
 export function CoursesAdminPage() {
+  const { t } = usePreferences()
   const { message } = App.useApp()
   const confirmDelete = useConfirmDelete()
   const { pinActions, compactActions } = useTableLayout()
@@ -66,8 +62,6 @@ export function CoursesAdminPage() {
 
   /* --------------------------- derived data --------------------------- */
 
-  // Group once per applications list, instead of filtering the full list
-  // again for every row and every expanded panel.
   const { applicationsByCourse, statsByCourse, pendingCount } = useMemo(() => {
     const byCourse = new Map<string, CourseApplicationRecord[]>()
     const stats = new Map<string, CourseStats>()
@@ -129,16 +123,16 @@ export function CoursesAdminPage() {
     try {
       if (editingId) {
         await updateCourse.mutateAsync({ id: editingId, payload: values })
-        message.success('과정이 수정되었습니다.')
+        message.success(t('courses.updated'))
       } else {
         await createCourse.mutateAsync(values)
-        message.success('과정이 추가되었습니다.')
+        message.success(t('courses.created'))
       }
 
       setModalOpen(false)
       form.resetFields()
     } catch (err) {
-      message.error(getErrorMessage(err, '과정 저장에 실패했습니다.'))
+      message.error(getErrorMessage(err, t('courses.saveFailed')))
     }
   }
 
@@ -148,26 +142,25 @@ export function CoursesAdminPage() {
     (record: CourseRecord) => {
       setPublished.mutate(
         { id: record.id, published: !record.isPublished },
-        { onError: (err) => message.error(getErrorMessage(err, '공개 상태 변경에 실패했습니다.')) },
+        { onError: (err) => message.error(getErrorMessage(err, t('courses.publishFailed'))) },
       )
     },
-    [message, setPublished],
+    [message, setPublished, t],
   )
 
   const handleDelete = useCallback(
     (record: CourseRecord) => {
       confirmDelete({
         target: record.title,
-        // Both relations are ON DELETE CASCADE on the backend.
-        note: '이 과정의 수강 신청과 수강 등록 기록도 함께 삭제되며, 이 작업은 되돌릴 수 없습니다.',
+        note: t('courses.deleteNote'),
         onConfirm: () =>
           deleteCourse.mutateAsync(record.id).then(
-            () => message.success('삭제되었습니다.'),
-            (err) => message.error(getErrorMessage(err, '과정 삭제에 실패했습니다.')),
+            () => message.success(t('courses.deleted')),
+            (err) => message.error(getErrorMessage(err, t('courses.deleteFailed'))),
           ),
       })
     },
-    [confirmDelete, deleteCourse, message],
+    [confirmDelete, deleteCourse, message, t],
   )
 
   const changeApplication = useCallback(
@@ -175,12 +168,13 @@ export function CoursesAdminPage() {
       setApplicationStatus.mutate(
         { id: application.id, status },
         {
-          onSuccess: () => message.success(`${application.applicantName} — ${applicationStatusMeta[status].label} 처리되었습니다.`),
-          onError: (err) => message.error(getErrorMessage(err, '상태 변경에 실패했습니다.')),
+          onSuccess: () =>
+            message.success(t('courses.statusChanged', { name: application.applicantName, status: t(statusLabelKey(status)) })),
+          onError: (err) => message.error(getErrorMessage(err, t('courses.statusChangeFailed'))),
         },
       )
     },
-    [message, setApplicationStatus],
+    [message, setApplicationStatus, t],
   )
 
   const handleApprove = useCallback((a: CourseApplicationRecord) => changeApplication(a, 'approved'), [changeApplication])
@@ -191,7 +185,7 @@ export function CoursesAdminPage() {
   const columns = useMemo<NonNullable<TableProps<CourseRecord>['columns']>>(
     () => [
       {
-        title: '수강명',
+        title: t('courses.columns.course'),
         key: 'title',
         render: (_, record) => (
           <div className="cell-stack">
@@ -201,8 +195,9 @@ export function CoursesAdminPage() {
         ),
       },
       {
-        title: '운영 정보',
+        title: t('courses.columns.operations'),
         key: 'scheduleInfo',
+        responsive: ['md'],
         render: (_, record) => (
           <div className="cell-stack">
             <Text>{record.teacherName || '-'}</Text>
@@ -216,58 +211,60 @@ export function CoursesAdminPage() {
         ),
       },
       {
-        title: '수강 상태',
+        title: t('courses.columns.enrollment'),
         key: 'enrollmentSummary',
         render: (_, record) => {
           const stats = statsByCourse.get(record.id) ?? emptyStats
 
           return (
             <div className="cell-stack">
-              <Text strong>총 {stats.total}명</Text>
+              <Text strong>{t('courses.stats.total', { count: stats.total })}</Text>
               <Space size={4} wrap>
-                <Tag color="gold">대기 {stats.pending}</Tag>
-                <Tag color="green">승인 {stats.approved}</Tag>
-                <Tag color="blue">수강 {stats.enrolled}</Tag>
-                <Tag color="red">반려 {stats.rejected}</Tag>
+                <Tag color="gold">{t('courses.stats.pending', { count: stats.pending })}</Tag>
+                <Tag color="green">{t('courses.stats.approved', { count: stats.approved })}</Tag>
+                <Tag color="blue">{t('courses.stats.enrolled', { count: stats.enrolled })}</Tag>
+                <Tag color="red">{t('courses.stats.rejected', { count: stats.rejected })}</Tag>
               </Space>
             </div>
           )
         },
       },
       {
-        title: '공개 상태',
+        title: t('courses.columns.visibility'),
         dataIndex: 'isPublished',
         key: 'isPublished',
-        width: 110,
-        render: (value: boolean) => <Tag color={value ? 'green' : 'gold'}>{value ? '공개' : '비공개'}</Tag>,
+        width: 120,
+        render: (value: boolean) => (
+          <Tag color={value ? 'green' : 'gold'}>{value ? t('common.published') : t('common.unpublished')}</Tag>
+        ),
       },
       {
-        title: '관리',
+        title: t('common.actions'),
         key: 'actions',
         fixed: pinActions,
         width: compactActions ? 120 : 260,
         render: (_, record) => (
           <Space>
-            <Button size="small" icon={<EditOutlined />} aria-label="수정" onClick={() => openEditModal(record)}>
-              {compactActions ? null : '수정'}
+            <Button size="small" icon={<EditOutlined />} aria-label={t('common.edit')} onClick={() => openEditModal(record)}>
+              {compactActions ? null : t('common.edit')}
             </Button>
             <Button
               size="small"
               icon={record.isPublished ? <EyeInvisibleOutlined /> : <EyeOutlined />}
               loading={setPublished.isPending && setPublished.variables?.id === record.id}
               onClick={() => handleTogglePublished(record)}
-              aria-label={record.isPublished ? '숨김' : '공개'}
+              aria-label={record.isPublished ? t('common.unpublish') : t('common.publish')}
             >
-              {compactActions ? null : record.isPublished ? '숨김' : '공개'}
+              {compactActions ? null : record.isPublished ? t('common.unpublish') : t('common.publish')}
             </Button>
-            <Button size="small" danger icon={<DeleteOutlined />} aria-label="삭제" onClick={() => handleDelete(record)}>
-              {compactActions ? null : '삭제'}
+            <Button size="small" danger icon={<DeleteOutlined />} aria-label={t('common.delete')} onClick={() => handleDelete(record)}>
+              {compactActions ? null : t('common.delete')}
             </Button>
           </Space>
         ),
       },
     ],
-    [compactActions, handleDelete, handleTogglePublished, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, statsByCourse],
+    [compactActions, handleDelete, handleTogglePublished, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, statsByCourse, t],
   )
 
   const expandedRowRender = useCallback(
@@ -278,7 +275,7 @@ export function CoursesAdminPage() {
         <div className="expanded-panel">
           <div className="expanded-panel-heading">
             <Text strong>{record.title}</Text>
-            <Text type="secondary">신청 학생 {list.length}명</Text>
+            <Text type="secondary">{t('courses.expandedApplicants', { count: list.length })}</Text>
           </div>
           <ApplicationsTable
             applications={list}
@@ -287,12 +284,12 @@ export function CoursesAdminPage() {
             busyId={setApplicationStatus.isPending ? setApplicationStatus.variables?.id : null}
             onApprove={handleApprove}
             onReject={handleReject}
-            emptyText="아직 신청한 학생이 없습니다."
+            emptyText={t('courses.expandedEmpty')}
           />
         </div>
       )
     },
-    [applicationsByCourse, handleApprove, handleReject, setApplicationStatus.isPending, setApplicationStatus.variables?.id],
+    [applicationsByCourse, handleApprove, handleReject, setApplicationStatus.isPending, setApplicationStatus.variables?.id, t],
   )
 
   /* ------------------------------- render ----------------------------- */
@@ -300,13 +297,13 @@ export function CoursesAdminPage() {
   return (
     <div className="page-layout">
       <PageHeader
-        kicker="ADMIN"
-        title="수강 관리"
-        description="수강 과정의 공개 여부, 일정, 담당교수 정보를 관리하고 학생 신청 상태를 한눈에 확인할 수 있습니다."
+        kicker={t('common.admin')}
+        title={t('courses.adminTitle')}
+        description={t('courses.adminSubtitle')}
         extra={
           <Badge
             status={pendingCount > 0 ? 'warning' : 'success'}
-            text={pendingCount > 0 ? `대기 중 신청 ${pendingCount}건` : '새로운 신청 없음'}
+            text={pendingCount > 0 ? t('courses.pendingBadge', { count: pendingCount }) : t('courses.noPending')}
           />
         }
       />
@@ -314,15 +311,15 @@ export function CoursesAdminPage() {
       <Card className="surface-card filter-card">
         <div className="filter-footer">
           <Text>
-            {courses.data?.length ?? 0}개의 과정 · 신청 {applications.data?.length ?? 0}건
+            {t('courses.count', { count: courses.data?.length ?? 0 })} · {t('courses.applications', { count: applications.data?.length ?? 0 })}
           </Text>
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
-            과정 추가
+            {t('courses.add')}
           </Button>
         </div>
       </Card>
 
-      <ErrorAlert error={courses.error ?? applications.error} fallback="과정/신청 정보를 불러오지 못했습니다." />
+      <ErrorAlert error={courses.error ?? applications.error} fallback={t('courses.loadFailed')} />
 
       <Card className="surface-card">
         <Table
@@ -338,64 +335,64 @@ export function CoursesAdminPage() {
       </Card>
 
       <Modal
-        title={editingId ? '수강 수정' : '수강 추가'}
+        title={editingId ? t('courses.editTitle') : t('courses.addTitle')}
         open={modalOpen}
         onOk={submitForm}
         onCancel={() => setModalOpen(false)}
-        okText={editingId ? '저장' : '추가'}
-        cancelText="취소"
+        okText={editingId ? t('common.save') : t('common.add')}
+        cancelText={t('common.cancel')}
         confirmLoading={saving}
-        destroyOnHidden
+        forceRender
         width={760}
       >
         <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false }}>
-          <Form.Item name="title" label="과정명" rules={[{ required: true, message: '과정명을 입력하세요.' }]}>
-            <Input />
+          <Form.Item name="title" label={t('courses.form.title')} rules={[{ required: true, message: t('courses.form.titleRequired') }]}>
+            <Input maxLength={255} />
           </Form.Item>
-          <Form.Item name="description" label="설명">
-            <Input.TextArea rows={4} />
+          <Form.Item name="description" label={t('courses.form.description')}>
+            <Input.TextArea rows={4} maxLength={4000} showCount />
           </Form.Item>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="subject" label="과목" rules={[{ required: true, message: '과목을 입력하세요.' }]}>
-                <Input placeholder="예: 한국어 1" />
+              <Form.Item name="subject" label={t('courses.form.subject')} rules={[{ required: true, message: t('courses.form.subjectRequired') }]}>
+                <Input placeholder={t('courses.form.subjectPlaceholder')} maxLength={120} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="teacherName" label="강사">
-                <Input />
+              <Form.Item name="teacherName" label={t('courses.form.teacher')}>
+                <Input maxLength={150} />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="schedule" label="시간표">
-                <Input placeholder="예: 월·수 10:00–11:30" />
+              <Form.Item name="schedule" label={t('courses.form.schedule')}>
+                <Input placeholder={t('courses.form.schedulePlaceholder')} maxLength={150} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="classroom" label="강의실">
-                <Input />
+              <Form.Item name="classroom" label={t('courses.form.classroom')}>
+                <Input maxLength={120} />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="startDate" label="시작일">
+              <Form.Item name="startDate" label={t('courses.form.startDate')}>
                 <Input type="date" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 name="endDate"
-                label="종료일"
+                label={t('courses.form.endDate')}
                 dependencies={['startDate']}
                 rules={[
                   ({ getFieldValue }) => ({
                     validator: (_, value?: string) =>
                       !value || !getFieldValue('startDate') || value >= getFieldValue('startDate')
                         ? Promise.resolve()
-                        : Promise.reject(new Error('종료일은 시작일 이후여야 합니다.')),
+                        : Promise.reject(new Error(t('courses.form.endBeforeStart'))),
                   }),
                 ]}
               >
@@ -403,11 +400,11 @@ export function CoursesAdminPage() {
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item name="isPublished" label="공개 여부">
+          <Form.Item name="isPublished" label={t('courses.form.visibility')}>
             <Select
               options={[
-                { value: true, label: '공개' },
-                { value: false, label: '비공개' },
+                { value: true, label: t('common.published') },
+                { value: false, label: t('common.unpublished') },
               ]}
             />
           </Form.Item>
