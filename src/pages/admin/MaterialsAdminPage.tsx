@@ -1,12 +1,12 @@
 import { DeleteOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, ReloadOutlined, SearchOutlined, UploadOutlined } from '@ant-design/icons'
 import { Alert, Button, Card, Col, Empty, Form, Input, Modal, Pagination, Row, Select, Space, Table, Tag, Typography, Upload } from 'antd'
 import { useCallback, useEffect, useState } from 'react'
-import { createMaterial, deleteMaterial, getMaterials, publishMaterial, unpublishMaterial, updateMaterial } from '../../features/materials/api/materialsApi'
+import { createMaterial, deleteMaterial, getMaterials, publishMaterial, unpublishMaterial, updateMaterial } from '../../features/materials/api'
 import type { MaterialsFilters } from '../../features/materials/types'
 import { EditableSelect } from '../../features/catalog/EditableSelect'
 import { useCatalog } from '../../features/catalog/useCatalog'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
-import type { MaterialListResponse } from '../../types'
+import type { MaterialListResponse } from '../../features/materials/types'
 
 const { Title, Text } = Typography
 

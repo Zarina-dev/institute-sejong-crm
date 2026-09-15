@@ -1,8 +1,8 @@
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
 import { Alert, Button, Card, Space, Table, Tag, Typography } from 'antd'
 import { useCallback, useEffect, useState } from 'react'
-import { approveApplication, getApplications, rejectApplication } from '../../features/courses/api/coursesApi'
-import type { CourseApplicationRecord } from '../../types'
+import { approveApplication, getApplications, rejectApplication } from '../../features/courses/api'
+import type { CourseApplicationRecord } from '../../features/courses/types'
 
 const { Title, Text } = Typography
 

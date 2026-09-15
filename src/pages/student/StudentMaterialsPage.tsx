@@ -1,9 +1,10 @@
 import { DownloadOutlined } from '@ant-design/icons'
 import { Alert, Button, Card, Col, Empty, Row, Typography } from 'antd'
 import { useEffect, useState } from 'react'
+import { apiUrl } from '../../api/client'
 import { useSession } from '../../auth/useSession'
-import { getMaterials } from '../../features/materials/api/materialsApi'
-import type { MaterialListResponse } from '../../types'
+import { getMaterials } from '../../features/materials/api'
+import type { MaterialListResponse } from '../../features/materials/types'
 
 const { Title, Paragraph, Text } = Typography
 
@@ -89,7 +90,7 @@ export function StudentMaterialsPage() {
                 <Paragraph type="secondary">{item.description || '자료 설명이 없습니다.'}</Paragraph>
                 <Text type="secondary">{item.subject} · {item.course}</Text>
                 <div style={{ marginTop: 16 }}>
-                  <Button type="primary" icon={<DownloadOutlined />} href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}/materials/${item.id}/download`} target="_blank" rel="noopener noreferrer">
+                  <Button type="primary" icon={<DownloadOutlined />} href={apiUrl(`/materials/${item.id}/download`)} target="_blank" rel="noopener noreferrer">
                     다운로드
                   </Button>
                 </div>

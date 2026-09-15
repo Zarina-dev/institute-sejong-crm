@@ -4,7 +4,7 @@ import type { TableProps } from 'antd'
 import { useEffect, useMemo, useState, type Key } from 'react'
 import { useCatalog } from '../../features/catalog/useCatalog'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
-import { createStudent, deleteStudent, getStudents, updateStudent } from '../../features/students/api/studentsApi'
+import { createStudent, deleteStudent, getStudents, updateStudent } from '../../features/students/api'
 
 const { Title, Text } = Typography
 

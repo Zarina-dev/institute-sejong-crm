@@ -1,7 +1,7 @@
 import { Alert, Button, Card, Col, Empty, Row, Typography } from 'antd'
 import { useEffect, useState } from 'react'
-import { createApplication, getCourses } from '../../features/courses/api/coursesApi'
-import type { CourseRecord } from '../../types'
+import { createApplication, getCourses } from '../../features/courses/api'
+import type { CourseRecord } from '../../features/courses/types'
 
 const { Title, Text, Paragraph } = Typography
 

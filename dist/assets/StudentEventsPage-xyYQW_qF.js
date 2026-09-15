@@ -1,0 +1,2 @@
+import{j as r}from"./index-7TVufheY.js";import{T as e,p as a}from"./antd-eGZK-LOA.js";import"./react-B3OjKfkA.js";const{Title:i,Paragraph:s}=e;function d(){return r.jsxs("div",{children:[r.jsx(i,{level:2,children:"행사"}),r.jsx(s,{children:"학기 중 진행되는 행사와 안내사항을 확인할 수 있는 화면입니다."}),r.jsxs(a,{className:"surface-card",children:[r.jsx(s,{children:"학기 초 오리엔테이션"}),r.jsx(s,{children:"취업 워크숍"})]})]})}export{d as StudentEventsPage};
+//# sourceMappingURL=StudentEventsPage-xyYQW_qF.js.map

@@ -1,9 +1,9 @@
 import { CheckOutlined, CloseOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import { Alert, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography } from 'antd'
 import { useEffect, useState } from 'react'
-import { approveApplication, createCourse, deleteCourse, getApplications, getCourses, publishCourse, rejectApplication, unpublishCourse, updateCourse } from '../../features/courses/api/coursesApi'
+import { approveApplication, createCourse, deleteCourse, getApplications, getCourses, publishCourse, rejectApplication, unpublishCourse, updateCourse } from '../../features/courses/api'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
-import type { CourseApplicationRecord, CourseRecord } from '../../types'
+import type { CourseApplicationRecord, CourseRecord } from '../../features/courses/types'
 
 const { Title, Text } = Typography
 

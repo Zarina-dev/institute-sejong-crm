@@ -6,9 +6,9 @@ import enUS from 'antd/locale/en_US'
 import koKR from 'antd/locale/ko_KR'
 import ruRU from 'antd/locale/ru_RU'
 
-import { AppRouter } from './app/router/AppRouter'
+import { AppRouter } from './app/router'
 import { PreferencesProvider, usePreferences, type Language } from './app/preferences'
-import { getAntdTheme } from './theme/antdTheme'
+import { getAntdTheme } from './app/theme'
 import './styles/index.css'
 
 /** Ant Design ships no Kyrgyz bundle; Russian is the closest available. */

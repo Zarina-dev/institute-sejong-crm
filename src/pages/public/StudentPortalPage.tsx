@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { usePreferences } from '../../app/preferences'
 import { clearSession, demoUsers, setSession } from '../../auth/demoAuth'
 import { useSession } from '../../auth/useSession'
-import { loginStudent } from '../../features/students/api/studentsApi'
+import { loginStudent } from '../../features/students/api'
 
 const { Title, Paragraph, Text } = Typography
 

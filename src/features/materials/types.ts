@@ -14,22 +14,24 @@ export type MaterialsFilters = {
   sortOrder?: 'ASC' | 'DESC'
 }
 
-export type MaterialsListResult = {
-  items: Array<{
-    id: string
-    title: string
-    description?: string | null
-    subject: string
-    course: string
-    fileType?: string | null
-    fileSize?: number | null
-    originalFileName?: string | null
-    storageKey?: string | null
-    thumbnailUrl?: string | null
-    isPublished: boolean
-    createdAt: string
-    updatedAt: string
-  }>
+export type MaterialItem = {
+  id: string
+  title: string
+  description: string | null
+  subject: string
+  course: string
+  fileType?: string | null
+  fileSize?: number | null
+  originalFileName?: string | null
+  storageKey?: string | null
+  thumbnailUrl?: string | null
+  isPublished: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type MaterialListResponse = {
+  items: MaterialItem[]
   page: number
   limit: number
   total: number
