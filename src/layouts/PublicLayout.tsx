@@ -18,6 +18,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 
 import { languages, usePreferences } from '../app/preferences'
 import { useSession } from '../auth/useSession'
+import { BrandMark } from '../shared/BrandMark'
 
 const { Header, Content, Footer } = Layout
 const { Text } = Typography
@@ -79,11 +80,9 @@ export function PublicLayout() {
       <Header className="site-header">
         <div className="header-inner">
           <NavLink to="/" className="brand" aria-label={t('brand.name')}>
-            <span className="brand-mark" aria-hidden="true">
-              I
-            </span>
+            <BrandMark />
             <span>
-              <strong>INSTITUT</strong>
+              <strong>{t('brand.name')}</strong>
               <small>{t('brand.tagline')}</small>
             </span>
           </NavLink>

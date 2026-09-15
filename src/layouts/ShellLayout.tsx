@@ -13,6 +13,7 @@ import { Link, Navigate, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { languages, usePreferences } from '../app/preferences'
 import { clearSession, type DemoRole } from '../auth/demoAuth'
 import { useSession } from '../auth/useSession'
+import { BrandMark } from '../shared/BrandMark'
 
 const { Content, Header, Sider } = Layout
 const { Title } = Typography
@@ -80,11 +81,9 @@ export function ShellLayout({ role, railSubtitle, title, navItems }: ShellLayout
       >
         <div className="rail">
           <Link to="/" className="rail-brand">
-            <span className="brand-mark" aria-hidden="true">
-              I
-            </span>
+            <BrandMark size={32} />
             <span>
-              <strong>Institut</strong>
+              <strong>{t('brand.name')}</strong>
               <small>{railSubtitle}</small>
             </span>
           </Link>

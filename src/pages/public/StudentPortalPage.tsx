@@ -7,6 +7,7 @@ import { usePreferences } from '../../app/preferences'
 import { clearSession, demoUsers, setSession, type DemoRole } from '../../auth/demoAuth'
 import { useSession } from '../../auth/useSession'
 import { useStudentLogin } from '../../features/students/queries'
+import { BrandMark } from '../../shared/BrandMark'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 
 const { Title, Paragraph, Text } = Typography
@@ -74,9 +75,7 @@ export function StudentPortalPage() {
   return (
     <div className="portal-page">
       <section className="portal-intro">
-        <span className="brand-mark" aria-hidden="true">
-          I
-        </span>
+        <BrandMark size={48} />
         <Text className="section-kicker">{t('session.studentPortal')}</Text>
         <Title level={1}>{t('login.portalTitle')}</Title>
         <Paragraph>{t('login.portalSubtitle')}</Paragraph>
