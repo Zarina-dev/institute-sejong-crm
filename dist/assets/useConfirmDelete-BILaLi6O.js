@@ -1,0 +1,2 @@
+import{j as e}from"./index-CoU9b56-.js";import{r as n}from"./react-B3OjKfkA.js";import{Q as c,ag as i}from"./antd-eGZK-LOA.js";function m(){const{modal:o}=c.useApp();return n.useCallback(({target:r,note:t,onConfirm:s})=>{o.confirm({title:"삭제 확인",icon:e.jsx(i,{}),content:e.jsxs("div",{className:"confirm-delete",children:[e.jsx("p",{children:"정말 삭제하시겠습니까?"}),e.jsx("strong",{children:r}),e.jsx("p",{children:t??"이 작업은 되돌릴 수 없습니다."})]}),okText:"삭제",okButtonProps:{danger:!0},cancelText:"취소",onOk:s})},[o])}export{m as u};
+//# sourceMappingURL=useConfirmDelete-BILaLi6O.js.map

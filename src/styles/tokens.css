@@ -1,0 +1,266 @@
+/* ==========================================================================
+   Design tokens — single source of truth for the visual language.
+
+   Layer 1 (palette)  : raw, theme-independent values. Never used directly
+                        in component styles.
+   Layer 2 (semantic) : role-based aliases (surface, border, text...). These
+                        are what component styles consume, and the only ones
+                        re-declared in the dark theme.
+
+   The brand ramp is mirrored in src/theme/antdTheme.ts so Ant Design
+   components and hand-written CSS resolve to the same colours.
+   ========================================================================== */
+
+:root {
+  /* ---------- Layer 1: palette ---------- */
+
+  --brand-50: #eef4ff;
+  --brand-100: #dce8ff;
+  --brand-200: #bcd2ff;
+  --brand-300: #8fb4ff;
+  --brand-400: #5b90ff;
+  --brand-500: #246bfd;
+  --brand-600: #1555d6;
+  --brand-700: #1243a8;
+  --brand-800: #132f6f;
+  --brand-900: #102551;
+
+  --neutral-0: #ffffff;
+  --neutral-25: #fbfcfe;
+  --neutral-50: #f6f8fc;
+  --neutral-100: #eef1f7;
+  --neutral-200: #e3e8f0;
+  --neutral-300: #cbd4e2;
+  --neutral-400: #9aa6bb;
+  --neutral-500: #71809a;
+  --neutral-600: #55647b;
+  --neutral-700: #3c4a61;
+  --neutral-800: #26334a;
+  --neutral-900: #172033;
+  --neutral-950: #0f172a;
+
+  --emerald-50: #e7f7ef;
+  --emerald-500: #22855a;
+  --emerald-600: #1c6d4a;
+
+  --amber-50: #fff3e6;
+  --amber-500: #d9791c;
+  --amber-600: #b9620f;
+
+  --rose-50: #fff0ef;
+  --rose-500: #e05252;
+  --rose-600: #c23c3c;
+
+  --violet-50: #f1edff;
+  --violet-500: #7952e8;
+  --violet-600: #6338d4;
+
+  /* ---------- Layer 2: semantic, light theme ---------- */
+
+  /* Surfaces, from furthest back to furthest forward. */
+  --color-canvas: var(--neutral-50);
+  --color-surface: var(--neutral-0);
+  --color-surface-sunken: var(--neutral-50);
+  --color-surface-raised: var(--neutral-0);
+  --color-surface-translucent: rgb(255 255 255 / 0.94);
+  --color-surface-hover: var(--neutral-25);
+
+  --color-border: var(--neutral-200);
+  --color-border-subtle: var(--neutral-100);
+  --color-border-strong: var(--neutral-300);
+
+  --color-text: var(--neutral-900);
+  --color-text-muted: var(--neutral-600);
+  --color-text-subtle: var(--neutral-500);
+  --color-text-faint: var(--neutral-400);
+  --color-text-inverse: var(--neutral-0);
+
+  --color-primary: var(--brand-500);
+  --color-primary-hover: var(--brand-600);
+  --color-primary-active: var(--brand-700);
+  --color-primary-soft: var(--brand-50);
+  --color-primary-soft-hover: var(--brand-100);
+  --color-primary-text: var(--brand-600);
+  --color-on-primary: var(--neutral-0);
+
+  --color-success: var(--emerald-500);
+  --color-success-soft: var(--emerald-50);
+  --color-warning: var(--amber-500);
+  --color-warning-soft: var(--amber-50);
+  --color-danger: var(--rose-500);
+  --color-danger-soft: var(--rose-50);
+  --color-accent: var(--violet-500);
+  --color-accent-soft: var(--violet-50);
+
+  /* Dark navigation rails (admin / student shells). Declared as semantic
+     tokens because they must also work when the whole app is dark. */
+  --color-rail: var(--neutral-950);
+  --color-rail-surface: rgb(255 255 255 / 0.06);
+  --color-rail-border: rgb(255 255 255 / 0.09);
+  --color-rail-text: var(--neutral-200);
+  --color-rail-text-muted: var(--neutral-400);
+  --color-rail-hover: rgb(255 255 255 / 0.08);
+  --color-rail-active: var(--neutral-0);
+  --color-rail-active-text: var(--neutral-950);
+
+  --color-focus-ring: rgb(36 107 253 / 0.32);
+  --color-overlay: rgb(15 23 42 / 0.45);
+
+  --gradient-hero:
+    radial-gradient(circle at 88% 10%, var(--brand-400) 0, transparent 31%),
+    linear-gradient(124deg, var(--brand-900) 0%, #16449b 55%, var(--brand-500) 100%);
+  --gradient-about: linear-gradient(125deg, #12264e, #215cc2);
+  --gradient-progress: linear-gradient(90deg, var(--brand-500), var(--brand-300));
+
+  /* ---------- Radii ---------- */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-pill: 999px;
+
+  /* ---------- Elevation ---------- */
+  --shadow-xs: 0 1px 2px rgb(24 45 82 / 0.05);
+  --shadow-sm: 0 3px 13px rgb(24 45 82 / 0.04);
+  --shadow-md: 0 10px 28px rgb(24 45 82 / 0.08);
+  --shadow-lg: 0 18px 34px rgb(19 70 159 / 0.2);
+  --shadow-primary: 0 6px 14px rgb(36 107 253 / 0.24);
+
+  /* ---------- Spacing (4px scale) ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+
+  /* ---------- Typography ---------- */
+  --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 27px;
+  --text-3xl: 32px;
+  --text-4xl: 36px;
+
+  --leading-tight: 1.07;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  --tracking-tight: -0.045em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.08em;
+  --tracking-wider: 0.12em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* ---------- Layout ---------- */
+  --layout-container: 1240px;
+  --layout-container-wide: 1600px;
+  --layout-header-height: 76px;
+  --layout-rail-width: 260px;
+  --layout-gutter: var(--space-6);
+  --layout-gutter-compact: var(--space-4);
+
+  /* ---------- Motion ---------- */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --duration-fast: 0.18s;
+  --duration-base: 0.22s;
+  --transition-colors: color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+  --transition-elevate: transform var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out);
+
+  /* ---------- Stacking ---------- */
+  --z-sticky: 30;
+  --z-header: 40;
+  --z-overlay: 100;
+}
+
+/* ==========================================================================
+   Dark theme — only semantic tokens are overridden.
+   ========================================================================== */
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-canvas: #0d1420;
+  --color-surface: #151d2b;
+  --color-surface-sunken: #101827;
+  --color-surface-raised: #1b2534;
+  --color-surface-translucent: rgb(13 20 32 / 0.92);
+  --color-surface-hover: #1d2838;
+
+  --color-border: #2b3a52;
+  --color-border-subtle: #223044;
+  --color-border-strong: #3a4b66;
+
+  --color-text: #edf2ff;
+  --color-text-muted: #a9b8cf;
+  --color-text-subtle: #8f9eb8;
+  --color-text-faint: #6f7f99;
+  --color-text-inverse: var(--neutral-950);
+
+  --color-primary: var(--brand-400);
+  --color-primary-hover: var(--brand-300);
+  --color-primary-active: var(--brand-200);
+  --color-primary-soft: #1b376c;
+  --color-primary-soft-hover: #224380;
+  --color-primary-text: #9fc1ff;
+  --color-on-primary: #06132c;
+
+  --color-success: #4cc38a;
+  --color-success-soft: #173f32;
+  --color-warning: #e9a23b;
+  --color-warning-soft: #402c14;
+  --color-danger: #f2696c;
+  --color-danger-soft: #401f24;
+  --color-accent: #a186f5;
+  --color-accent-soft: #372667;
+
+  --color-rail: #0b111c;
+  --color-rail-surface: rgb(255 255 255 / 0.05);
+  --color-rail-border: rgb(255 255 255 / 0.07);
+  --color-rail-text: #c8d4e8;
+  --color-rail-text-muted: #7c8ca6;
+  --color-rail-hover: rgb(255 255 255 / 0.07);
+  --color-rail-active: var(--color-primary-soft);
+  --color-rail-active-text: #dbe8ff;
+
+  --color-focus-ring: rgb(91 144 255 / 0.4);
+  --color-overlay: rgb(0 0 0 / 0.6);
+
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-sm: none;
+  --shadow-md: 0 10px 28px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 18px 34px rgb(0 0 0 / 0.45);
+  --shadow-primary: 0 6px 14px rgb(0 0 0 / 0.35);
+
+  --gradient-hero:
+    radial-gradient(circle at 88% 10%, #2f66c9 0, transparent 31%),
+    linear-gradient(124deg, #0a1731 0%, #10306f 55%, #1b52c4 100%);
+  --gradient-about: linear-gradient(125deg, #0d1c38, #1a4483);
+  --gradient-progress: linear-gradient(90deg, var(--brand-400), var(--brand-200));
+}
