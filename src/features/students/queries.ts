@@ -1,16 +1,33 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { createStudent, deleteStudent, getStudents, loginStudent, updateStudent } from './api'
+import { createStudent, deleteStudent, getStudent, getStudents, loginStudent, updateStudent } from './api'
 
 export const studentKeys = {
   all: ['students'] as const,
   list: () => [...studentKeys.all, 'list'] as const,
+  detail: (studentId: string) => [...studentKeys.all, 'detail', studentId] as const,
 }
 
 export function useStudents() {
   return useQuery({
     queryKey: studentKeys.list(),
     queryFn: getStudents,
+  })
+}
+
+/**
+ * One student by login id. Lives under `studentKeys.all`, so an approval in
+ * the admin panel (which invalidates that prefix) refreshes it as well.
+ */
+export function useStudent(studentId: string | undefined) {
+  return useQuery({
+    queryKey: studentKeys.detail(studentId ?? ''),
+    queryFn: () => getStudent(studentId as string),
+    enabled: Boolean(studentId),
+    // The portal is often open in a second tab while the admin approves in
+    // the first; refetch on focus is the cheapest way to pick that up.
+    refetchOnWindowFocus: true,
+    staleTime: 10_000,
   })
 }
 

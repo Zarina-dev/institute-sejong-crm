@@ -2,7 +2,7 @@ import { BookOutlined, FolderOpenOutlined, IdcardOutlined, CalendarOutlined } fr
 import { Card, Col, Row, Tag, Typography } from 'antd'
 import { Link } from 'react-router-dom'
 
-import { useSession } from '../../auth/useSession'
+import { useCurrentStudent } from '../../auth/useCurrentStudent'
 import { useStudentEnrollments } from '../../features/courses/queries'
 import { useMaterials } from '../../features/materials/queries'
 import { PageHeader } from '../../shared/PageHeader'
@@ -10,8 +10,7 @@ import { PageHeader } from '../../shared/PageHeader'
 const { Text, Paragraph } = Typography
 
 export function StudentDashboardPage() {
-  const session = useSession()
-  const student = session?.student
+  const { session, student } = useCurrentStudent()
   const studentId = student?.id ?? session?.studentId
 
   // Both are cheap head-counts and share the cache with their own pages, so

@@ -1,2 +1,0 @@
-import{r as n,j as e}from"./react-DMhA2_fz.js";import{t as c,ak as a}from"./antd-C_AoaiXE.js";function p(){const{modal:t}=c.useApp();return n.useCallback(({target:o,note:r,onConfirm:s})=>{t.confirm({title:"삭제 확인",icon:e.jsx(a,{}),content:e.jsxs("div",{className:"confirm-delete",children:[e.jsx("p",{children:"정말 삭제하시겠습니까?"}),e.jsx("strong",{children:o}),e.jsx("p",{children:r??"이 작업은 되돌릴 수 없습니다."})]}),okText:"삭제",okButtonProps:{danger:!0},cancelText:"취소",onOk:s})},[t])}export{p as u};
-//# sourceMappingURL=useConfirmDelete-BN74R-eV.js.map

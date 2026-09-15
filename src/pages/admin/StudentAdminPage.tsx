@@ -10,6 +10,7 @@ import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
+import { useTableLayout } from '../../shared/useTableLayout'
 
 const { Text } = Typography
 
@@ -57,6 +58,7 @@ export function StudentAdminPage() {
   const { message } = App.useApp()
   const catalog = useCatalog()
   const confirmDelete = useConfirmDelete()
+  const { pinActions, compactActions } = useTableLayout()
 
   const students = useStudents()
   const createStudent = useCreateStudent()
@@ -213,6 +215,7 @@ export function StudentAdminPage() {
         title: '비밀번호',
         dataIndex: 'password',
         key: 'password',
+        responsive: ['md'],
         filters: [
           { text: '입력됨', value: 'plain' },
           { text: '암호화됨', value: 'hashed' },
@@ -220,12 +223,13 @@ export function StudentAdminPage() {
         onFilter: (value: boolean | Key, record) => (value === 'hashed') === isHashed(record.password),
         render: (value?: string) => (!value ? '-' : isHashed(value) ? <Text type="secondary">암호화됨</Text> : value),
       },
-      { title: '이메일', dataIndex: 'email', key: 'email' },
-      { title: '전화번호', dataIndex: 'phone', key: 'phone' },
+      { title: '이메일', dataIndex: 'email', key: 'email', responsive: ['lg'], ellipsis: true },
+      { title: '전화번호', dataIndex: 'phone', key: 'phone', responsive: ['lg'] },
       {
         title: '입학 날짜',
         dataIndex: 'admissionDate',
         key: 'admissionDate',
+        responsive: ['xl'],
         filters: columnFilters.admissionDate,
         onFilter: (value: boolean | Key, record) => record.admissionDate === String(value),
         sorter: (a, b) => (a.admissionDate ?? '').localeCompare(b.admissionDate ?? ''),
@@ -242,6 +246,7 @@ export function StudentAdminPage() {
         title: 'TOPIK 레벨',
         dataIndex: 'level',
         key: 'level',
+        responsive: ['md'],
         filters: columnFilters.level,
         onFilter: (value: boolean | Key, record) => record.level === String(value),
       },
@@ -249,6 +254,7 @@ export function StudentAdminPage() {
         title: 'TOPIK 파일',
         dataIndex: 'topikFiles',
         key: 'topikFiles',
+        responsive: ['xl'],
         filters: [
           { text: '첨부됨', value: 'attached' },
           { text: '없음', value: 'none' },
@@ -269,20 +275,21 @@ export function StudentAdminPage() {
       {
         title: '관리',
         key: 'actions',
-        width: 170,
+        fixed: pinActions,
+        width: compactActions ? 90 : 170,
         render: (_, record) => (
           <Space>
-            <Button size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)}>
-              수정
+            <Button size="small" icon={<EditOutlined />} aria-label="수정" onClick={() => openEditModal(record)}>
+              {compactActions ? null : '수정'}
             </Button>
-            <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)}>
-              삭제
+            <Button size="small" danger icon={<DeleteOutlined />} aria-label="삭제" onClick={() => handleDelete(record)}>
+              {compactActions ? null : '삭제'}
             </Button>
           </Space>
         ),
       },
     ],
-    [columnFilters, handleDelete, openEditModal],
+    [columnFilters, compactActions, handleDelete, openEditModal, pinActions],
   )
 
   /* ------------------------------- render ----------------------------- */
@@ -296,17 +303,17 @@ export function StudentAdminPage() {
       />
 
       <Row gutter={[16, 16]}>
-        <Col xs={24} md={8}>
+        <Col xs={8}>
           <Card className="surface-card student-admin-stat">
             <Statistic title="총 학생" value={stats.total} loading={students.isPending} />
           </Card>
         </Col>
-        <Col xs={24} md={8}>
+        <Col xs={8}>
           <Card className="surface-card student-admin-stat">
             <Statistic title="활동 중" value={stats.active} loading={students.isPending} />
           </Card>
         </Col>
-        <Col xs={24} md={8}>
+        <Col xs={8}>
           <Card className="surface-card student-admin-stat">
             <Statistic title="TOPIK 첨부" value={stats.withTopik} loading={students.isPending} />
           </Card>
@@ -348,7 +355,7 @@ export function StudentAdminPage() {
           rowKey="id"
           loading={students.isPending}
           pagination={{ pageSize: 10, showSizeChanger: false }}
-          scroll={{ x: 1400 }}
+          scroll={{ x: 'max-content' }}
         />
       </Card>
 

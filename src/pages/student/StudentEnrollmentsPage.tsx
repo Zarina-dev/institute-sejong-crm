@@ -1,6 +1,6 @@
 import { Card, Empty, List, Skeleton, Tag, Typography } from 'antd'
 
-import { useSession } from '../../auth/useSession'
+import { useCurrentStudent } from '../../auth/useCurrentStudent'
 import { useStudentEnrollments } from '../../features/courses/queries'
 import type { EnrollmentRecord } from '../../features/courses/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
@@ -16,8 +16,8 @@ const statusMeta: Record<NonNullable<EnrollmentRecord['status']>, { label: strin
 }
 
 export function StudentEnrollmentsPage() {
-  const session = useSession()
-  const studentId = session?.student?.id ?? session?.studentId
+  const { session, student } = useCurrentStudent()
+  const studentId = student?.id ?? session?.studentId
   const enrollments = useStudentEnrollments(studentId)
 
   return (

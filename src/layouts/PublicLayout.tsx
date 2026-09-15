@@ -132,6 +132,22 @@ export function PublicLayout() {
             {portal.label}
           </Button>
         </NavLink>
+        {/* Below 520px the header drops these two to fit; they live here instead. */}
+        <div className="drawer-preferences">
+          <Button
+            block
+            icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
+            onClick={toggleTheme}
+          >
+            {t(theme === 'light' ? 'dark' : 'light')}
+          </Button>
+          <Select
+            aria-label={t('language')}
+            value={language}
+            onChange={setLanguage}
+            options={languages.map(({ value, title }) => ({ value, label: title }))}
+          />
+        </div>
       </Drawer>
 
       <Content className="site-content" id="main-content" tabIndex={-1}>

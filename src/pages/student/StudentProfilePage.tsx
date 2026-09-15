@@ -1,11 +1,10 @@
 import { Card, Descriptions, Tag } from 'antd'
 
-import { useSession } from '../../auth/useSession'
+import { useCurrentStudent } from '../../auth/useCurrentStudent'
 import { PageHeader } from '../../shared/PageHeader'
 
 export function StudentProfilePage() {
-  const session = useSession()
-  const student = session?.student
+  const { session, student } = useCurrentStudent()
 
   return (
     <div className="page-layout">

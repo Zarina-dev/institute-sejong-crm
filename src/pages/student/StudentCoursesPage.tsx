@@ -2,7 +2,7 @@ import { SendOutlined } from '@ant-design/icons'
 import { App, Button, Card, Col, Descriptions, Empty, Row, Skeleton, Typography } from 'antd'
 import { useCallback, useMemo } from 'react'
 
-import { useSession } from '../../auth/useSession'
+import { useCurrentStudent } from '../../auth/useCurrentStudent'
 import { applicationStatusMeta } from '../../features/courses/applicationStatus'
 import { ApplicationStatusTag } from '../../features/courses/ApplicationStatusTag'
 import { CourseCard } from '../../features/courses/CourseCard'
@@ -17,8 +17,7 @@ const { Text } = Typography
 
 export function StudentCoursesPage() {
   const { message } = App.useApp()
-  const session = useSession()
-  const student = session?.student
+  const { session, student } = useCurrentStudent()
 
   const courses = useCourses(true)
   const applications = useApplications()

@@ -1,5 +1,6 @@
 import {
   DeleteOutlined,
+  EditOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
   PlusOutlined,
@@ -42,6 +43,7 @@ import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
+import { useTableLayout } from '../../shared/useTableLayout'
 
 const { Text } = Typography
 
@@ -65,6 +67,7 @@ export function MaterialsAdminPage() {
   const { message } = App.useApp()
   const catalog = useCatalog()
   const confirmDelete = useConfirmDelete()
+  const { pinActions, compactActions } = useTableLayout()
 
   const [filters, setFilters] = useState<MaterialsFilters>(defaultFilters)
   const [modalOpen, setModalOpen] = useState(false)
@@ -198,28 +201,30 @@ export function MaterialsAdminPage() {
       {
         title: '관리',
         key: 'actions',
-        width: 260,
+        fixed: pinActions,
+        width: compactActions ? 120 : 260,
         render: (_, record) => (
           <Space>
-            <Button size="small" onClick={() => openEditModal(record)}>
-              수정
+            <Button size="small" icon={<EditOutlined />} aria-label="수정" onClick={() => openEditModal(record)}>
+              {compactActions ? null : '수정'}
             </Button>
             <Button
               size="small"
               icon={record.isPublished ? <EyeInvisibleOutlined /> : <EyeOutlined />}
               onClick={() => handleTogglePublished(record)}
               loading={setPublished.isPending && setPublished.variables?.id === record.id}
+              aria-label={record.isPublished ? '숨김' : '공개'}
             >
-              {record.isPublished ? '숨김' : '공개'}
+              {compactActions ? null : record.isPublished ? '숨김' : '공개'}
             </Button>
-            <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)}>
-              삭제
+            <Button size="small" danger icon={<DeleteOutlined />} aria-label="삭제" onClick={() => handleDelete(record)}>
+              {compactActions ? null : '삭제'}
             </Button>
           </Space>
         ),
       },
     ],
-    [handleDelete, handleTogglePublished, openEditModal, setPublished.isPending, setPublished.variables?.id],
+    [compactActions, handleDelete, handleTogglePublished, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id],
   )
 
   /* ------------------------------- render ------------------------------ */
@@ -294,7 +299,7 @@ export function MaterialsAdminPage() {
           dataSource={data?.items ?? []}
           rowKey="id"
           pagination={false}
-          scroll={{ x: 900 }}
+          scroll={{ x: 'max-content' }}
           // isFetching (not isPending) also dims the table during background
           // refetches after a mutation, so the stale row is visibly "in flight".
           loading={materials.isFetching}

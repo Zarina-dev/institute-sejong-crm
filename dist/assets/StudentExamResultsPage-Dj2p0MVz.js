@@ -1,2 +1,0 @@
-import{j as e}from"./react-DMhA2_fz.js";import{P as s}from"./index-CltzbCHZ.js";import{p as r,E as a}from"./antd-C_AoaiXE.js";function o(){return e.jsxs("div",{className:"page-layout",children:[e.jsx(s,{level:2,title:"시험 결과",description:"최근 시험 성적과 평가 결과를 한눈에 확인할 수 있는 화면입니다."}),e.jsx(r,{className:"surface-card empty-card",children:e.jsx(a,{description:"아직 등록된 시험 결과가 없습니다."})})]})}export{o as StudentExamResultsPage};
-//# sourceMappingURL=StudentExamResultsPage-Dj2p0MVz.js.map

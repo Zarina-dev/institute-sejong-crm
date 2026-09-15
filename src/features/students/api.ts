@@ -25,6 +25,11 @@ export async function getStudents() {
   return apiGet<StudentApiRecord[]>('/students')
 }
 
+/** Password-free copy of one student, by login id. */
+export async function getStudent(studentId: string) {
+  return apiGet<Omit<StudentApiRecord, 'password'>>(`/students/${encodeURIComponent(studentId)}`)
+}
+
 export async function createStudent(payload: Record<string, unknown>) {
   return apiPost<StudentApiResponse>('/students', payload)
 }

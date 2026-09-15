@@ -25,6 +25,7 @@ import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
+import { useTableLayout } from '../../shared/useTableLayout'
 
 const { Text } = Typography
 
@@ -47,6 +48,7 @@ const emptyStats: CourseStats = { total: 0, pending: 0, approved: 0, rejected: 0
 export function CoursesAdminPage() {
   const { message } = App.useApp()
   const confirmDelete = useConfirmDelete()
+  const { pinActions, compactActions } = useTableLayout()
 
   const courses = useCourses(false)
   const applications = useApplications()
@@ -242,28 +244,30 @@ export function CoursesAdminPage() {
       {
         title: '관리',
         key: 'actions',
-        width: 260,
+        fixed: pinActions,
+        width: compactActions ? 120 : 260,
         render: (_, record) => (
           <Space>
-            <Button size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)}>
-              수정
+            <Button size="small" icon={<EditOutlined />} aria-label="수정" onClick={() => openEditModal(record)}>
+              {compactActions ? null : '수정'}
             </Button>
             <Button
               size="small"
               icon={record.isPublished ? <EyeInvisibleOutlined /> : <EyeOutlined />}
               loading={setPublished.isPending && setPublished.variables?.id === record.id}
               onClick={() => handleTogglePublished(record)}
+              aria-label={record.isPublished ? '숨김' : '공개'}
             >
-              {record.isPublished ? '숨김' : '공개'}
+              {compactActions ? null : record.isPublished ? '숨김' : '공개'}
             </Button>
-            <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)}>
-              삭제
+            <Button size="small" danger icon={<DeleteOutlined />} aria-label="삭제" onClick={() => handleDelete(record)}>
+              {compactActions ? null : '삭제'}
             </Button>
           </Space>
         ),
       },
     ],
-    [handleDelete, handleTogglePublished, openEditModal, setPublished.isPending, setPublished.variables?.id, statsByCourse],
+    [compactActions, handleDelete, handleTogglePublished, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, statsByCourse],
   )
 
   const expandedRowRender = useCallback(
@@ -327,7 +331,7 @@ export function CoursesAdminPage() {
           dataSource={courses.data ?? []}
           rowKey="id"
           pagination={{ pageSize: 10, showSizeChanger: false }}
-          scroll={{ x: 1100 }}
+          scroll={{ x: 'max-content' }}
           loading={courses.isPending || applications.isPending}
           expandable={{ expandedRowRender }}
         />

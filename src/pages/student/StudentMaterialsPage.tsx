@@ -1,6 +1,6 @@
 import { Card, Col, Empty, Row, Skeleton, Typography } from 'antd'
 
-import { useSession } from '../../auth/useSession'
+import { useCurrentStudent } from '../../auth/useCurrentStudent'
 import { MaterialCard } from '../../features/materials/MaterialCard'
 import { useMaterials } from '../../features/materials/queries'
 import { ErrorAlert } from '../../shared/ErrorAlert'
@@ -9,8 +9,8 @@ import { PageHeader } from '../../shared/PageHeader'
 const { Paragraph, Text } = Typography
 
 export function StudentMaterialsPage() {
-  const session = useSession()
-  const studentCourse = session?.student?.course
+  const { student } = useCurrentStudent()
+  const studentCourse = student?.course
 
   // `enabled` skips the request for students without an approved course
   // instead of firing a query we would throw away.

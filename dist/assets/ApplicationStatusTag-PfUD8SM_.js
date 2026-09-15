@@ -1,2 +1,0 @@
-import{r as e,j as l}from"./react-DMhA2_fz.js";import{m as t}from"./antd-C_AoaiXE.js";const r={pending:{label:"대기",color:"gold"},approved:{label:"승인",color:"green"},rejected:{label:"반려",color:"red"},enrolled:{label:"수강 등록",color:"blue"}},s=e.memo(function({status:a}){const o=r[a??"pending"];return l.jsx(t,{color:o.color,children:o.label})});export{s as A,r as a};
-//# sourceMappingURL=ApplicationStatusTag-PfUD8SM_.js.map

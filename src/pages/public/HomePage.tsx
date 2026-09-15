@@ -156,7 +156,7 @@ export function HomePage() {
           {audiences.map((audience) => (
             <Col xs={24} md={8} key={audience.tone}>
               <Card className={`surface-card audience-card ${audience.tone}`}>
-                <span aria-hidden="true">{audience.icon}</span>
+                <span className="audience-icon" aria-hidden="true">{audience.icon}</span>
                 <Text className="audience-label">{audience.label}</Text>
                 <Title level={3}>{audience.title}</Title>
                 <Paragraph>{audience.description}</Paragraph>

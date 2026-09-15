@@ -66,6 +66,14 @@
   gap: var(--space-6);
 }
 
+/* Grid/flex items default to min-width:auto, which lets a wide table push
+   the whole page past the viewport instead of scrolling inside its card. */
+.page-layout > *,
+.admin-shell > .ant-layout,
+.admin-content.ant-layout-content {
+  min-width: 0;
+}
+
 .page-heading {
   margin-bottom: var(--space-1);
 }
@@ -158,7 +166,7 @@
 .quick-icon,
 .stat-icon,
 .file-icon,
-.audience-card > .ant-card-body > span,
+.audience-icon,
 .value-card > .ant-card-body > span {
   display: inline-grid;
   place-items: center;
@@ -264,6 +272,19 @@
 
 .mobile-nav a {
   padding: var(--space-3);
+}
+
+.drawer-preferences {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.drawer-preferences .ant-select {
+  width: 100%;
 }
 
 .header-actions {
@@ -503,19 +524,19 @@
   padding: var(--space-7);
 }
 
-.audience-card > .ant-card-body > span {
+.audience-icon {
   width: 48px;
   height: 48px;
   margin-bottom: var(--space-4);
   font-size: 22px;
 }
 
-.audience-card.student > .ant-card-body > span {
+.audience-card.student .audience-icon {
   background: var(--color-success-soft);
   color: var(--color-success);
 }
 
-.audience-card.teacher > .ant-card-body > span {
+.audience-card.teacher .audience-icon {
   background: var(--color-accent-soft);
   color: var(--color-accent);
 }
@@ -681,6 +702,13 @@
 
 .filter-footer .ant-btn-link {
   padding: 0;
+}
+
+/* A footer with no filter row above it needs no divider. */
+.filter-card .ant-card-body > .filter-footer:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .empty-card .ant-card-body {
@@ -1417,8 +1445,15 @@
 
 /* --- Tables --- */
 
-.admin-table .ant-table-wrapper {
+/* The class is applied to the wrapper itself; with `scroll.x` AntD scrolls
+   `.ant-table-content`, this only guarantees the wrapper never grows. */
+.admin-table.ant-table-wrapper {
+  max-width: 100%;
+}
+
+.admin-table .ant-table-content {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-table .ant-table-thead > tr > th {
@@ -1446,6 +1481,20 @@
 
 .student-admin-stat .ant-card-body {
   padding: var(--space-5) var(--space-6);
+}
+
+@media (max-width: 760px) {
+  .student-admin-stat .ant-card-body {
+    padding: var(--space-3) var(--space-3);
+  }
+
+  .student-admin-stat .ant-statistic-title {
+    font-size: var(--text-xs);
+  }
+
+  .student-admin-stat .ant-statistic-content {
+    font-size: var(--text-xl);
+  }
 }
 
 .student-admin-stat-label {
@@ -1689,9 +1738,16 @@
     padding: 0 var(--layout-gutter-compact);
   }
 
-  /* Keep the icon, drop the word, so the header fits without wrapping. */
-  .logout-button.ant-btn span {
+  /* Keep the icon, drop the word, so the header fits without wrapping.
+     AntD wraps the icon in `span.ant-btn-icon`, so exclude it. */
+  .logout-button.ant-btn > span:not(.ant-btn-icon) {
     display: none;
+  }
+
+  .logout-button.ant-btn {
+    width: 38px;
+    padding-inline: 0;
+    justify-content: center;
   }
 }
 
@@ -1774,8 +1830,15 @@
     display: none;
   }
 
-  .language-select {
-    width: 58px;
+  /* Header keeps brand · portal · menu; theme and language move into the
+     drawer (.drawer-preferences). Four controls do not fit in 390px. */
+  .header-actions .language-select,
+  .header-actions > .icon-button:not(.menu-button) {
+    display: none;
+  }
+
+  .header-actions .ant-btn-primary {
+    padding-inline: var(--space-3);
   }
 
   .site-footer.ant-layout-footer {
