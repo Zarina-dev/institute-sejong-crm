@@ -49,19 +49,15 @@ export function StudentPortalPage() {
     }
 
     try {
-      const result = await login.mutateAsync({ studentId: username, password })
-
-      if (!result.valid || !result.student) {
-        setLocalError(result.reason ?? t('login.invalidCredentials'))
-        return
-      }
+      // A wrong password is a 401 from the API — surfaced through login.error.
+      const { student } = await login.mutateAsync({ studentId: username, password })
 
       setSession({
-        username: result.student.studentId,
+        username: student.studentId,
         role: 'student',
-        displayName: result.student.name,
-        studentId: result.student.studentId,
-        student: result.student,
+        displayName: student.name,
+        studentId: student.studentId,
+        student,
       })
       navigate(homeFor('student'), { replace: true })
     } catch {

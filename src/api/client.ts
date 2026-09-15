@@ -65,8 +65,23 @@ async function readErrorMessage(response: Response): Promise<string> {
   }
 }
 
+/**
+ * Language sent as `Accept-Language` on every request, so the API answers
+ * validation and error messages in the UI language. Set by
+ * PreferencesProvider; kept as a module variable so this file has no React
+ * dependency.
+ */
+let apiLanguage = 'en'
+
+export function setApiLanguage(language: string) {
+  apiLanguage = language
+}
+
 export async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(apiUrl(endpoint), options)
+  const headers = new Headers(options.headers)
+  headers.set('Accept-Language', apiLanguage)
+
+  const response = await fetch(apiUrl(endpoint), { ...options, headers })
 
   if (!response.ok) {
     throw new ApiError(await readErrorMessage(response), response.status)

@@ -36,6 +36,12 @@ const CoursesAdminPage = lazy(() =>
 const MaterialsAdminPage = lazy(() =>
   import('../pages/admin/MaterialsAdminPage').then((m) => ({ default: m.MaterialsAdminPage })),
 )
+const NewsAdminPage = lazy(() =>
+  import('../pages/admin/NewsAdminPage').then((m) => ({ default: m.NewsAdminPage })),
+)
+const ScheduleAdminPage = lazy(() =>
+  import('../pages/admin/ScheduleAdminPage').then((m) => ({ default: m.ScheduleAdminPage })),
+)
 const StudentAdminPage = lazy(() =>
   import('../pages/admin/StudentAdminPage').then((m) => ({ default: m.StudentAdminPage })),
 )
@@ -114,6 +120,8 @@ export function AppRouter() {
           <Route path="courses" element={<CoursesAdminPage />} />
           <Route path="materials" element={<MaterialsAdminPage />} />
           <Route path="students" element={<StudentAdminPage />} />
+          <Route path="news" element={<NewsAdminPage />} />
+          <Route path="schedule" element={<ScheduleAdminPage />} />
         </Route>
       </Routes>
     </Suspense>

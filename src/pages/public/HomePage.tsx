@@ -8,11 +8,15 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons'
-import { Button, Card, Col, Row, Tag, Typography } from 'antd'
-import type { ReactNode } from 'react'
+import { Button, Card, Col, Row, Skeleton, Tag, Typography } from 'antd'
+import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import { usePreferences, type TranslationKey } from '../../app/preferences'
+import { usePublishedNews } from '../../features/news/queries'
+import { useSchedule } from '../../features/schedule/queries'
+import { startOfWeek, toIsoDate, weekRange } from '../../features/schedule/week'
+import { formatDate } from '../../shared/format'
 
 const { Title, Paragraph, Text } = Typography
 
@@ -40,12 +44,6 @@ const quickLinks: Array<{ icon: ReactNode; title: TranslationKey; copy: Translat
   { icon: <UserOutlined />, title: 'home.quickPortal', copy: 'home.quickPortalCopy', link: '/login' },
 ]
 
-const newsPreview = [
-  { id: 1, title: 'Semester registration is open', date: 'Sep 2026' },
-  { id: 2, title: 'New language lab opens on campus', date: 'Sep 2026' },
-  { id: 3, title: 'Autumn student activities announced', date: 'Sep 2026' },
-]
-
 function SectionHeading({ kicker, title, aside }: { kicker: string; title: string; aside: ReactNode }) {
   return (
     <div className="section-heading">
@@ -59,7 +57,19 @@ function SectionHeading({ kicker, title, aside }: { kicker: string; title: strin
 }
 
 export function HomePage() {
-  const { t } = usePreferences()
+  const { t, language } = usePreferences()
+  const news = usePublishedNews(3)
+  const week = useSchedule(useMemo(() => weekRange(startOfWeek(new Date())), []))
+
+  // First class today or later this week — what "next class" means on a landing page.
+  const nextClass = useMemo(() => {
+    const today = toIsoDate(new Date())
+    const now = new Date().toTimeString().slice(0, 5)
+    return (week.data ?? []).find((item) => item.date > today || (item.date === today && item.endTime >= now)) ?? null
+  }, [week.data])
+  const nextDate = nextClass ? new Date(`${nextClass.date}T00:00:00`) : new Date()
+  const dayShort = useMemo(() => new Intl.DateTimeFormat(language, { weekday: 'short' }), [language])
+  const monthShort = useMemo(() => new Intl.DateTimeFormat(language, { month: 'short' }), [language])
 
   return (
     <div className="home-page">
@@ -152,21 +162,24 @@ export function HomePage() {
         />
         <Card className="surface-card today-card">
           <div className="today-date">
-            <span>MON</span>
-            <strong>14</strong>
-            <small>SEP</small>
+            <span>{dayShort.format(nextDate)}</span>
+            <strong>{nextDate.getDate()}</strong>
+            <small>{monthShort.format(nextDate)}</small>
           </div>
           <div className="next-class">
             <Text type="secondary">{t('home.nextClass')}</Text>
-            <Title level={4}>Mathematics</Title>
-            <span>
-              <ClockCircleOutlined /> 09:00 – 10:30 · Room A-101
-            </span>
+            <Title level={4}>{nextClass?.subject ?? t('schedule.emptyWeek')}</Title>
+            {nextClass ? (
+              <span>
+                <ClockCircleOutlined /> {nextClass.startTime} – {nextClass.endTime}
+                {nextClass.classroom ? ` · ${nextClass.classroom}` : ''}
+              </span>
+            ) : null}
           </div>
           <div className="today-progress">
             <div>
               <Text type="secondary">{t('home.thisWeek')}</Text>
-              <strong>{t('home.classesPlanned', { count: 3 })}</strong>
+              <strong>{t('home.classesPlanned', { count: week.data?.length ?? 0 })}</strong>
             </div>
             <div className="progress-track" role="presentation">
               <i />
@@ -192,14 +205,28 @@ export function HomePage() {
           }
         />
         <Row gutter={[16, 16]}>
-          {newsPreview.map((item) => (
-            <Col xs={24} md={8} key={item.id}>
-              <Card className="surface-card news-card" title={item.title} extra={<Text type="secondary">{item.date}</Text>}>
-                <Paragraph type="secondary">{t('home.newsCopy')}</Paragraph>
-                <Link to="/news">{t('common.readMore')}</Link>
-              </Card>
-            </Col>
-          ))}
+          {news.isPending
+            ? Array.from({ length: 3 }, (_, index) => (
+                <Col xs={24} md={8} key={index}>
+                  <Card className="surface-card news-card">
+                    <Skeleton active paragraph={{ rows: 2 }} />
+                  </Card>
+                </Col>
+              ))
+            : (news.data ?? []).map((post) => (
+                <Col xs={24} md={8} key={post.id}>
+                  <Card
+                    className="surface-card news-card"
+                    title={post.title}
+                    extra={<Text type="secondary">{formatDate(post.publishedAt ?? post.createdAt, language)}</Text>}
+                  >
+                    <Paragraph type="secondary" ellipsis={{ rows: 3 }}>
+                      {post.body}
+                    </Paragraph>
+                    <Link to="/news">{t('common.readMore')}</Link>
+                  </Card>
+                </Col>
+              ))}
         </Row>
       </section>
     </div>

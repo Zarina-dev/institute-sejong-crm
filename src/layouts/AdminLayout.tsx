@@ -1,7 +1,9 @@
 import {
   AppstoreOutlined,
+  CalendarOutlined,
   DashboardOutlined,
   FolderOpenOutlined,
+  NotificationOutlined,
   SolutionOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
@@ -24,6 +26,8 @@ export function AdminLayout() {
     { to: '/admin/courses', label: t('adminNav.courses'), icon: <AppstoreOutlined /> },
     { to: '/admin/materials', label: t('adminNav.materials'), icon: <FolderOpenOutlined /> },
     { to: '/admin/students', label: t('adminNav.students'), icon: <TeamOutlined /> },
+    { to: '/admin/news', label: t('adminNav.news'), icon: <NotificationOutlined /> },
+    { to: '/admin/schedule', label: t('adminNav.schedule'), icon: <CalendarOutlined /> },
   ]
 
   return (

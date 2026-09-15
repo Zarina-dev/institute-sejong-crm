@@ -1,10 +1,57 @@
-import { ArrowRightOutlined, CalendarOutlined } from '@ant-design/icons'
-import { Button, Card, Col, Row, Tag, Typography } from 'antd'
+import { CalendarOutlined } from '@ant-design/icons'
+import { Card, Col, Empty, Row, Skeleton, Tag, Typography } from 'antd'
+
 import { usePreferences } from '../../app/preferences'
+import { usePublishedNews } from '../../features/news/queries'
+import { ErrorAlert } from '../../shared/ErrorAlert'
+import { formatDate } from '../../shared/format'
+import { PageHeader } from '../../shared/PageHeader'
+
 const { Title, Paragraph, Text } = Typography
-const news = [
-  { title: 'Semester registration is now open', body: 'Choose your classes and confirm your place for the coming semester through the student portal.', category: 'Academic', date: '10 Sep 2026', featured: true },
-  { title: 'Career workshop series begins next Monday', body: 'Meet employers, refine your CV, and practice the conversations that matter.', category: 'Events', date: '8 Sep 2026', featured: false },
-  { title: 'Library hours extended for exam preparation', body: 'More quiet study time is available throughout the exam preparation week.', category: 'Campus', date: '3 Sep 2026', featured: false },
-]
-export function NewsPage() { const { t } = usePreferences(); return <div className="page-layout"><header className="page-heading"><Text className="section-kicker">CAMPUS LIFE</Text><Title level={1}>{t('pages.newsTitle')}</Title><Text>{t('pages.newsSubtitle')}</Text></header><Row gutter={[18, 18]}>{news.map((item) => <Col xs={24} md={item.featured ? 24 : 12} key={item.title}><Card className={`surface-card announcement-card ${item.featured ? 'featured' : ''}`}><div><Tag color={item.featured ? 'blue' : 'default'}>{item.category}</Tag><Text type="secondary"><CalendarOutlined /> {item.date}</Text></div><Title level={item.featured ? 2 : 3}>{item.title}</Title><Paragraph>{item.body}</Paragraph><Button type="link" icon={<ArrowRightOutlined />} iconPosition="end">Read announcement</Button></Card></Col>)}</Row></div> }
+
+export function NewsPage() {
+  const { t, language } = usePreferences()
+  const news = usePublishedNews()
+
+  return (
+    <div className="page-layout">
+      <PageHeader kicker={t('news.kicker')} title={t('pages.newsTitle')} description={t('pages.newsSubtitle')} />
+
+      <ErrorAlert error={news.error} fallback={t('news.loadFailed')} />
+
+      {news.isPending ? (
+        <Row gutter={[18, 18]}>
+          {Array.from({ length: 3 }, (_, index) => (
+            <Col xs={24} md={index === 0 ? 24 : 12} key={index}>
+              <Card className="surface-card announcement-card">
+                <Skeleton active paragraph={{ rows: 3 }} />
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      ) : news.data && news.data.length > 0 ? (
+        <Row gutter={[18, 18]}>
+          {news.data.map((post) => (
+            <Col xs={24} md={post.isFeatured ? 24 : 12} key={post.id}>
+              <Card className={`surface-card announcement-card ${post.isFeatured ? 'featured' : ''}`}>
+                <div>
+                  <Tag color={post.isFeatured ? 'blue' : 'default'}>{t(`news.category.${post.category}`)}</Tag>
+                  <Text type="secondary">
+                    <CalendarOutlined /> {formatDate(post.publishedAt ?? post.createdAt, language)}
+                  </Text>
+                </div>
+                <Title level={post.isFeatured ? 2 : 3}>{post.title}</Title>
+                {/* Announcement bodies are plain text with line breaks. */}
+                <Paragraph style={{ whiteSpace: 'pre-line' }}>{post.body}</Paragraph>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      ) : (
+        <Card className="surface-card empty-card">
+          <Empty description={t('news.empty')} />
+        </Card>
+      )}
+    </div>
+  )
+}

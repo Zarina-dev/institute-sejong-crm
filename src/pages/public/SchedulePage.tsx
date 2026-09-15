@@ -1,37 +1,182 @@
-import { CalendarOutlined, EnvironmentOutlined, FilterOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Card, Col, Empty, Row, Select, Tag, Typography } from 'antd'
+import { CalendarOutlined, EnvironmentOutlined, FilterOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons'
+import { Button, Card, Col, Empty, Row, Select, Skeleton, Space, Tag, Typography } from 'antd'
 import { useMemo, useState } from 'react'
+
 import { usePreferences } from '../../app/preferences'
+import { useSchedule } from '../../features/schedule/queries'
+import type { ScheduleEntry } from '../../features/schedule/types'
+import { addDays, formatWeekLabel, startOfWeek, weekRange } from '../../features/schedule/week'
+import { ErrorAlert } from '../../shared/ErrorAlert'
+import { PageHeader } from '../../shared/PageHeader'
 
 const { Title, Text } = Typography
-const scheduleItems = [
-  { day: 'MON', date: '14', month: 'September', time: '09:00 - 10:30', subject: 'Mathematics', teacher: 'Dr. Harper', room: 'A-101', group: 'Group A', tone: 'blue' },
-  { day: 'MON', date: '14', month: 'September', time: '11:00 - 12:30', subject: 'Physics', teacher: 'Prof. Lewis', room: 'B-204', group: 'Group B', tone: 'violet' },
-  { day: 'TUE', date: '15', month: 'September', time: '10:00 - 11:30', subject: 'Literature', teacher: 'Ms. Rivera', room: 'C-305', group: 'Group A', tone: 'orange' },
-]
+
+const TONES = ['blue', 'violet', 'orange'] as const
+
+/** Stable fallback so `useMemo` deps do not see a fresh `[]` every render. */
+const NO_ENTRIES: ScheduleEntry[] = []
+
+/** Stable colour per subject within a week — same subject, same stripe. */
+function toneFor(subject: string, subjects: string[]) {
+  return TONES[Math.max(0, subjects.indexOf(subject)) % TONES.length]
+}
 
 export function SchedulePage() {
-  const { t } = usePreferences()
-  const [group, setGroup] = useState('all')
-  const [subject, setSubject] = useState('all')
-  const filteredItems = useMemo(() => scheduleItems.filter((item) => (group === 'all' || item.group === group) && (subject === 'all' || item.subject === subject)), [group, subject])
-  const groupedItems = useMemo(() => {
-    const groups = new Map<string, typeof scheduleItems>()
-    filteredItems.forEach((item) => {
-      const key = `${item.day}-${item.date}-${item.month}`
-      groups.set(key, [...(groups.get(key) ?? []), item])
-    })
-    return [...groups.values()]
-  }, [filteredItems])
-  const resetFilters = () => { setGroup('all'); setSubject('all') }
+  const { t, language } = usePreferences()
+  const [monday, setMonday] = useState(() => startOfWeek(new Date()))
+  const [group, setGroup] = useState<string>()
+  const [subject, setSubject] = useState<string>()
 
-  return <div className="page-layout">
-    <header className="page-heading"><Text className="section-kicker">STUDENT TOOLS</Text><Title level={1}>{t('pages.scheduleTitle')}</Title><Text>{t('pages.scheduleSubtitle')}</Text></header>
-    <Card className="surface-card filter-card"><Row gutter={[16, 16]} align="bottom">
-      <Col xs={24} md={8}><Text strong>Course / group</Text><Select value={group} onChange={setGroup} options={[{ value: 'all', label: 'All groups' }, { value: 'Group A', label: 'Group A' }, { value: 'Group B', label: 'Group B' }]} /></Col>
-      <Col xs={24} md={8}><Text strong>Week</Text><Select defaultValue="current" options={[{ value: 'current', label: '14-18 September 2026' }]} /></Col>
-      <Col xs={24} md={8}><Text strong>Subject</Text><Select value={subject} onChange={setSubject} options={[{ value: 'all', label: 'All subjects' }, { value: 'Mathematics', label: 'Mathematics' }, { value: 'Physics', label: 'Physics' }, { value: 'Literature', label: 'Literature' }]} /></Col>
-    </Row><div className="filter-footer"><Text type="secondary"><FilterOutlined /> {filteredItems.length} classes shown</Text>{(group !== 'all' || subject !== 'all') && <Button type="link" onClick={resetFilters}>Clear filters</Button>}</div></Card>
-    {groupedItems.length ? groupedItems.map((items) => { const first = items[0]; return <section className="schedule-list" key={`${first.day}-${first.date}`}><div className="schedule-date"><span>{first.day}</span><strong>{first.date}</strong><div><b>{first.month}</b><Text type="secondary">{items.length} {items.length === 1 ? 'class' : 'classes'} planned</Text></div></div>{items.map((item) => <Card className={`surface-card lesson-card ${item.tone}`} key={`${item.subject}-${item.time}`}><div className="lesson-time"><CalendarOutlined />{item.time}</div><div className="lesson-main"><Tag>{item.group}</Tag><Title level={4}>{item.subject}</Title><span><UserOutlined /> {item.teacher}</span></div><div className="lesson-room"><EnvironmentOutlined /><span><Text type="secondary">Room</Text><b>{item.room}</b></span></div></Card>)}</section> }) : <Card className="surface-card empty-card"><Empty description="No classes match these filters."><Button onClick={resetFilters}>Show all classes</Button></Empty></Card>}
-  </div>
+  const range = useMemo(() => weekRange(monday), [monday])
+  // Filters are applied client-side on the week's data, so the option lists
+  // always reflect what exists that week and one query serves every combination.
+  const schedule = useSchedule(range)
+  const entries = schedule.data ?? NO_ENTRIES
+
+  const { groups, subjects } = useMemo(() => {
+    const g = new Set<string>()
+    const s = new Set<string>()
+    for (const item of entries) {
+      if (item.courseGroup) g.add(item.courseGroup)
+      s.add(item.subject)
+    }
+    return { groups: [...g].sort(), subjects: [...s].sort() }
+  }, [entries])
+
+  const filtered = useMemo(
+    () => entries.filter((item) => (!group || item.courseGroup === group) && (!subject || item.subject === subject)),
+    [entries, group, subject],
+  )
+
+  const byDay = useMemo(() => {
+    const map = new Map<string, ScheduleEntry[]>()
+    for (const item of filtered) {
+      map.set(item.date, [...(map.get(item.date) ?? []), item])
+    }
+    return [...map.entries()]
+  }, [filtered])
+
+  const dayName = useMemo(() => new Intl.DateTimeFormat(language, { weekday: 'short' }), [language])
+  const monthName = useMemo(() => new Intl.DateTimeFormat(language, { month: 'long' }), [language])
+  const filtersActive = Boolean(group || subject)
+  const isCurrentWeek = range.from === weekRange(startOfWeek(new Date())).from
+
+  const resetFilters = () => {
+    setGroup(undefined)
+    setSubject(undefined)
+  }
+
+  return (
+    <div className="page-layout">
+      <PageHeader kicker={t('schedule.kicker')} title={t('pages.scheduleTitle')} description={t('pages.scheduleSubtitle')} />
+
+      <Card className="surface-card filter-card">
+        <Row gutter={[16, 16]} align="bottom">
+          <Col xs={24} md={8}>
+            <Text strong>{t('schedule.week')}</Text>
+            <div className="week-nav">
+              <Button icon={<LeftOutlined />} aria-label={t('schedule.prevWeek')} onClick={() => setMonday(addDays(monday, -7))} />
+              <Text strong className="week-label">{formatWeekLabel(monday, language)}</Text>
+              <Button icon={<RightOutlined />} aria-label={t('schedule.nextWeek')} onClick={() => setMonday(addDays(monday, 7))} />
+              {!isCurrentWeek ? (
+                <Button type="link" onClick={() => setMonday(startOfWeek(new Date()))}>
+                  {t('schedule.thisWeek')}
+                </Button>
+              ) : null}
+            </div>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Text strong>{t('schedule.group')}</Text>
+            <Select
+              allowClear
+              value={group}
+              onChange={setGroup}
+              placeholder={t('schedule.allGroups')}
+              options={groups.map((value) => ({ value, label: value }))}
+            />
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Text strong>{t('schedule.subject')}</Text>
+            <Select
+              allowClear
+              value={subject}
+              onChange={setSubject}
+              placeholder={t('schedule.allSubjects')}
+              options={subjects.map((value) => ({ value, label: value }))}
+            />
+          </Col>
+        </Row>
+        <div className="filter-footer">
+          <Text type="secondary">
+            <FilterOutlined /> {t('schedule.classesShown', { count: filtered.length })}
+          </Text>
+          {filtersActive ? (
+            <Button type="link" onClick={resetFilters}>
+              {t('common.resetFilters')}
+            </Button>
+          ) : null}
+        </div>
+      </Card>
+
+      <ErrorAlert error={schedule.error} fallback={t('schedule.loadFailed')} />
+
+      {schedule.isPending ? (
+        <Card className="surface-card">
+          <Skeleton active paragraph={{ rows: 4 }} />
+        </Card>
+      ) : byDay.length > 0 ? (
+        <div className={schedule.isFetching ? 'is-refreshing' : undefined}>
+          {byDay.map(([date, items]) => {
+            const day = new Date(`${date}T00:00:00`)
+
+            return (
+              <section className="schedule-list" key={date}>
+                <div className="schedule-date">
+                  <span>{dayName.format(day)}</span>
+                  <strong>{day.getDate()}</strong>
+                  <div>
+                    <b>{monthName.format(day)}</b>
+                    <Text type="secondary">{t('schedule.classesPlanned', { count: items.length })}</Text>
+                  </div>
+                </div>
+                {items.map((item) => (
+                  <Card className={`surface-card lesson-card ${toneFor(item.subject, subjects)}`} key={item.id}>
+                    <div className="lesson-time">
+                      <CalendarOutlined />
+                      {item.startTime} – {item.endTime}
+                    </div>
+                    <div className="lesson-main">
+                      {item.courseGroup ? <Tag>{item.courseGroup}</Tag> : null}
+                      <Title level={4}>{item.subject}</Title>
+                      {item.teacher ? (
+                        <span>
+                          <UserOutlined /> {item.teacher}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="lesson-room">
+                      <EnvironmentOutlined />
+                      <span>
+                        <Text type="secondary">{t('schedule.room')}</Text>
+                        <b>{item.classroom ?? '-'}</b>
+                      </span>
+                    </div>
+                  </Card>
+                ))}
+              </section>
+            )
+          })}
+        </div>
+      ) : (
+        <Card className="surface-card empty-card">
+          <Empty description={filtersActive ? t('schedule.empty') : t('schedule.emptyWeek')}>
+            <Space>
+              {filtersActive ? <Button onClick={resetFilters}>{t('schedule.showAll')}</Button> : null}
+              {!isCurrentWeek ? <Button onClick={() => setMonday(startOfWeek(new Date()))}>{t('schedule.thisWeek')}</Button> : null}
+            </Space>
+          </Empty>
+        </Card>
+      )}
+    </div>
+  )
 }

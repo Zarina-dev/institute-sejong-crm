@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 
+import { setApiLanguage } from '../api/client'
 import {
   en,
   getLoadedDictionary,
@@ -83,6 +84,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
     document.documentElement.lang = language
+    setApiLanguage(language)
 
     let cancelled = false
 
