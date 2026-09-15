@@ -82,7 +82,8 @@ export function PublicLayout() {
           <NavLink to="/" className="brand" aria-label={t('brand.name')}>
             <BrandMark />
             <span>
-              <strong>{t('brand.name')}</strong>
+              <strong className="brand-name--full">{t('brand.name')}</strong>
+              <strong className="brand-name--short">{t('brand.short')}</strong>
               <small>{t('brand.tagline')}</small>
             </span>
           </NavLink>

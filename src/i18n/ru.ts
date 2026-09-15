@@ -3,6 +3,7 @@ import type { LocaleDictionary } from './index'
 const ru: LocaleDictionary = {
   brand: {
     name: 'Институт короля Седжона Ош 1',
+    short: 'КСИ Ош 1',
     tagline: 'корейский язык и культура · Ош, Кыргызстан',
     footer: 'Учите корейский. Откройте Корею.',
   },

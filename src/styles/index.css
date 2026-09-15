@@ -175,6 +175,15 @@
   color: var(--color-primary-text);
 }
 
+/* Korean wraps between words, never inside one ("한/국문화"). */
+:lang(ko) h1,
+:lang(ko) h2,
+:lang(ko) h3,
+:lang(ko) h4 {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 /* ==========================================================================
    Public site chrome — header, nav, footer
    ========================================================================== */
@@ -209,8 +218,7 @@
   text-decoration: none;
 }
 
-/* KSI symbol tile. The Foundation's CI is drawn on white, so the tile stays
-   white in both themes and on the dark navigation rail. */
+/* KSI symbol. Drawn without a tile — the mark reads on light and dark alike. */
 .brand-mark {
   display: inline-grid;
   place-items: center;
@@ -218,14 +226,17 @@
   width: 34px;
   height: 34px;
   border-radius: var(--radius-md);
-  background:'transparent';
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-xs);
+  background: transparent;
 }
 
 .brand-mark img {
   display: block;
   user-select: none;
+}
+
+/* Both names are rendered; specificity must beat `.brand strong` below. */
+.brand .brand-name--short {
+  display: none;
 }
 
 .brand strong {
@@ -1244,7 +1255,7 @@
   letter-spacing: var(--tracking-tight);
 }
 
-.about-hero p {
+.about-hero p.ant-typography {
   max-width: 58ch;
   color: var(--brand-100);
   font-size: var(--text-lg);
@@ -1900,8 +1911,13 @@
 }
 
 @media (max-width: 520px) {
-  .brand small {
+  .brand small,
+  .brand .brand-name--full {
     display: none;
+  }
+
+  .brand .brand-name--short {
+    display: block;
   }
 
   /* Header keeps brand · portal · menu; theme and language move into the

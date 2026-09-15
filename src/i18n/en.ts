@@ -11,6 +11,7 @@
 export const en = {
   brand: {
     name: 'King Sejong Institute Osh 1',
+    short: 'KSI Osh 1',
     tagline: 'Korean language & culture · Osh, Kyrgyzstan',
     footer: 'Learn Korean. Discover Korea.',
   },

@@ -3,6 +3,7 @@ import type { LocaleDictionary } from './index'
 const ko: LocaleDictionary = {
   brand: {
     name: '오시 1 세종학당',
+    short: '오시 1 세종학당',
     tagline: '한국어와 한국문화 · 키르기스스탄 오시',
     footer: '한국어를 배우고, 한국을 만나다.',
   },
