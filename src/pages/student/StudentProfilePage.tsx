@@ -1,25 +1,36 @@
-import { Card, Typography } from 'antd'
-import { useSession } from '../../auth/useSession'
+import { Card, Descriptions, Tag } from 'antd'
 
-const { Title, Paragraph, Text } = Typography
+import { useSession } from '../../auth/useSession'
+import { PageHeader } from '../../shared/PageHeader'
 
 export function StudentProfilePage() {
   const session = useSession()
   const student = session?.student
 
   return (
-    <div>
-      <Title level={2}>내 정보</Title>
-      <Paragraph>학생의 기본 정보, 현재 과정, 활동 상태, TOPIK 첨부 파일 정보를 확인하는 화면입니다.</Paragraph>
+    <div className="page-layout">
+      <PageHeader
+        level={2}
+        title="내 정보"
+        description="학생의 기본 정보, 현재 과정, 활동 상태, TOPIK 첨부 파일 정보를 확인하는 화면입니다."
+      />
+
       <Card className="surface-card">
-        <Paragraph><Text strong>이름:</Text> {student?.name ?? session?.displayName ?? '-'}</Paragraph>
-        <Paragraph><Text strong>학번:</Text> {student?.studentId ?? session?.studentId ?? '-'}</Paragraph>
-        <Paragraph><Text strong>이메일:</Text> {student?.email ?? '-'}</Paragraph>
-        <Paragraph><Text strong>전화번호:</Text> {student?.phone ?? '-'}</Paragraph>
-        <Paragraph><Text strong>과정:</Text> {student?.course ?? '-'}</Paragraph>
-        <Paragraph><Text strong>TOPIK 레벨:</Text> {student?.level ?? '-'}</Paragraph>
-        <Paragraph><Text strong>입학 날짜:</Text> {student?.admissionDate ?? '-'}</Paragraph>
-        <Paragraph><Text strong>상태:</Text> {student?.status === 'active' ? '활동 중' : student?.status === 'inactive' ? '비활동' : '-'}</Paragraph>
+        <Descriptions column={{ xs: 1, md: 2 }} bordered size="middle">
+          <Descriptions.Item label="이름">{student?.name ?? session?.displayName ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label="학번">{student?.studentId ?? session?.studentId ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label="이메일">{student?.email ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label="전화번호">{student?.phone ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label="과정">{student?.course ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label="TOPIK 레벨">{student?.level ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label="입학 날짜">{student?.admissionDate ?? '-'}</Descriptions.Item>
+          <Descriptions.Item label="상태">
+            {student?.status === 'active' ? <Tag color="green">활동 중</Tag> : student?.status === 'inactive' ? <Tag>비활동</Tag> : '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="TOPIK 파일" span={2}>
+            {student?.topikFiles?.length ? student.topikFiles.map((file) => <Tag key={file.id}>{file.name}</Tag>) : '첨부 없음'}
+          </Descriptions.Item>
+        </Descriptions>
       </Card>
     </div>
   )

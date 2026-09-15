@@ -1,93 +1,95 @@
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
-import { Alert, Button, Card, Space, Table, Tag, Typography } from 'antd'
-import { useCallback, useEffect, useState } from 'react'
-import { approveApplication, getApplications, rejectApplication } from '../../features/courses/api'
-import type { CourseApplicationRecord } from '../../features/courses/types'
+import { App, Card, Segmented, Space, Typography } from 'antd'
+import { useCallback, useMemo, useState } from 'react'
 
-const { Title, Text } = Typography
+import { ApplicationsTable } from '../../features/courses/ApplicationsTable'
+import { applicationStatusMeta } from '../../features/courses/applicationStatus'
+import { useApplications, useSetApplicationStatus } from '../../features/courses/queries'
+import type { ApplicationStatus, CourseApplicationRecord } from '../../features/courses/types'
+import { ErrorAlert } from '../../shared/ErrorAlert'
+import { getErrorMessage } from '../../shared/errors'
+import { PageHeader } from '../../shared/PageHeader'
+
+const { Text } = Typography
+
+type StatusFilter = ApplicationStatus | 'all'
 
 export function ApplicationsAdminPage() {
-  const [applications, setApplications] = useState<CourseApplicationRecord[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { message } = App.useApp()
+  const applications = useApplications()
+  const setStatus = useSetApplicationStatus()
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
 
-  const loadApplications = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+  const counts = useMemo(() => {
+    const result: Record<StatusFilter, number> = { all: 0, pending: 0, approved: 0, rejected: 0, enrolled: 0 }
 
-    try {
-      const response = await getApplications()
-      setApplications(response)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '수강 신청 정보를 불러오지 못했습니다.')
-    } finally {
-      setLoading(false)
+    for (const application of applications.data ?? []) {
+      result.all += 1
+      result[application.status ?? 'pending'] += 1
     }
-  }, [])
 
-  useEffect(() => {
-    void loadApplications()
-  }, [loadApplications])
+    return result
+  }, [applications.data])
 
-  const handleApprove = async (id: string) => {
-    try {
-      await approveApplication(id)
-      await loadApplications()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '승인 처리에 실패했습니다.')
-    }
-  }
+  const visible = useMemo(() => {
+    const list = applications.data ?? []
+    return statusFilter === 'all' ? list : list.filter((item) => (item.status ?? 'pending') === statusFilter)
+  }, [applications.data, statusFilter])
 
-  const handleReject = async (id: string) => {
-    try {
-      await rejectApplication(id)
-      await loadApplications()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '반려 처리에 실패했습니다.')
-    }
-  }
-
-  const columns = [
-    { title: '신청자', dataIndex: 'applicantName', key: 'applicantName' },
-    { title: '이메일', dataIndex: 'applicantEmail', key: 'applicantEmail' },
-    { title: '연락처', dataIndex: 'phone', key: 'phone', render: (value?: string | null) => value || '-' },
-    { title: '희망 과정', dataIndex: 'course', key: 'course', render: (course?: { title?: string }) => course?.title || '-' },
-    { title: '목적', dataIndex: 'goal', key: 'goal', render: (value?: string | null) => value || '-' },
-    {
-      title: '상태',
-      dataIndex: 'status',
-      key: 'status',
-      render: (value?: string | null) => {
-        if (value === 'approved') return <Tag color="green">승인</Tag>
-        if (value === 'rejected') return <Tag color="red">반려</Tag>
-        if (value === 'enrolled') return <Tag color="blue">수강 등록</Tag>
-        return <Tag color="gold">대기</Tag>
-      },
+  const change = useCallback(
+    (application: CourseApplicationRecord, status: 'approved' | 'rejected') => {
+      setStatus.mutate(
+        { id: application.id, status },
+        {
+          onSuccess: () => message.success(`${application.applicantName} — ${applicationStatusMeta[status].label} 처리되었습니다.`),
+          onError: (err) => message.error(getErrorMessage(err, '상태 변경에 실패했습니다.')),
+        },
+      )
     },
-    {
-      title: '관리',
-      key: 'actions',
-      render: (_: unknown, record: CourseApplicationRecord) => (
-        <Space>
-          <Button size="small" icon={<CheckOutlined />} onClick={() => handleApprove(record.id)} disabled={record.status === 'approved'}>승인</Button>
-          <Button size="small" danger icon={<CloseOutlined />} onClick={() => handleReject(record.id)} disabled={record.status === 'rejected'}>반려</Button>
-        </Space>
-      ),
-    },
-  ]
+    [message, setStatus],
+  )
+
+  const handleApprove = useCallback((application: CourseApplicationRecord) => change(application, 'approved'), [change])
+  const handleReject = useCallback((application: CourseApplicationRecord) => change(application, 'rejected'), [change])
+
+  const filterOptions = useMemo(
+    (): Array<{ value: StatusFilter; label: string }> => [
+      { value: 'all', label: `전체 ${counts.all}` },
+      { value: 'pending', label: `대기 ${counts.pending}` },
+      { value: 'approved', label: `승인 ${counts.approved}` },
+      { value: 'enrolled', label: `수강 등록 ${counts.enrolled}` },
+      { value: 'rejected', label: `반려 ${counts.rejected}` },
+    ],
+    [counts],
+  )
 
   return (
     <div className="page-layout">
-      <header className="page-heading">
-        <Text className="section-kicker">ADMIN</Text>
-        <Title level={1}>수강 신청 관리</Title>
-        <Text>학생의 수강 신청을 검토하고 승인/반려 상태를 관리할 수 있습니다.</Text>
-      </header>
+      <PageHeader
+        kicker="ADMIN"
+        title="수강 신청 관리"
+        description="학생의 수강 신청을 검토하고 승인/반려 상태를 관리할 수 있습니다."
+      />
 
-      {error ? <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} /> : null}
+      <Card className="surface-card filter-card">
+        <Space wrap size="middle" className="filter-row">
+          <Segmented<StatusFilter> options={filterOptions} value={statusFilter} onChange={setStatusFilter} />
+          <Text type="secondary">
+            {counts.pending > 0 ? `${counts.pending}건이 검토를 기다리고 있습니다.` : '대기 중인 신청이 없습니다.'}
+          </Text>
+        </Space>
+      </Card>
+
+      <ErrorAlert error={applications.error} fallback="수강 신청 정보를 불러오지 못했습니다." />
 
       <Card className="surface-card">
-        <Table className="admin-table" columns={columns} dataSource={applications} rowKey="id" pagination={{ pageSize: 10 }} loading={loading} scroll={{ x: 1200 }} />
+        <ApplicationsTable
+          applications={visible}
+          loading={applications.isPending}
+          busyId={setStatus.isPending ? setStatus.variables?.id : null}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          emptyText={statusFilter === 'all' ? '신청 내역이 없습니다.' : '이 상태의 신청이 없습니다.'}
+        />
       </Card>
     </div>
   )

@@ -1,2 +1,0 @@
-import{j as r}from"./index-7TVufheY.js";import{T as e,p as a}from"./antd-eGZK-LOA.js";import"./react-B3OjKfkA.js";const{Title:i,Paragraph:s}=e;function l(){return r.jsxs("div",{children:[r.jsx(i,{level:2,children:"시험 결과"}),r.jsx(s,{children:"최근 시험 성적과 평가 결과를 한눈에 확인할 수 있는 화면입니다."}),r.jsxs(a,{className:"surface-card",children:[r.jsx(s,{children:"최근 시험 결과입니다."}),r.jsx(s,{children:"중간고사: 92점 (A)"})]})]})}export{l as StudentExamResultsPage};
-//# sourceMappingURL=StudentExamResultsPage-DepUr2Dt.js.map

@@ -1,6 +1,6 @@
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { App, Button, Divider, Input, Select, Tooltip } from 'antd'
-import { useState, type MouseEvent } from 'react'
+import { memo, useState, type MouseEvent } from 'react'
 
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import {
@@ -37,8 +37,12 @@ function swallow(event: MouseEvent) {
  * in the dropdown footer adds an item, and each option carries a delete
  * button. Backed by the shared catalog store, so every other picker in the
  * app reflects the change immediately.
+ *
+ * Memoised because it sits in filter bars that re-render on every keystroke
+ * of the search box; its own props only change when the catalog or the
+ * selected value does.
  */
-export function EditableSelect({
+export const EditableSelect = memo(function EditableSelect({
   kind,
   options,
   value,
@@ -154,4 +158,4 @@ export function EditableSelect({
       )}
     />
   )
-}
+})

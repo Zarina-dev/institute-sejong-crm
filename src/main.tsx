@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { App as AntdApp, ConfigProvider } from 'antd'
 import enUS from 'antd/locale/en_US'
 import koKR from 'antd/locale/ko_KR'
@@ -8,6 +9,7 @@ import ruRU from 'antd/locale/ru_RU'
 
 import { AppRouter } from './app/router'
 import { PreferencesProvider, usePreferences, type Language } from './app/preferences'
+import { queryClient } from './app/queryClient'
 import { getAntdTheme } from './app/theme'
 import './styles/index.css'
 
@@ -41,10 +43,12 @@ if (!container) {
 
 createRoot(container).render(
   <StrictMode>
-    <BrowserRouter>
-      <PreferencesProvider>
-        <ThemedApp />
-      </PreferencesProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <PreferencesProvider>
+          <ThemedApp />
+        </PreferencesProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   </StrictMode>,
 )

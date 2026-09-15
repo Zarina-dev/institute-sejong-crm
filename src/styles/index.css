@@ -83,6 +83,76 @@
   font-size: var(--text-md);
 }
 
+/* Title + optional right-hand slot (status badge, primary action). */
+.page-heading-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+}
+
+.page-heading-row h1.ant-typography,
+.page-heading-row h2.ant-typography {
+  margin: 0 0 var(--space-2);
+}
+
+.page-heading h2.ant-typography {
+  color: var(--color-text);
+  font-size: clamp(26px, 3vw, 32px);
+  letter-spacing: var(--tracking-tight);
+}
+
+/* Generic "stacked lines in a table cell" — replaces inline flex styles. */
+.cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.table-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-6);
+}
+
+/* Lists dim while a background refetch is in flight, instead of collapsing
+   to a spinner and re-appearing — the previous page stays readable. */
+.is-refreshing {
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+/* Nested applications table inside an expanded course row. */
+.expanded-panel {
+  padding: var(--space-2) var(--space-2) var(--space-1);
+}
+
+.expanded-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.filter-footer--inline {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+  min-height: 38px;
+}
+
+.filter-row {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.login-feedback:not(:empty) {
+  margin-bottom: var(--space-4);
+}
+
 /* Square, tinted icon tile. Used by quick links, values, stats, files. */
 .icon-tile,
 .quick-icon,
@@ -843,14 +913,91 @@
   font-size: var(--text-xl);
 }
 
+.material-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.material-meta .ant-tag {
+  margin: 0;
+}
+
 .material-footer {
   display: flex;
   width: 100%;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-3);
   margin-top: auto;
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-border-subtle);
+}
+
+.material-footer > .ant-typography {
+  min-width: 0;
+  flex: 1;
+}
+
+/* --- Course cards (public + student portal) --- */
+
+.course-card .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.course-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
+.course-facts dt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.course-facts dd {
+  margin: 2px 0 0;
+  color: var(--color-text);
+  font-size: var(--text-base);
+  overflow-wrap: anywhere;
+}
+
+.course-card-footer {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.application-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+/* --- Student dashboard --- */
+
+.dash-card .ant-card-head-title .anticon {
+  margin-right: var(--space-2);
+  color: var(--color-primary-text);
+}
+
+.dash-card p.ant-typography:last-child {
+  margin-bottom: 0;
 }
 
 .material-footer .ant-btn-link {

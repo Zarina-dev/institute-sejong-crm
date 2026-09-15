@@ -1,90 +1,126 @@
-import { Alert, Button, Card, Col, Empty, Row, Typography } from 'antd'
-import { useEffect, useState } from 'react'
-import { createApplication, getCourses } from '../../features/courses/api'
-import type { CourseRecord } from '../../features/courses/types'
+import { SendOutlined } from '@ant-design/icons'
+import { App, Button, Card, Col, Empty, Form, Input, Modal, Row, Skeleton } from 'antd'
+import { useCallback, useState } from 'react'
 
-const { Title, Text, Paragraph } = Typography
+import { usePreferences } from '../../app/preferences'
+import { CourseCard } from '../../features/courses/CourseCard'
+import { useCourses, useCreateApplication } from '../../features/courses/queries'
+import type { CourseRecord } from '../../features/courses/types'
+import { ErrorAlert } from '../../shared/ErrorAlert'
+import { getErrorMessage } from '../../shared/errors'
+import { PageHeader } from '../../shared/PageHeader'
+
+type ApplyFormValues = {
+  applicantName: string
+  applicantEmail: string
+  phone?: string
+  goal?: string
+}
 
 export function CoursesPage() {
-  const [courses, setCourses] = useState<CourseRecord[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { t } = usePreferences()
+  const { message } = App.useApp()
+  const courses = useCourses(true)
+  const createApplication = useCreateApplication()
 
-  const loadCourses = async () => {
-    try {
-      const response = await getCourses(true)
-      setCourses(response)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '과정을 불러오지 못했습니다.')
-    } finally {
-      setLoading(false)
+  // The course being applied for; null = modal closed. Replaces a chain of
+  // window.prompt() calls that could not be styled, validated or cancelled
+  // half-way without losing what was typed.
+  const [applyingTo, setApplyingTo] = useState<CourseRecord | null>(null)
+  const [form] = Form.useForm<ApplyFormValues>()
+
+  const openApply = useCallback((course: CourseRecord) => setApplyingTo(course), [])
+
+  const closeApply = useCallback(() => {
+    setApplyingTo(null)
+    form.resetFields()
+  }, [form])
+
+  const submitApplication = async () => {
+    if (!applyingTo) {
+      return
     }
-  }
 
-  useEffect(() => {
-    void loadCourses()
-  }, [])
+    const values = await form.validateFields()
 
-  const handleApply = async (courseId: string) => {
     try {
-      const studentName = window.prompt('신청자 이름을 입력하세요.')?.trim()
-      if (!studentName) return
-
-      const email = window.prompt('이메일을 입력하세요.')?.trim()
-      if (!email) return
-
-      await createApplication({
-        courseId,
-        applicantName: studentName,
-        applicantEmail: email,
-      })
-
-      window.alert('수강 신청이 접수되었습니다.')
+      await createApplication.mutateAsync({ courseId: applyingTo.id, ...values })
+      message.success(`"${applyingTo.title}" 수강 신청이 접수되었습니다.`)
+      closeApply()
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : '신청 처리에 실패했습니다.')
+      message.error(getErrorMessage(err, '신청 처리에 실패했습니다.'))
     }
   }
 
   return (
     <div className="page-layout">
-      <header className="page-heading">
-        <Text className="section-kicker">PROGRAMS</Text>
-        <Title level={1}>수강</Title>
-        <Text>공개 중인 수강 과정을 확인하고 신청할 수 있습니다.</Text>
-      </header>
+      <PageHeader kicker={t('courses')} title="수강" description="공개 중인 수강 과정을 확인하고 신청할 수 있습니다." />
 
-      {error ? <Alert type="error" message={error} showIcon /> : null}
+      <ErrorAlert error={courses.error} fallback="과정을 불러오지 못했습니다." />
 
-      {loading ? (
-        <Text>과정을 불러오는 중입니다...</Text>
-      ) : courses.length > 0 ? (
+      {courses.isPending ? (
         <Row gutter={[16, 16]}>
-          {courses.map((course) => (
-            <Col xs={24} md={12} lg={8} key={course.id}>
-              <Card className="surface-card" title={course.title}>
-                <Paragraph>{course.description || '과정 설명이 없습니다.'}</Paragraph>
-                <Text strong>과목:</Text> {course.subject}
-                <br />
-                <Text strong>강사:</Text> {course.teacherName || '-'}
-                <br />
-                <Text strong>시간:</Text> {course.schedule || '-'}
-                <br />
-                <Text strong>강의실:</Text> {course.classroom || '-'}
-                <br />
-                <Text strong>기간:</Text> {course.startDate || '-'} ~ {course.endDate || '-'}
-                <br />
-                <Button type="primary" style={{ marginTop: 16 }} onClick={() => handleApply(course.id)}>
-                  수강 신청
-                </Button>
+          {Array.from({ length: 3 }, (_, index) => (
+            <Col xs={24} md={12} lg={8} key={index}>
+              <Card className="surface-card">
+                <Skeleton active paragraph={{ rows: 5 }} />
               </Card>
             </Col>
           ))}
         </Row>
+      ) : courses.data && courses.data.length > 0 ? (
+        <Row gutter={[16, 16]}>
+          {courses.data.map((course) => (
+            <Col xs={24} md={12} lg={8} key={course.id}>
+              <CourseCard
+                course={course}
+                footer={
+                  <Button type="primary" icon={<SendOutlined />} block onClick={() => openApply(course)}>
+                    수강 신청
+                  </Button>
+                }
+              />
+            </Col>
+          ))}
+        </Row>
       ) : (
-        <Card className="surface-card">
+        <Card className="surface-card empty-card">
           <Empty description="공개된 과정이 없습니다." />
         </Card>
       )}
+
+      <Modal
+        title={applyingTo ? `수강 신청 — ${applyingTo.title}` : '수강 신청'}
+        open={Boolean(applyingTo)}
+        onOk={submitApplication}
+        onCancel={closeApply}
+        okText="신청하기"
+        cancelText="취소"
+        confirmLoading={createApplication.isPending}
+        destroyOnHidden
+      >
+        <Form form={form} layout="vertical" disabled={createApplication.isPending}>
+          <Form.Item name="applicantName" label="이름" rules={[{ required: true, message: '이름을 입력하세요.' }]}>
+            <Input autoComplete="name" />
+          </Form.Item>
+          <Form.Item
+            name="applicantEmail"
+            label="이메일"
+            rules={[
+              { required: true, message: '이메일을 입력하세요.' },
+              { type: 'email', message: '올바른 이메일 형식이 아닙니다.' },
+            ]}
+          >
+            <Input autoComplete="email" inputMode="email" />
+          </Form.Item>
+          <Form.Item name="phone" label="연락처">
+            <Input autoComplete="tel" inputMode="tel" />
+          </Form.Item>
+          <Form.Item name="goal" label="수강 목적">
+            <Input.TextArea rows={3} maxLength={120} showCount />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   )
 }

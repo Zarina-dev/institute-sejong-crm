@@ -25,13 +25,13 @@ export default defineConfig({
     // Ant Design alone is ~950 kB raw / ~300 kB gzipped and is deliberately
     // isolated in its own long-lived chunk below, so the default 500 kB
     // warning would fire on every build with nothing to act on.
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 1100,
     rollupOptions: {
       output: {
         // Keep the large, rarely-changing vendor code in its own chunk so a
         // change to app code does not invalidate it in the browser cache.
         manualChunks: {
-          react: ['react', 'react-dom', 'react-router-dom'],
+          react: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
           antd: ['antd', '@ant-design/icons'],
         },
       },

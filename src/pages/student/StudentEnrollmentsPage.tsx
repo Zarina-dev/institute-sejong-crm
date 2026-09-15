@@ -1,59 +1,62 @@
-import { Alert, Card, Typography } from 'antd'
-import { useEffect, useState } from 'react'
-import { useSession } from '../../auth/useSession'
-import { getStudentEnrollments } from '../../features/courses/api'
-import type { EnrollmentRecord } from '../../features/courses/types'
+import { Card, Empty, List, Skeleton, Tag, Typography } from 'antd'
 
-const { Title, Paragraph, Text } = Typography
+import { useSession } from '../../auth/useSession'
+import { useStudentEnrollments } from '../../features/courses/queries'
+import type { EnrollmentRecord } from '../../features/courses/types'
+import { ErrorAlert } from '../../shared/ErrorAlert'
+import { formatDate } from '../../shared/format'
+import { PageHeader } from '../../shared/PageHeader'
+
+const { Text } = Typography
+
+const statusMeta: Record<NonNullable<EnrollmentRecord['status']>, { label: string; color: string }> = {
+  active: { label: '수강 중', color: 'green' },
+  completed: { label: '수료', color: 'blue' },
+  paused: { label: '휴학', color: 'gold' },
+}
 
 export function StudentEnrollmentsPage() {
   const session = useSession()
-  const [enrollments, setEnrollments] = useState<EnrollmentRecord[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const load = async () => {
-      const studentId = session?.student?.id ?? session?.studentId
-
-      if (!studentId) {
-        setLoading(false)
-        return
-      }
-
-      try {
-        const response = await getStudentEnrollments(studentId)
-        setEnrollments(response)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : '수강 등록 정보를 불러오지 못했습니다.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    void load()
-  }, [session?.student?.id, session?.studentId])
+  const studentId = session?.student?.id ?? session?.studentId
+  const enrollments = useStudentEnrollments(studentId)
 
   return (
-    <div>
-      <Title level={2}>수강 등록 정보</Title>
-      <Paragraph>관리자 승인 완료 후 등록된 과정과 현재 수강 상태를 확인할 수 있는 화면입니다.</Paragraph>
+    <div className="page-layout">
+      <PageHeader
+        level={2}
+        title="수강 등록 정보"
+        description="관리자 승인 완료 후 등록된 과정과 현재 수강 상태를 확인할 수 있습니다."
+      />
+
+      <ErrorAlert error={enrollments.error} fallback="수강 등록 정보를 불러오지 못했습니다." />
+
       <Card className="surface-card">
-        <Paragraph>현재 학생이 승인되어 등록된 과정 정보입니다.</Paragraph>
-        {error ? <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} /> : null}
-        {loading ? (
-          <Text>수강 정보를 불러오는 중입니다...</Text>
-        ) : enrollments.length > 0 ? (
-          enrollments.map((enrollment) => (
-            <div key={enrollment.id} style={{ marginBottom: 12 }}>
-              <Text strong>{enrollment.course?.title || '과정명 미확인'}</Text>
-              <div style={{ color: '#64748b' }}>
-                상태: {enrollment.status || 'active'} · 등록일: {new Date(enrollment.createdAt).toLocaleDateString('ko-KR')}
-              </div>
-            </div>
-          ))
+        {enrollments.isPending && studentId ? (
+          <Skeleton active paragraph={{ rows: 3 }} />
+        ) : enrollments.data && enrollments.data.length > 0 ? (
+          <List
+            dataSource={enrollments.data}
+            renderItem={(enrollment) => {
+              const meta = statusMeta[enrollment.status ?? 'active']
+
+              return (
+                <List.Item key={enrollment.id}>
+                  <List.Item.Meta
+                    title={enrollment.course?.title ?? '과정명 미확인'}
+                    description={
+                      <>
+                        {enrollment.course?.subject ? <Text type="secondary">{enrollment.course.subject} · </Text> : null}
+                        <Text type="secondary">등록일 {formatDate(enrollment.createdAt)}</Text>
+                      </>
+                    }
+                  />
+                  <Tag color={meta.color}>{meta.label}</Tag>
+                </List.Item>
+              )
+            }}
+          />
         ) : (
-          <Text>등록된 과정이 아직 없습니다.</Text>
+          <Empty description="등록된 과정이 아직 없습니다." />
         )}
       </Card>
     </div>
