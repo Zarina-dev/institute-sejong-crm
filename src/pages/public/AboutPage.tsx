@@ -1,9 +1,26 @@
-import { ArrowRightOutlined, BookOutlined, CalendarOutlined, GlobalOutlined, LinkOutlined, ReadOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons'
-import { Button, Card, Col, Row, Tag, Typography } from 'antd'
+import {
+  ArrowRightOutlined,
+  BookOutlined,
+  CalendarOutlined,
+  EnvironmentOutlined,
+  GlobalOutlined,
+  LinkOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  ReadOutlined,
+  TeamOutlined,
+  TrophyOutlined,
+  UserOutlined,
+} from '@ant-design/icons'
+import { Avatar, Button, Card, Col, Empty, Row, Skeleton, Tag, Typography } from 'antd'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
+import { assetUrl } from '../../api/client'
 import { usePreferences, type TranslationKey } from '../../app/preferences'
+import { usePublishedStaff } from '../../features/staff/queries'
+import type { StaffMember } from '../../features/staff/types'
+import { ErrorAlert } from '../../shared/ErrorAlert'
 
 const { Title, Paragraph, Text } = Typography
 
@@ -32,76 +49,153 @@ const contact = {
   address: 'Osh, Kyrgyzstan',
 }
 
-function FactGrid({ items, t }: { items: Fact[]; t: (key: TranslationKey) => string }) {
+const NO_STAFF: StaffMember[] = []
+
+/**
+ * Facts as a numbered list rather than three floating cards: one column of
+ * generous text is far easier to read than three narrow ones, and the icon
+ * column gives the eye an anchor per item.
+ */
+function FactList({ items, t }: { items: Fact[]; t: (key: TranslationKey) => string }) {
   return (
-    <Row gutter={[18, 18]}>
+    <ol className="about-facts">
       {items.map((item) => (
-        <Col xs={24} md={8} key={item.title}>
-          <Card className="surface-card value-card">
-            <span aria-hidden="true">{item.icon}</span>
+        <li key={item.title}>
+          <span className="about-fact-icon" aria-hidden="true">
+            {item.icon}
+          </span>
+          <div>
             <Title level={3}>{t(item.title)}</Title>
-            <Paragraph type="secondary">{t(item.text)}</Paragraph>
-          </Card>
-        </Col>
+            <Paragraph>{t(item.text)}</Paragraph>
+          </div>
+        </li>
       ))}
-    </Row>
+    </ol>
+  )
+}
+
+function StaffCard({ member }: { member: StaffMember }) {
+  return (
+    <Card className="surface-card staff-card">
+      <Avatar size={112} src={member.photoUrl ? assetUrl(member.photoUrl) : undefined} icon={<UserOutlined />} alt="" />
+      <Title level={3}>{member.name}</Title>
+      <Text className="staff-card__position">{member.position}</Text>
+      {member.bio ? <Paragraph className="staff-card__bio">{member.bio}</Paragraph> : null}
+      {member.email ? (
+        <a className="staff-card__email" href={`mailto:${member.email}`}>
+          <MailOutlined /> {member.email}
+        </a>
+      ) : null}
+    </Card>
   )
 }
 
 export function AboutPage() {
   const { t } = usePreferences()
+  const staff = usePublishedStaff()
+  const members = staff.data ?? NO_STAFF
 
   return (
     <div className="page-layout about-page">
       <header className="about-hero">
-        <Tag>{t('about.kicker')}</Tag>
-        <Title level={1}>{t('about.title')}</Title>
-        <Paragraph>{t('about.copy')}</Paragraph>
-        <Link to="/schedule">
-          <Button type="primary" size="large" icon={<ArrowRightOutlined />} iconPosition="end">
-            {t('about.cta')}
-          </Button>
-        </Link>
+        <div className="about-hero__copy">
+          <Tag>{t('about.kicker')}</Tag>
+          <Title level={1}>{t('about.title')}</Title>
+          <Paragraph>{t('about.copy')}</Paragraph>
+          <Link to="/schedule">
+            <Button type="primary" size="large" icon={<ArrowRightOutlined />} iconPosition="end">
+              {t('about.cta')}
+            </Button>
+          </Link>
+        </div>
+        <img src="/ksi-symbol.svg" alt="" className="about-hero__symbol" aria-hidden="true" />
       </header>
 
       {/* ---- 세종학당: the network this institute belongs to ---- */}
-      <section className="about-block">
-        <div className="section-heading">
-          <div>
-            <Text className="section-kicker">{t('about.ksi.kicker')}</Text>
-            <Title level={2}>{t('about.ksi.title')}</Title>
-          </div>
-          <img src="/ksif-logo.svg" alt="King Sejong Institute Foundation" className="about-ksif-logo" />
+      <section className="about-section" aria-labelledby="about-ksi">
+        <div className="about-section__intro">
+          <Text className="section-kicker">{t('about.ksi.kicker')}</Text>
+          <Title level={2} id="about-ksi">
+            {t('about.ksi.title')}
+          </Title>
+          <Paragraph className="about-lead">{t('about.ksi.intro')}</Paragraph>
+          <a className="about-link" href={KSIF_URL} target="_blank" rel="noopener noreferrer">
+            <img src="/ksif-logo.svg" alt="" className="about-ksif-logo" />
+            <span>
+              <LinkOutlined /> {t('about.ksi.link')}
+            </span>
+          </a>
         </div>
-        <Paragraph className="about-intro">{t('about.ksi.intro')}</Paragraph>
-        <FactGrid items={ksiFacts} t={t} />
-        <a className="about-link" href={KSIF_URL} target="_blank" rel="noopener noreferrer">
-          <LinkOutlined /> {t('about.ksi.link')}
-        </a>
+        <FactList items={ksiFacts} t={t} />
       </section>
 
       {/* ---- 오시 1 세종학당: this institute ---- */}
-      <section className="about-block">
+      <section className="about-section about-section--accent" aria-labelledby="about-osh">
+        <div className="about-section__intro">
+          <Text className="section-kicker">{t('about.osh.kicker')}</Text>
+          <Title level={2} id="about-osh">
+            {t('about.osh.title')}
+          </Title>
+          <Paragraph className="about-lead">{t('about.osh.intro')}</Paragraph>
+        </div>
+        <FactList items={oshItems} t={t} />
+      </section>
+
+      {/* ---- 교직원: managed from /admin/staff ---- */}
+      <section className="about-staff" aria-labelledby="about-staff">
         <div className="section-heading">
           <div>
-            <Text className="section-kicker">{t('about.osh.kicker')}</Text>
-            <Title level={2}>{t('about.osh.title')}</Title>
+            <Text className="section-kicker">{t('about.staffKicker')}</Text>
+            <Title level={2} id="about-staff">
+              {t('about.staffTitle')}
+            </Title>
           </div>
         </div>
-        <Paragraph className="about-intro">{t('about.osh.intro')}</Paragraph>
-        <FactGrid items={oshItems} t={t} />
+        <Paragraph className="about-lead">{t('about.staffIntro')}</Paragraph>
+
+        <ErrorAlert error={staff.error} fallback={t('staff.loadFailed')} />
+
+        {staff.isPending ? (
+          <Row gutter={[18, 18]}>
+            {Array.from({ length: 3 }, (_, index) => (
+              <Col xs={24} sm={12} lg={8} key={index}>
+                <Card className="surface-card staff-card">
+                  <Skeleton active avatar={{ size: 112, shape: 'circle' }} paragraph={{ rows: 2 }} />
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        ) : members.length > 0 ? (
+          <Row gutter={[18, 18]}>
+            {members.map((member) => (
+              <Col xs={24} sm={12} lg={8} key={member.id}>
+                <StaffCard member={member} />
+              </Col>
+            ))}
+          </Row>
+        ) : staff.error ? null : (
+          <Card className="surface-card empty-card">
+            <Empty description={t('about.staffEmpty')} />
+          </Card>
+        )}
       </section>
 
       <Card className="surface-card contact-card">
         <div>
           <Text className="section-kicker">{t('about.contactKicker')}</Text>
           <Title level={2}>{t('about.contactTitle')}</Title>
-          <Paragraph type="secondary">{t('about.contactCopy')}</Paragraph>
+          <Paragraph>{t('about.contactCopy')}</Paragraph>
         </div>
         <div className="contact-details">
-          <a href={`mailto:${contact.email}`}>{contact.email}</a>
-          <a href={`tel:${contact.phone.replace(/\s+/g, '')}`}>{contact.phone}</a>
-          <Text type="secondary">{contact.address}</Text>
+          <a href={`mailto:${contact.email}`}>
+            <MailOutlined /> {contact.email}
+          </a>
+          <a href={`tel:${contact.phone.replace(/\s+/g, '')}`}>
+            <PhoneOutlined /> {contact.phone}
+          </a>
+          <Text>
+            <EnvironmentOutlined /> {contact.address}
+          </Text>
         </div>
       </Card>
     </div>

@@ -6,13 +6,13 @@ import {
   MoonOutlined,
   SunOutlined,
 } from '@ant-design/icons'
-import { Avatar, Button, Layout, Select, Tooltip, Typography } from 'antd'
+import { Avatar, Button, Layout, Select, Spin, Tooltip, Typography } from 'antd'
 import { useState, type ReactNode } from 'react'
 import { Link, Navigate, NavLink, Outlet, useNavigate } from 'react-router-dom'
 
 import { languages, usePreferences } from '../app/preferences'
 import { clearSession, type DemoRole } from '../auth/demoAuth'
-import { useSession } from '../auth/useSession'
+import { useSession, useSessionResolving } from '../auth/useSession'
 import { BrandMark } from '../shared/BrandMark'
 
 const { Content, Header, Sider } = Layout
@@ -47,9 +47,16 @@ type ShellLayoutProps = {
  */
 export function ShellLayout({ role, railSubtitle, title, navItems }: ShellLayoutProps) {
   const session = useSession()
+  const resolving = useSessionResolving()
   const navigate = useNavigate()
   const { language, setLanguage, theme, toggleTheme, t } = usePreferences()
   const [collapsed, setCollapsed] = useState(false)
+
+  // A tab opened from the public site receives the session over the
+  // BroadcastChannel a moment after load; don't bounce to /login before then.
+  if (!session && resolving) {
+    return <Spin className="shell-resolving" size="large" />
+  }
 
   if (!session || session.role !== role) {
     return <Navigate to="/login" replace />

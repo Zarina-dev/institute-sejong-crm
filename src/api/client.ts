@@ -14,6 +14,17 @@ export function apiUrl(endpoint: string) {
   return `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`
 }
 
+/** Origin of the API server, without the `/api` prefix — where `/uploads/…` is served from. */
+const ASSET_ORIGIN = API_BASE_URL.replace(/\/api$/, '')
+
+/**
+ * Absolute URL for a site-relative asset path stored by the API
+ * (`/uploads/images/…`). Absolute URLs pass through untouched.
+ */
+export function assetUrl(path: string) {
+  return /^https?:\/\//.test(path) ? path : `${ASSET_ORIGIN}${path.startsWith('/') ? '' : '/'}${path}`
+}
+
 function buildQueryString(params: QueryParams) {
   const searchParams = new URLSearchParams()
 

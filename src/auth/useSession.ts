@@ -1,6 +1,6 @@
-import { useSyncExternalStore } from 'react'
+﻿import { useSyncExternalStore } from 'react'
 
-import { getSession, subscribeToSession, type DemoSession } from './demoAuth'
+import { getSession, isSessionResolving, subscribeToSession, type DemoSession } from './demoAuth'
 
 /**
  * Reads the demo session as reactive state.
@@ -12,4 +12,13 @@ import { getSession, subscribeToSession, type DemoSession } from './demoAuth'
  */
 export function useSession(): DemoSession | null {
   return useSyncExternalStore(subscribeToSession, getSession, () => null)
+}
+
+/**
+ * True for the first few hundred milliseconds of a freshly opened tab while
+ * it asks the other tabs of the site for their session. Guards should wait
+ * rather than redirect to the login page during that window.
+ */
+export function useSessionResolving(): boolean {
+  return useSyncExternalStore(subscribeToSession, isSessionResolving, () => false)
 }

@@ -9,7 +9,9 @@ import { NEWS_CATEGORIES, type NewsCategory, type NewsPost } from '../../feature
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { formatDate } from '../../shared/format'
+import { ImageUploadField } from '../../shared/ImageUploadField'
 import { PageHeader } from '../../shared/PageHeader'
+import { RichTextEditor } from '../../shared/RichTextEditor'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
 
@@ -18,6 +20,7 @@ const { Text } = Typography
 type NewsFormValues = {
   title: string
   body: string
+  coverImage: string | null
   category: NewsCategory
   isPublished: boolean
   isFeatured: boolean
@@ -57,6 +60,7 @@ export function NewsAdminPage() {
       form.setFieldsValue({
         title: post.title,
         body: post.body,
+        coverImage: post.coverImage,
         category: post.category,
         isPublished: post.isPublished,
         isFeatured: post.isFeatured,
@@ -215,14 +219,19 @@ export function NewsAdminPage() {
         cancelText={t('common.cancel')}
         confirmLoading={saving}
         forceRender
-        width={760}
+        width={920}
+        className="editor-modal"
       >
-        <Form form={form} layout="vertical" disabled={saving} initialValues={{ category: 'campus', isPublished: false, isFeatured: false }}>
+        <Form form={form} layout="vertical" disabled={saving} initialValues={{ category: 'campus', isPublished: false, isFeatured: false, coverImage: null }}>
           <Form.Item name="title" label={t('news.form.title')} rules={[{ required: true, message: t('news.form.titleRequired') }]}>
             <Input maxLength={255} />
           </Form.Item>
-          <Form.Item name="body" label={t('news.form.body')} rules={[{ required: true, message: t('news.form.bodyRequired') }]}>
-            <Input.TextArea rows={8} maxLength={20000} showCount />
+          <Form.Item name="coverImage" label={t('news.form.cover')}>
+            <ImageUploadField shape="wide" hint={t('news.form.coverHint')} />
+          </Form.Item>
+          {/* The editor is a controlled Form.Item child: it emits '' when empty so equired works. */}
+          <Form.Item name="body" label={t('news.form.body')} extra={t('news.form.bodyHelp')} rules={[{ required: true, message: t('news.form.bodyRequired') }]}>
+            <RichTextEditor />
           </Form.Item>
           <Form.Item name="category" label={t('news.form.category')}>
             <Select options={categoryOptions} />

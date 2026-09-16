@@ -7,6 +7,8 @@ export const getPublishedNews = (limit?: number) => apiGet<NewsPost[]>('/news', 
 /** Everything including drafts — admin. */
 export const getAllNews = () => apiGet<NewsPost[]>('/news', { all: true })
 
+export const getNewsPost = (id: string) => apiGet<NewsPost>(`/news/${id}`)
+
 export const createNews = (payload: NewsInput) => apiPost<NewsPost>('/news', payload)
 export const updateNews = (id: string, payload: Partial<NewsInput>) => apiPatch<NewsPost>(`/news/${id}`, payload)
 export const deleteNews = (id: string) => apiDelete<{ success: boolean }>(`/news/${id}`)

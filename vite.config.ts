@@ -1,4 +1,4 @@
-import { fileURLToPath, URL } from 'node:url'
+﻿import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       // tsconfig.app.json already declares this path mapping, but Vite had no
-      // matching alias — so any `@/...` import type-checked and then failed
+      // matching alias вЂ” so any `@/...` import type-checked and then failed
       // to resolve at build time.
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
@@ -25,7 +25,7 @@ export default defineConfig({
     // Ant Design alone is ~950 kB raw / ~300 kB gzipped and is deliberately
     // isolated in its own long-lived chunk below, so the default 500 kB
     // warning would fire on every build with nothing to act on.
-    chunkSizeWarningLimit: 1100,
+    chunkSizeWarningLimit: 1200,
     rollupOptions: {
       output: {
         // Keep the large, rarely-changing vendor code in its own chunk so a

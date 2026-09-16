@@ -65,11 +65,12 @@ export function PublicLayout() {
         icon: session.role === 'admin' ? <TeamOutlined /> : <UserOutlined />,
         newTab: true,
       }
-    : { to: '/login', label: t('nav.portal'), icon: <LoginOutlined />, newTab: false }
+    : { to: '/login', label: t('nav.login'), icon: <LoginOutlined />, newTab: false }
 
-  const portalLinkProps = portal.newTab
-    ? { target: '_blank' as const, rel: 'noreferrer' }
-    : {}
+  // Same origin, so no noopener/noreferrer: with an opener the browser
+  // copies sessionStorage into the new tab, which is what keeps the admin
+  // panel signed in (the BroadcastChannel handshake is the fallback).
+  const portalLinkProps = portal.newTab ? { target: '_blank' as const } : {}
 
   return (
     <Layout className="app-shell">

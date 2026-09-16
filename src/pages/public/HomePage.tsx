@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom'
 
 import { usePreferences, type TranslationKey } from '../../app/preferences'
 import { usePublishedNews } from '../../features/news/queries'
+import { richTextExcerpt } from '../../shared/richText'
 import { useTimetable } from '../../features/courses/queries'
 import { startOfWeek, toIsoDate, weekRange } from '../../features/courses/week'
 import { formatDate } from '../../shared/format'
@@ -221,9 +222,9 @@ export function HomePage() {
                     extra={<Text type="secondary">{formatDate(post.publishedAt ?? post.createdAt, language)}</Text>}
                   >
                     <Paragraph type="secondary" ellipsis={{ rows: 3 }}>
-                      {post.body}
+                      {richTextExcerpt(post.body, 240)}
                     </Paragraph>
-                    <Link to="/news">{t('common.readMore')}</Link>
+                    <Link to={`/news/${post.id}`}>{t('common.readMore')}</Link>
                   </Card>
                 </Col>
               ))}

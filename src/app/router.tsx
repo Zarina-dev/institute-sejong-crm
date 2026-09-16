@@ -7,6 +7,7 @@ import { AboutPage } from '../pages/public/AboutPage'
 import { CoursesPage } from '../pages/public/CoursesPage'
 import { HomePage } from '../pages/public/HomePage'
 import { MaterialsPage } from '../pages/public/MaterialsPage'
+import { NewsDetailPage } from '../pages/public/NewsDetailPage'
 import { NewsPage } from '../pages/public/NewsPage'
 import { SchedulePage } from '../pages/public/SchedulePage'
 import { StudentPortalPage } from '../pages/public/StudentPortalPage'
@@ -38,6 +39,9 @@ const MaterialsAdminPage = lazy(() =>
 )
 const NewsAdminPage = lazy(() =>
   import('../pages/admin/NewsAdminPage').then((m) => ({ default: m.NewsAdminPage })),
+)
+const StaffAdminPage = lazy(() =>
+  import('../pages/admin/StaffAdminPage').then((m) => ({ default: m.StaffAdminPage })),
 )
 const StudentAdminPage = lazy(() =>
   import('../pages/admin/StudentAdminPage').then((m) => ({ default: m.StudentAdminPage })),
@@ -90,6 +94,7 @@ export function AppRouter() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/news" element={<NewsPage />} />
+          <Route path="/news/:id" element={<NewsDetailPage />} />
           <Route path="/materials" element={<MaterialsPage />} />
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/login" element={<StudentPortalPage />} />
@@ -118,6 +123,7 @@ export function AppRouter() {
           <Route path="materials" element={<MaterialsAdminPage />} />
           <Route path="students" element={<StudentAdminPage />} />
           <Route path="news" element={<NewsAdminPage />} />
+          <Route path="staff" element={<StaffAdminPage />} />
         </Route>
       </Routes>
     </Suspense>
