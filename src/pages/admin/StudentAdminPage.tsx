@@ -3,7 +3,7 @@ import type { TableProps } from 'antd'
 import { Alert, App, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Statistic, Table, Tag, Tooltip, Typography } from 'antd'
 import { useCallback, useMemo, useRef, useState, type ChangeEvent, type Key } from 'react'
 
-import { assetUrl } from '../../api/client'
+import { authedUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
 import { useCatalog } from '../../features/catalog/useCatalog'
 import { LEVEL_NONE, type StudentApiRecord } from '../../features/students/api'
@@ -492,7 +492,7 @@ export function StudentAdminPage() {
                   <div key={file.id} className="student-admin-file-item">
                     <Tag color="blue">{file.type || 'FILE'}</Tag>
                     {file.url ? (
-                      <a href={assetUrl(file.url)} target="_blank" rel="noreferrer">
+                      <a href={editingId ? authedUrl(`/students/${editingId}/topik-files/${file.id}`) : undefined} target="_blank" rel="noreferrer">
                         <PaperClipOutlined /> {file.name}
                       </a>
                     ) : (

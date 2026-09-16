@@ -52,11 +52,3 @@ export async function updateStudent(id: string, payload: Record<string, unknown>
 export async function deleteStudent(id: string) {
   return apiDelete<{ success: boolean }>(`/students/${id}`)
 }
-
-/** Resolves with the student, or rejects with an ApiError (401/403) carrying a localized message. */
-export async function loginStudent(studentId: string, password: string) {
-  return apiPost<{ valid: true; student: Omit<StudentApiRecord, 'password' | 'notes'> }>('/students/login', {
-    studentId,
-    password,
-  })
-}

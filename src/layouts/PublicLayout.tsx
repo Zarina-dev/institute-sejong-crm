@@ -9,7 +9,6 @@ import {
   MenuOutlined,
   MoonOutlined,
   PhoneOutlined,
-  ReadOutlined,
   SolutionOutlined,
   SunOutlined,
   TeamOutlined,
@@ -27,13 +26,12 @@ import { BrandMark } from '../shared/BrandMark'
 const { Header, Content, Footer } = Layout
 const { Text } = Typography
 
-type NavItem = { to: string; labelKey: 'nav.home' | 'nav.schedule' | 'nav.materials' | 'nav.news' | 'nav.courses' | 'nav.about'; icon: ReactNode }
+type NavItem = { to: string; labelKey: 'nav.home' | 'nav.schedule' | 'nav.news' | 'nav.courses' | 'nav.about'; icon: ReactNode }
 
 const navigation: NavItem[] = [
   { to: '/', labelKey: 'nav.home', icon: <HomeOutlined /> },
   { to: '/courses', labelKey: 'nav.courses', icon: <SolutionOutlined /> },
   { to: '/schedule', labelKey: 'nav.schedule', icon: <CalendarOutlined /> },
-  { to: '/materials', labelKey: 'nav.materials', icon: <ReadOutlined /> },
   { to: '/news', labelKey: 'nav.news', icon: <BookOutlined /> },
   { to: '/about', labelKey: 'nav.about', icon: <InfoCircleOutlined /> },
 ]

@@ -4,6 +4,8 @@ export type DemoSession = {
   username: string
   role: DemoRole
   displayName: string
+  /** API bearer token issued by POST /auth/login (12 h). */
+  token: string
   studentId?: string
   student?: Partial<StudentRecord>
 }
@@ -28,20 +30,7 @@ export type StudentRecord = {
 }
 
 const STORAGE_KEY = 'institut-demo-session'
-const STUDENTS_STORAGE_KEY = 'institut-students'
 
-export const demoUsers: Record<DemoRole, { username: string; password: string; displayName: string }> = {
-  admin: {
-    username: 'admin',
-    password: 'admin123',
-    displayName: 'Admin',
-  },
-  student: {
-    username: 'student',
-    password: 'student123',
-    displayName: 'Student',
-  },
-}
 
 /* --------------------------------------------------------------------------
    Session store
@@ -201,74 +190,6 @@ if (typeof window !== 'undefined') {
     }
   }
 }
-/* --------------------------------------------------------------------------
-   Demo login
-   -------------------------------------------------------------------------- */
-
-function getStudentRecords(): StudentRecord[] {
-  if (typeof window === 'undefined') {
-    return []
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STUDENTS_STORAGE_KEY)
-
-    if (!raw) {
-      return []
-    }
-
-    return JSON.parse(raw) as StudentRecord[]
-  } catch {
-    return []
-  }
-}
-
-function findStudentByLogin(username: string): StudentRecord | undefined {
-  const normalized = username.trim().toLowerCase()
-
-  return getStudentRecords().find(
-    (student) => student.studentId.trim().toLowerCase() === normalized,
-  )
-}
-
-export function validateDemoLogin(username: string, password: string): DemoSession | null {
-  const normalizedUsername = username.trim()
-
-  for (const [role, user] of Object.entries(demoUsers) as Array<[DemoRole, (typeof demoUsers)[DemoRole]]>) {
-    if (user.username === normalizedUsername && user.password === password) {
-      return {
-        username: user.username,
-        role,
-        displayName: user.displayName,
-      } satisfies DemoSession
-    }
-  }
-
-  const matchedStudent = findStudentByLogin(normalizedUsername)
-
-  if (matchedStudent && matchedStudent.status === 'active') {
-    return {
-      username: matchedStudent.studentId,
-      role: 'student',
-      displayName: matchedStudent.name,
-      studentId: matchedStudent.studentId,
-    }
-  }
-
-  return null
-}
-
-export function getStudentLoginStatus(username: string) {
-  const matchedStudent = findStudentByLogin(username)
-
-  if (!matchedStudent) {
-    return null
-  }
-
-  return matchedStudent.status === 'active'
-    ? { valid: true, student: matchedStudent }
-    : { valid: false, student: matchedStudent, reason: '비활동 상태의 학생은 사이트에 접속할 수 없습니다.' }
-}
 
 export function isAdminSession() {
   return getSession()?.role === 'admin'
@@ -276,4 +197,9 @@ export function isAdminSession() {
 
 export function isStudentSession() {
   return getSession()?.role === 'student'
+}
+
+/** Bearer token for API calls; undefined when signed out. */
+export function getAuthToken(): string | undefined {
+  return getSession()?.token
 }

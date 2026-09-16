@@ -4,9 +4,9 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { usePreferences } from '../../app/preferences'
-import { clearSession, demoUsers, setSession, type DemoRole } from '../../auth/demoAuth'
+import { clearSession, setSession, type DemoRole } from '../../auth/demoAuth'
 import { useSession } from '../../auth/useSession'
-import { useStudentLogin } from '../../features/students/queries'
+import { useLogin } from '../../features/auth/queries'
 import { BrandMark } from '../../shared/BrandMark'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 
@@ -21,9 +21,9 @@ export function StudentPortalPage() {
   const { t } = usePreferences()
   const navigate = useNavigate()
   const session = useSession()
-  const login = useStudentLogin()
-  // Local-only failures (empty id, wrong admin password) that never reach
-  // the API and therefore never appear in `login.error`.
+  const login = useLogin()
+  // Local-only failures (empty id) that never reach the API and therefore
+  // never appear in `login.error`.
   const [localError, setLocalError] = useState<string | null>(null)
 
   const onFinish = async (values: LoginValues) => {
@@ -36,32 +36,26 @@ export function StudentPortalPage() {
       return
     }
 
-    // The admin account is local to the demo build; students are verified
-    // against the API.
-    if (username === demoUsers.admin.username) {
-      if (password !== demoUsers.admin.password) {
-        setLocalError(t('login.invalidCredentials'))
+    try {
+      // Admin and students go through the same endpoint; the API answers
+      // with a bearer token that every later request carries.
+      const result = await login.mutateAsync({ username, password })
+
+      if (result.role === 'admin') {
+        setSession({ username, role: 'admin', displayName: 'Admin', token: result.token })
+        navigate(homeFor('admin'), { replace: true })
         return
       }
 
-      setSession({ username: demoUsers.admin.username, role: 'admin', displayName: demoUsers.admin.displayName })
-      navigate(homeFor('admin'), { replace: true })
-      return
-    }
-
-    try {
-      // A wrong password is a 401 from the API — surfaced through login.error.
-      const { student } = await login.mutateAsync({ studentId: username, password })
-
       setSession({
-        username: student.studentId,
+        username: result.student.studentId,
         role: 'student',
-        displayName: student.name,
-        studentId: student.studentId,
-        student,
+        displayName: result.student.name,
+        studentId: result.student.studentId,
+        student: result.student,
+        token: result.token,
       })
-      navigate(homeFor('student'), { replace: true })
-    } catch {
+      navigate(homeFor('student'), { replace: true })    } catch {
       // Rendered through <ErrorAlert error={login.error}> below.
     }
   }

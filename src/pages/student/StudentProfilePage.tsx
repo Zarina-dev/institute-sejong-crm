@@ -1,7 +1,7 @@
-﻿import { InfoCircleOutlined, PaperClipOutlined } from '@ant-design/icons'
+import { InfoCircleOutlined, PaperClipOutlined } from '@ant-design/icons'
 import { Alert, Card, Descriptions, Space, Tag } from 'antd'
 
-import { assetUrl } from '../../api/client'
+import { authedUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
 import { useCurrentStudent } from '../../auth/useCurrentStudent'
 import { formatLevel } from '../../features/students/level'
@@ -41,7 +41,7 @@ export function StudentProfilePage() {
               <Space wrap>
                 {student.topikFiles.map((file) =>
                   file.url ? (
-                    <a key={file.id} href={assetUrl(file.url)} target="_blank" rel="noreferrer">
+                    <a key={file.id} href={authedUrl(`/students/${student.id}/topik-files/${file.id}`)} target="_blank" rel="noreferrer">
                       <PaperClipOutlined /> {file.name}
                     </a>
                   ) : (

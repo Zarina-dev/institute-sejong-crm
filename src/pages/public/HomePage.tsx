@@ -41,7 +41,7 @@ const audiences: Audience[] = [
 
 const quickLinks: Array<{ icon: ReactNode; title: TranslationKey; copy: TranslationKey; link: string }> = [
   { icon: <CalendarOutlined />, title: 'home.quickSchedule', copy: 'home.quickScheduleCopy', link: '/schedule' },
-  { icon: <FileTextOutlined />, title: 'home.quickMaterials', copy: 'home.quickMaterialsCopy', link: '/materials' },
+  { icon: <FileTextOutlined />, title: 'home.quickMaterials', copy: 'home.quickMaterialsCopy', link: '/login' },
   { icon: <UserOutlined />, title: 'home.quickPortal', copy: 'home.quickPortalCopy', link: '/login' },
 ]
 

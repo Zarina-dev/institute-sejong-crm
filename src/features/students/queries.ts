@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { createStudent, deleteStudent, getStudent, getStudents, loginStudent, updateStudent } from './api'
+import { createStudent, deleteStudent, getStudent, getStudents, updateStudent } from './api'
 
 export const studentKeys = {
   all: ['students'] as const,
@@ -61,13 +61,5 @@ export function useDeleteStudent() {
   return useMutation({
     mutationFn: (id: string) => deleteStudent(id),
     onSuccess: invalidate,
-  })
-}
-
-/** Login is a mutation: it has side effects and must never be cached. */
-export function useStudentLogin() {
-  return useMutation({
-    mutationFn: ({ studentId, password }: { studentId: string; password: string }) =>
-      loginStudent(studentId, password),
   })
 }

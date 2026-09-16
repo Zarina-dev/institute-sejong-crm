@@ -4,6 +4,8 @@
  * The base URL comes from `VITE_API_BASE_URL` (see .env.example); the
  * localhost fallback exists so `npm run dev` works with no .env at all.
  */
+import { clearSession, getAuthToken } from '../auth/demoAuth'
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api').replace(/\/+$/, '')
 
 type QueryValue = string | number | boolean | undefined | null
@@ -12,6 +14,16 @@ type QueryParams = Record<string, QueryValue>
 /** Absolute URL for an API endpoint — for `<a href>` / downloads, not fetch. */
 export function apiUrl(endpoint: string) {
   return `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`
+}
+
+/**
+ * Absolute URL for a protected file route used as a plain link (downloads
+ * open in the browser, so there is no way to set a header). The guard
+ * accepts the token as `?token=`.
+ */
+export function authedUrl(endpoint: string) {
+  const token = getAuthToken()
+  return token ? `${apiUrl(endpoint)}?token=${encodeURIComponent(token)}` : apiUrl(endpoint)
 }
 
 /** Origin of the API server, without the `/api` prefix — where `/uploads/…` is served from. */
@@ -92,9 +104,20 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
   const headers = new Headers(options.headers)
   headers.set('Accept-Language', apiLanguage)
 
+  const token = getAuthToken()
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
   const response = await fetch(apiUrl(endpoint), { ...options, headers })
 
   if (!response.ok) {
+    // A rejected token means the session is over (expired, or the server
+    // secret changed): sign out so the guards send the user to /login.
+    if (response.status === 401 && token) {
+      clearSession()
+    }
+
     throw new ApiError(await readErrorMessage(response), response.status)
   }
 

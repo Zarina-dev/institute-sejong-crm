@@ -6,7 +6,6 @@ import { PublicLayout } from '../layouts/PublicLayout'
 import { AboutPage } from '../pages/public/AboutPage'
 import { CoursesPage } from '../pages/public/CoursesPage'
 import { HomePage } from '../pages/public/HomePage'
-import { MaterialsPage } from '../pages/public/MaterialsPage'
 import { NewsDetailPage } from '../pages/public/NewsDetailPage'
 import { NewsPage } from '../pages/public/NewsPage'
 import { SchedulePage } from '../pages/public/SchedulePage'
@@ -95,7 +94,8 @@ export function AppRouter() {
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/news/:id" element={<NewsDetailPage />} />
-          <Route path="/materials" element={<MaterialsPage />} />
+          {/* Learning materials are for signed-in students/staff only (see StudentMaterialsPage, MaterialsAdminPage). */}
+          <Route path="/materials" element={<Navigate to="/login" replace />} />
           <Route path="/courses" element={<CoursesPage />} />
           <Route path="/login" element={<StudentPortalPage />} />
 
