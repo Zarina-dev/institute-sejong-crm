@@ -163,6 +163,8 @@ const ru: LocaleDictionary = {
     newsSubtitle: 'Важные обновления для учёбы и жизни института.',
   },
   materials: {
+    unlinked: 'Без курса',
+    unlinkedHint: 'Ещё не привязан к курсу — откройте материал и выберите курс.',
     title: 'Учебные материалы',
     subtitle: 'Всё, что открыли ваши преподаватели, — по предметам.',
     adminTitle: 'Материалы',
@@ -387,6 +389,7 @@ const ru: LocaleDictionary = {
       status: 'Статус',
     },
     form: {
+      noCourse: 'Без курса (назначится позже или при одобрении)',
       name: 'Имя',
       nameRequired: 'Введите имя.',
       studentId: 'ID студента',

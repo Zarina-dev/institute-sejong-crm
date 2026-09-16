@@ -178,6 +178,8 @@ export const en = {
     newsSubtitle: 'Updates that matter for your studies and campus experience.',
   },
   materials: {
+    unlinked: 'No course',
+    unlinkedHint: 'Not linked to a course record yet — open the material and pick its course.',
     title: 'Course materials',
     subtitle: 'Everything shared by your teachers, organized by subject.',
     adminTitle: 'Materials',
@@ -391,6 +393,7 @@ export const en = {
       status: 'Status',
     },
     form: {
+      noCourse: 'No course (assign later or on approval)',
       name: 'Name',
       nameRequired: 'Enter a name.',
       studentId: 'Student ID',

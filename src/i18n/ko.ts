@@ -163,6 +163,8 @@ const ko: LocaleDictionary = {
     newsSubtitle: '학생 생활에 필요한 소식을 확인하세요.',
   },
   materials: {
+    unlinked: '과정 없음',
+    unlinkedHint: '아직 과정 레코드와 연결되지 않았습니다. 자료를 열어 과정을 선택하세요.',
     title: '학습 자료',
     subtitle: '선생님이 공유한 모든 자료를 과목별로 정리했습니다.',
     adminTitle: '자료실 관리',
@@ -363,6 +365,7 @@ const ko: LocaleDictionary = {
       status: '상태',
     },
     form: {
+      noCourse: '과정 없음 (나중에 또는 승인 시 지정)',
       name: '이름',
       nameRequired: '이름을 입력하세요.',
       studentId: '학생 ID',

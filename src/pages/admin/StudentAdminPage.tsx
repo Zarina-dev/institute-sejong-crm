@@ -5,7 +5,7 @@ import { useCallback, useMemo, useRef, useState, type ChangeEvent, type Key } fr
 
 import { authedUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
-import { useCatalog } from '../../features/catalog/useCatalog'
+import { useCourseOptions } from '../../features/courses/useCourseOptions'
 import { LEVEL_NONE, type StudentApiRecord } from '../../features/students/api'
 import { formatLevel } from '../../features/students/level'
 import { DOCUMENT_ACCEPT, MAX_DOCUMENT_SIZE, uploadDocument } from '../../features/uploads/api'
@@ -28,7 +28,7 @@ type StudentFormValues = {
   email: string
   phone: string
   admissionDate: string
-  course: string
+  courseId: string | null
   level: string
   status: StudentRecord['status']
   password?: string
@@ -52,7 +52,7 @@ const NO_STUDENTS: StudentRecord[] = []
 export function StudentAdminPage() {
   const { t } = usePreferences()
   const { message } = App.useApp()
-  const catalog = useCatalog()
+  const { courseOptions } = useCourseOptions()
   const confirmDelete = useConfirmDelete()
   const { pinActions, compactActions } = useTableLayout()
 
@@ -137,6 +137,7 @@ export function StudentAdminPage() {
       setUploadError(null)
       form.setFieldsValue({
         ...record,
+        courseId: record.courseId ?? null,
         notes: record.notes ?? undefined,
         password: isHashed(record.password) ? '' : record.password,
       })
@@ -199,6 +200,7 @@ export function StudentAdminPage() {
     const payload = {
       ...values,
       studentId: values.studentId.trim(),
+      courseId: values.courseId ?? null,
       notes: values.notes?.trim() || null,
       ...(password ? { password } : {}),
       topikFiles: topikFiles.map(({ id, name, size, type, url }) => ({ id, name, size, type, ...(url ? { url } : {}) })),
@@ -452,8 +454,8 @@ export function StudentAdminPage() {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="course" label={t('students.form.course')} rules={[{ required: true, message: t('students.form.courseRequired') }]}>
-                <Select options={catalog.courses} placeholder={t('catalog.selectCourse')} />
+              <Form.Item name="courseId" label={t('students.form.course')}>
+                <Select allowClear showSearch optionFilterProp="label" options={courseOptions} placeholder={t('students.form.noCourse')} />
               </Form.Item>
             </Col>
           </Row>

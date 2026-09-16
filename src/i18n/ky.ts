@@ -163,6 +163,8 @@ const ky: LocaleDictionary = {
     newsSubtitle: 'Окуу жана кампус үчүн маанилүү жаңылыктар.',
   },
   materials: {
+    unlinked: 'Курс жок',
+    unlinkedHint: 'Курс жазуусуна байланышкан эмес — материалды ачып, курсун тандаңыз.',
     title: 'Окуу материалдары',
     subtitle: 'Мугалимдер бөлүшкөн бардык материалдар, предмет боюнча.',
     adminTitle: 'Материалдар',
@@ -371,6 +373,7 @@ const ky: LocaleDictionary = {
       status: 'Абалы',
     },
     form: {
+      noCourse: 'Курс жок (кийин же бекитүүдө дайындалат)',
       name: 'Аты',
       nameRequired: 'Атын киргизиңиз.',
       studentId: 'Студент ID',

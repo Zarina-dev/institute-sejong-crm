@@ -6,7 +6,10 @@ export type StudentApiRecord = {
   studentId: string
   email: string
   phone: string
+  /** Display label of the current course (empty when none). */
   course: string
+  /** Current course record; set on approval or from the admin form. */
+  courseId: string | null
   level: string
   admissionDate: string
   status: 'active' | 'inactive'

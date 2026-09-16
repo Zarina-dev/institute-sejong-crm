@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import { useCurrentStudent } from '../../auth/useCurrentStudent'
-import { useCatalog } from '../../features/catalog/useCatalog'
+import { useCourseOptions } from '../../features/courses/useCourseOptions'
 import { MaterialCard } from '../../features/materials/MaterialCard'
 import { useMaterials } from '../../features/materials/queries'
 import type { MaterialsFilters } from '../../features/materials/types'
@@ -26,17 +26,15 @@ const defaultFilters: MaterialsFilters = {
 /**
  * Every published material, for any signed-in student.
  *
- * This used to show only rows whose `course` equalled the student's course
- * string — but both are free text (catalog labels vs. the title stamped on
- * approval), so "한국어" never matched "한국어 1" and students saw nothing
- * the admin had just published. "Published" now means visible to every
- * student; the student's own course is a one-click filter, not a gate.
+ * "Published" means visible to every signed-in student; the student's own
+ * course (a real course record, `courseId`) is a one-click filter, not a gate.
  */
 export function StudentMaterialsPage() {
   const { t } = usePreferences()
   const { student } = useCurrentStudent()
-  const catalog = useCatalog()
+  const { courseOptions, subjectOptions } = useCourseOptions()
   const studentCourse = student?.course || undefined
+  const studentCourseId = student?.courseId || undefined
 
   const [filters, setFilters] = useState<MaterialsFilters>(defaultFilters)
   const materials = useMaterials(filters)
@@ -46,8 +44,8 @@ export function StudentMaterialsPage() {
     setFilters((current) => ({ ...current, ...patch, page: patch.page ?? 1 }))
   }, [])
 
-  const filtersActive = Boolean(filters.search || filters.subject || filters.course)
-  const showingMine = Boolean(studentCourse) && filters.course === studentCourse
+  const filtersActive = Boolean(filters.search || filters.subject || filters.courseId)
+  const showingMine = Boolean(studentCourseId) && filters.courseId === studentCourseId
 
   return (
     <div className="page-layout">
@@ -86,7 +84,7 @@ export function StudentMaterialsPage() {
               placeholder={t('materials.subject')}
               value={filters.subject}
               onChange={(value) => patchFilters({ subject: value })}
-              options={catalog.subjects}
+              options={subjectOptions}
             />
           </Col>
           <Col xs={24} sm={12} lg={6}>
@@ -95,9 +93,11 @@ export function StudentMaterialsPage() {
               size="large"
               allowClear
               placeholder={t('materials.course')}
-              value={filters.course}
-              onChange={(value) => patchFilters({ course: value })}
-              options={catalog.courses}
+              showSearch
+              optionFilterProp="label"
+              value={filters.courseId}
+              onChange={(value) => patchFilters({ courseId: value })}
+              options={courseOptions}
             />
           </Col>
         </Row>
@@ -105,10 +105,10 @@ export function StudentMaterialsPage() {
         <div className="filter-footer">
           <Text>{data ? t('materials.count', { count: data.total }) : t('materials.loadingCount')}</Text>
           <div className="filter-footer__actions">
-            {studentCourse ? (
+            {studentCourseId ? (
               <Segmented
                 value={showingMine ? 'mine' : 'all'}
-                onChange={(value) => patchFilters({ course: value === 'mine' ? studentCourse : undefined })}
+                onChange={(value) => patchFilters({ courseId: value === 'mine' ? studentCourseId : undefined })}
                 options={[
                   { value: 'all', label: t('materials.student.all') },
                   { value: 'mine', label: t('materials.student.myCourseOnly') },

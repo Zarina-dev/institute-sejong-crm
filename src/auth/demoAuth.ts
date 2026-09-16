@@ -17,6 +17,7 @@ export type StudentRecord = {
   email: string
   phone: string
   course: string
+  courseId?: string | null
   level: string
   admissionDate: string
   status: 'active' | 'inactive'

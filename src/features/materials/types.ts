@@ -8,6 +8,8 @@ export type MaterialsFilters = {
   search?: string
   subject?: string
   course?: string
+  /** Filter by course record — preferred over the free-text `course` label. */
+  courseId?: string
   published?: 'true' | 'false' | 'all'
   studentId?: string
   sortBy?: 'title' | 'updatedAt' | 'createdAt'
@@ -20,6 +22,8 @@ export type MaterialItem = {
   description: string | null
   subject: string
   course: string
+  /** Linked course; null on legacy rows whose label matched no course. */
+  courseId: string | null
   fileType?: string | null
   fileSize?: number | null
   originalFileName?: string | null

@@ -24,14 +24,14 @@ import {
   Space,
   Table,
   Tag,
+  Tooltip,
   Typography,
   Upload,
 } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
-import { EditableSelect } from '../../features/catalog/EditableSelect'
-import { useCatalog } from '../../features/catalog/useCatalog'
+import { useCourseOptions } from '../../features/courses/useCourseOptions'
 import {
   useCreateMaterial,
   useDeleteMaterial,
@@ -66,15 +66,14 @@ const defaultFilters: MaterialsFilters = {
 type MaterialFormValues = {
   title: string
   description?: string
-  subject: string
-  course: string
+  courseId: string
   isPublished?: boolean
 }
 
 export function MaterialsAdminPage() {
   const { message } = App.useApp()
   const { t } = usePreferences()
-  const catalog = useCatalog()
+  const { courseOptions, subjectOptions } = useCourseOptions()
   const confirmDelete = useConfirmDelete()
   const { pinActions, compactActions } = useTableLayout()
 
@@ -100,8 +99,8 @@ export function MaterialsAdminPage() {
   }, [])
 
   const setSubject = useCallback((value?: string) => patchFilters({ subject: value }), [patchFilters])
-  const setCourse = useCallback((value?: string) => patchFilters({ course: value }), [patchFilters])
-  const filtersActive = Boolean(filters.search || filters.subject || filters.course)
+  const setCourse = useCallback((value?: string) => patchFilters({ courseId: value }), [patchFilters])
+  const filtersActive = Boolean(filters.search || filters.subject || filters.courseId)
 
   /* ------------------------------- modal ------------------------------- */
 
@@ -118,8 +117,7 @@ export function MaterialsAdminPage() {
       form.setFieldsValue({
         title: record.title,
         description: record.description ?? undefined,
-        subject: record.subject,
-        course: record.course,
+        courseId: record.courseId ?? undefined,
         isPublished: record.isPublished,
       })
       setModalOpen(true)
@@ -229,7 +227,19 @@ export function MaterialsAdminPage() {
     () => [
       { title: t('materials.form.title'), dataIndex: 'title', key: 'title', render: (value: string) => <strong>{value}</strong> },
       { title: t('materials.subject'), dataIndex: 'subject', key: 'subject', width: 140 },
-      { title: t('materials.course'), dataIndex: 'course', key: 'course', width: 160 },
+      {
+        title: t('materials.course'),
+        dataIndex: 'course',
+        key: 'course',
+        width: 180,
+        // Rows from before the course link whose label matched no course: edit to attach one.
+        render: (value: string, record) =>
+          record.courseId ? value : (
+            <Tooltip title={t('materials.unlinkedHint')}>
+              <Tag color="warning">{value || t('materials.unlinked')}</Tag>
+            </Tooltip>
+          ),
+      },
       {
         title: t('common.status'),
         dataIndex: 'isPublished',
@@ -288,11 +298,11 @@ export function MaterialsAdminPage() {
           </Col>
           <Col xs={24} sm={12} lg={6}>
             <Text>{t('materials.subject')}</Text>
-            <EditableSelect kind="subjects" options={catalog.subjects} allowClear placeholder={t('materials.subject')} value={filters.subject} onChange={setSubject} />
+            <Select allowClear placeholder={t('materials.subject')} value={filters.subject} onChange={setSubject} options={subjectOptions} style={{ width: '100%' }} />
           </Col>
           <Col xs={24} sm={12} lg={6}>
             <Text>{t('materials.course')}</Text>
-            <EditableSelect kind="courses" options={catalog.courses} allowClear placeholder={t('materials.course')} value={filters.course} onChange={setCourse} />
+            <Select allowClear showSearch optionFilterProp="label" placeholder={t('materials.course')} value={filters.courseId} onChange={setCourse} options={courseOptions} style={{ width: '100%' }} />
           </Col>
         </Row>
 
@@ -349,18 +359,10 @@ export function MaterialsAdminPage() {
           <Form.Item name="description" label={t('materials.form.description')}>
             <Input.TextArea rows={4} maxLength={4000} showCount />
           </Form.Item>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name="subject" label={t('materials.subject')} rules={[{ required: true, message: t('materials.form.subjectRequired') }]}>
-                <EditableSelect kind="subjects" options={catalog.subjects} selectOnAdd />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="course" label={t('materials.course')} rules={[{ required: true, message: t('materials.form.courseRequired') }]}>
-                <EditableSelect kind="courses" options={catalog.courses} selectOnAdd />
-              </Form.Item>
-            </Col>
-          </Row>
+          {/* Subject comes from the course record; both labels are derived server-side. */}
+          <Form.Item name="courseId" label={t('materials.course')} rules={[{ required: true, message: t('materials.form.courseRequired') }]}>
+            <Select showSearch optionFilterProp="label" placeholder={t('materials.course')} options={courseOptions} />
+          </Form.Item>
           {!editingId ? (
             <Form.Item label={t('materials.form.file')} extra={t('materials.form.fileHint', { max: formatFileSize(MAX_MATERIAL_FILE_SIZE) })}>
               <Upload
