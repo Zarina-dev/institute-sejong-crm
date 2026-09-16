@@ -334,6 +334,8 @@ const ky: LocaleDictionary = {
     status: { active: 'Окууда', completed: 'Аяктады', paused: 'Токтотулду' },
   },
   students: {
+    levelNone: 'Жок',
+    uploadFiles: 'Файл жүктөө',
     adminTitle: 'Студенттер',
     adminSubtitle: 'Аккаунттар, сырсөздөр, TOPIK файлдары жана студенттер жөнүндө эскертүүлөр — бир жерде.',
     total: 'Бардыгы',
@@ -407,6 +409,10 @@ const ky: LocaleDictionary = {
     removeFile: '{{name}} алып салуу',
   },
   dashboard: {
+    activityEmpty: 'Азырынча өзгөрүү жок.',
+    created: 'кошулду',
+    updated: 'жаңыртылды',
+    justNow: 'азыр эле',
     greeting: 'Саламатсызбы, {{name}}',
     subtitle: 'Маалыматыңыз, учурдагы курсуңуз жана материалдарга жетүү — бир караганда.',
     currentCourse: 'Учурдагы курс',
@@ -441,6 +447,7 @@ const ky: LocaleDictionary = {
     priorities: 'Бүгүнкү артыкчылыктар',
   },
   profile: {
+    contactNote: 'Маалыматта ката болсо, администрацияга кайрылыңыз.',
     title: 'Менин маалыматым',
     subtitle: 'Жеке маалыматыңыз, курсуңуз, абалыңыз жана TOPIK файлдарыңыз.',
     name: 'Аты',
@@ -592,6 +599,10 @@ const ky: LocaleDictionary = {
     redo: 'Кайталоо',
   },
   staff: {
+    dragHint: 'Саптарды сүйрөп, «Институт жөнүндө» барагындагы иретти өзгөртүңүз.',
+    reordered: 'Ирет сакталды.',
+    reorderFailed: 'Иретти сактоо мүмкүн болбоду.',
+    dragHandle: 'Сүйрөп иретте',
     adminTitle: 'Кызматкерлер',
     adminSubtitle: '«Институт жөнүндө» барагында көрүнгөн мугалимдер жана администрация. Ирети «Ирет» саны боюнча.',
     add: 'Кызматкер кошуу',

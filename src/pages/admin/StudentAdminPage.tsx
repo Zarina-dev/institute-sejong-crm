@@ -1,11 +1,14 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, PaperClipOutlined, PlusOutlined, SearchOutlined, UploadOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
 import { Alert, App, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Statistic, Table, Tag, Tooltip, Typography } from 'antd'
-import { useCallback, useMemo, useState, type ChangeEvent, type Key } from 'react'
+import { useCallback, useMemo, useRef, useState, type ChangeEvent, type Key } from 'react'
 
+import { assetUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
 import { useCatalog } from '../../features/catalog/useCatalog'
-import type { StudentApiRecord } from '../../features/students/api'
+import { LEVEL_NONE, type StudentApiRecord } from '../../features/students/api'
+import { formatLevel } from '../../features/students/level'
+import { DOCUMENT_ACCEPT, MAX_DOCUMENT_SIZE, uploadDocument } from '../../features/uploads/api'
 import { useCreateStudent, useDeleteStudent, useStudents, useUpdateStudent } from '../../features/students/queries'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
@@ -32,10 +35,10 @@ type StudentFormValues = {
   notes?: string
 }
 
-const topikLevelOptions = ['TOPIK 1', 'TOPIK 2', 'TOPIK 3', 'TOPIK 4', 'TOPIK 5', 'TOPIK 6'].map((value) => ({ value, label: value }))
+const TOPIK_LEVELS = ['TOPIK 1', 'TOPIK 2', 'TOPIK 3', 'TOPIK 4', 'TOPIK 5', 'TOPIK 6']
 
 const MAX_TOPIK_FILES = 2
-const MAX_TOPIK_FILE_SIZE = 5 * 1024 * 1024
+const MAX_TOPIK_FILE_SIZE = MAX_DOCUMENT_SIZE
 
 /** A bcrypt hash starts with "$2"; anything else is a plain password. */
 const isHashed = (password?: string) => Boolean(password?.startsWith('$2'))
@@ -63,7 +66,14 @@ export function StudentAdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [topikFiles, setTopikFiles] = useState<TopikFileRecord[]>([])
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [form] = Form.useForm<StudentFormValues>()
+
+  const topikLevelOptions = useMemo(
+    () => [{ value: LEVEL_NONE, label: t('students.levelNone') }, ...TOPIK_LEVELS.map((value) => ({ value, label: value }))],
+    [t],
+  )
 
   const saving = createStudent.isPending || updateStudent.isPending
   const list = students.data ?? NO_STUDENTS
@@ -104,10 +114,10 @@ export function StudentAdminPage() {
   const columnFilters = useMemo(
     () => ({
       course: toFilterOptions(list.map((s) => s.course)),
-      level: toFilterOptions(list.map((s) => s.level)),
+      level: toFilterOptions(list.map((s) => s.level)).map((option) => ({ ...option, text: formatLevel(option.value, t) })),
       admissionDate: toFilterOptions(list.map((s) => s.admissionDate)),
     }),
-    [list],
+    [list, t],
   )
 
   /* ------------------------------- modal ------------------------------ */
@@ -135,8 +145,13 @@ export function StudentAdminPage() {
     [form],
   )
 
+  /**
+   * Files are uploaded as soon as they are picked and only their stored path
+   * travels with the form. (They used to be listed by name only and never
+   * left the browser — the "attached" files did not exist on the server.)
+   */
   const handleFileChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
+    async (event: ChangeEvent<HTMLInputElement>) => {
       const selected = Array.from(event.target.files ?? [])
       event.target.value = ''
 
@@ -144,7 +159,7 @@ export function StudentAdminPage() {
         return
       }
 
-      if (selected.length > MAX_TOPIK_FILES) {
+      if (topikFiles.length + selected.length > MAX_TOPIK_FILES) {
         setUploadError(t('students.tooManyFiles', { max: MAX_TOPIK_FILES }))
         return
       }
@@ -156,12 +171,23 @@ export function StudentAdminPage() {
         return
       }
 
-      setTopikFiles(selected.map((file) => ({ id: crypto.randomUUID(), name: file.name, size: file.size, type: file.type })))
       setUploadError(null)
-    },
-    [t],
-  )
+      setUploading(true)
 
+      try {
+        const uploaded = await Promise.all(selected.map((file) => uploadDocument(file)))
+        setTopikFiles((current) => [
+          ...current,
+          ...uploaded.map((file) => ({ id: crypto.randomUUID(), name: file.name, size: file.size, type: file.type, url: file.url })),
+        ])
+      } catch (err) {
+        setUploadError(getErrorMessage(err, t('upload.failed')))
+      } finally {
+        setUploading(false)
+      }
+    },
+    [t, topikFiles.length],
+  )
   const handleSubmit = async () => {
     const values = await form.validateFields().catch(() => null)
 
@@ -175,7 +201,7 @@ export function StudentAdminPage() {
       studentId: values.studentId.trim(),
       notes: values.notes?.trim() || null,
       ...(password ? { password } : {}),
-      topikFiles: topikFiles.map(({ id, name, size, type }) => ({ id, name, size, type })),
+      topikFiles: topikFiles.map(({ id, name, size, type, url }) => ({ id, name, size, type, ...(url ? { url } : {}) })),
     }
 
     if (!password) {
@@ -258,6 +284,7 @@ export function StudentAdminPage() {
         responsive: ['md'],
         filters: columnFilters.level,
         onFilter: (value: boolean | Key, record) => record.level === String(value),
+        render: (value: string) => formatLevel(value, t),
       },
       {
         title: t('students.columns.topikFiles'),
@@ -454,14 +481,23 @@ export function StudentAdminPage() {
             <Input.TextArea rows={3} maxLength={2000} showCount placeholder={t('students.form.notesPlaceholder')} />
           </Form.Item>
           <Form.Item label={t('students.form.topikFiles', { max: MAX_TOPIK_FILES, size: formatFileSize(MAX_TOPIK_FILE_SIZE) })}>
-            <Input type="file" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.txt" onChange={handleFileChange} />
+            <input ref={fileInputRef} type="file" multiple accept={DOCUMENT_ACCEPT} hidden onChange={handleFileChange} />
+            <Button icon={<UploadOutlined />} loading={uploading} disabled={topikFiles.length >= MAX_TOPIK_FILES} onClick={() => fileInputRef.current?.click()}>
+              {t('students.uploadFiles')}
+            </Button>
             {uploadError ? <Alert type="error" message={uploadError} showIcon style={{ marginTop: 12 }} /> : null}
             <div className="student-admin-file-list">
               {topikFiles.length > 0 ? (
                 topikFiles.map((file) => (
                   <div key={file.id} className="student-admin-file-item">
                     <Tag color="blue">{file.type || 'FILE'}</Tag>
-                    <span>{file.name}</span>
+                    {file.url ? (
+                      <a href={assetUrl(file.url)} target="_blank" rel="noreferrer">
+                        <PaperClipOutlined /> {file.name}
+                      </a>
+                    ) : (
+                      <span>{file.name}</span>
+                    )}
                     <small>{formatFileSize(file.size)}</small>
                     <Button
                       type="text"

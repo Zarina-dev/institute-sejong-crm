@@ -1,23 +1,37 @@
 import { ArrowUpOutlined, BookOutlined, CalendarOutlined, FileTextOutlined, TeamOutlined } from '@ant-design/icons'
-import { Card, Col, Row, Tag, Typography } from 'antd'
+import { Card, Col, Empty, Row, Skeleton, Tag, Typography } from 'antd'
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 
 import { usePreferences, type TranslationKey } from '../../app/preferences'
 import { useApplications, useCourses } from '../../features/courses/queries'
+import { useRecentActivity, type ActivityKind } from '../../features/dashboard/useRecentActivity'
 import { useMaterials } from '../../features/materials/queries'
 import { useStudents } from '../../features/students/queries'
+import { formatRelativeTime } from '../../shared/format'
 
 const { Title, Text } = Typography
+
+/** Which admin menu each feed entry belongs to. */
+const KIND_LABEL: Record<ActivityKind, TranslationKey> = {
+  student: 'adminNav.students',
+  course: 'adminNav.courses',
+  application: 'adminNav.applications',
+  material: 'adminNav.materials',
+  news: 'adminNav.news',
+  staff: 'adminNav.staff',
+}
 
 type Stat = { title: TranslationKey; value: number | string; delta: TranslationKey; icon: ReactNode; tone: 'blue' | 'violet' | 'orange' | 'green' }
 
 /**
  * Admin landing. The four counters are live (same queries the admin pages
  * use, so they are already cached once any of those pages was opened); the
- * activity feed is still static until there is an audit log to read from.
+ * activity feed merges the newest rows of every admin-managed table.
  */
 export function DashboardPage() {
-  const { t } = usePreferences()
+  const { t, language } = usePreferences()
+  const activity = useRecentActivity()
   const students = useStudents()
   const courses = useCourses(false)
   const applications = useApplications()
@@ -74,16 +88,27 @@ export function DashboardPage() {
               <Tag color="blue">{t('dashboard.live')}</Tag>
             </div>
 
-            {(applications.data ?? []).slice(0, 5).map((item) => (
-              <div className="activity-row" key={item.id}>
-                <span className={`activity-dot ${item.status === 'approved' || item.status === 'enrolled' ? 'green' : item.status === 'rejected' ? 'orange' : ''}`} aria-hidden="true" />
-                <div>
-                  <b>{item.applicantName}</b>
-                  <Text type="secondary">{item.course?.title ?? '-'}</Text>
-                </div>
-                <Text type="secondary">{t(`courses.appStatus.${item.status ?? 'pending'}`)}</Text>
-              </div>
-            ))}
+            {activity.isPending && activity.entries.length === 0 ? (
+              <Skeleton active paragraph={{ rows: 6 }} />
+            ) : activity.entries.length === 0 ? (
+              <Empty description={t('dashboard.activityEmpty')} />
+            ) : (
+              activity.entries.map((entry) => (
+                <Link className="activity-row" to={entry.to} key={entry.id}>
+                  <span className={`activity-dot ${entry.created ? 'green' : ''}`} aria-hidden="true" />
+                  <div>
+                    <b>{entry.title}</b>
+                    <Text type="secondary">
+                      <Tag className="activity-kind">{t(KIND_LABEL[entry.kind])}</Tag>
+                      {entry.detailKey ? t(entry.detailKey) : entry.detail}
+                    </Text>
+                  </div>
+                  <Text type="secondary" className="activity-when">
+                    {t(entry.created ? 'dashboard.created' : 'dashboard.updated')} · {formatRelativeTime(entry.at, language, t('dashboard.justNow'))}
+                  </Text>
+                </Link>
+              ))
+            )}
           </Card>
         </Col>
 

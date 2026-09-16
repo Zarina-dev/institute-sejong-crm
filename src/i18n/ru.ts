@@ -348,6 +348,8 @@ const ru: LocaleDictionary = {
     status: { active: 'Учится', completed: 'Завершён', paused: 'Приостановлен' },
   },
   students: {
+    levelNone: 'Нет',
+    uploadFiles: 'Загрузить файл',
     adminTitle: 'Студенты',
     adminSubtitle: 'Учётные записи, пароли, файлы TOPIK и заметки о студентах — в одном месте.',
     total: 'Всего',
@@ -425,6 +427,10 @@ const ru: LocaleDictionary = {
     removeFile: 'Убрать {{name}}',
   },
   dashboard: {
+    activityEmpty: 'Изменений пока нет.',
+    created: 'добавлено',
+    updated: 'обновлено',
+    justNow: 'только что',
     greeting: 'Здравствуйте, {{name}}',
     subtitle: 'Ваши данные, текущий курс и доступ к материалам — одним взглядом.',
     currentCourse: 'Текущий курс',
@@ -463,6 +469,7 @@ const ru: LocaleDictionary = {
     priorities: 'Приоритеты на сегодня',
   },
   profile: {
+    contactNote: 'Если в данных есть ошибка, обратитесь в администрацию.',
     title: 'Мои данные',
     subtitle: 'Личные данные, курс, статус и файлы TOPIK.',
     name: 'Имя',
@@ -620,6 +627,10 @@ const ru: LocaleDictionary = {
     redo: 'Повторить',
   },
   staff: {
+    dragHint: 'Перетаскивайте строки, чтобы изменить порядок на странице «О центре».',
+    reordered: 'Порядок сохранён.',
+    reorderFailed: 'Не удалось сохранить порядок.',
+    dragHandle: 'Перетащить',
     adminTitle: 'Сотрудники',
     adminSubtitle: 'Преподаватели и администрация на странице «О центре». Порядок задаётся числом «Порядок».',
     add: 'Добавить сотрудника',

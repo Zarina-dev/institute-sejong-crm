@@ -13,13 +13,22 @@ export type StudentApiRecord = {
   password?: string
   /** Admin-only memo; absent from the public `/students/:id` response. */
   notes?: string | null
-  topikFiles: Array<{
-    id: string
-    name: string
-    size: number
-    type: string
-  }>
+  topikFiles: TopikFile[]
+  createdAt: string
+  updatedAt: string
 }
+
+export type TopikFile = {
+  id: string
+  name: string
+  size: number
+  type: string
+  /** Site-relative `/uploads/documents/…` path; missing on records saved before files were stored. */
+  url?: string
+}
+
+/** Sentinel stored in `level` for students without a TOPIK certificate. */
+export const LEVEL_NONE = 'none'
 
 export type StudentApiResponse = StudentApiRecord
 

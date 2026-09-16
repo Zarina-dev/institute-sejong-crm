@@ -327,6 +327,8 @@ const ko: LocaleDictionary = {
     status: { active: '수강 중', completed: '수료', paused: '휴학' },
   },
   students: {
+    levelNone: '없음',
+    uploadFiles: '파일 업로드',
     adminTitle: '학생 관리',
     adminSubtitle: '관리자가 각 학생의 ID와 비밀번호를 설정하고, TOPIK 결과 파일과 메모를 관리할 수 있는 화면입니다.',
     total: '총 학생',
@@ -398,6 +400,10 @@ const ko: LocaleDictionary = {
     removeFile: '{{name}} 제거',
   },
   dashboard: {
+    activityEmpty: '아직 변경 사항이 없습니다.',
+    created: '추가',
+    updated: '수정',
+    justNow: '방금',
     greeting: '안녕하세요, {{name}}님',
     subtitle: '기본 정보, 현재 수강 상태, 자료실 접근 권한을 한눈에 확인할 수 있습니다.',
     currentCourse: '현재 수강 과정',
@@ -430,6 +436,7 @@ const ko: LocaleDictionary = {
     priorities: '오늘의 할 일',
   },
   profile: {
+    contactNote: '잘못된 정보가 있을 시 행정실에 연락하세요.',
     title: '내 정보',
     subtitle: '학생의 기본 정보, 현재 과정, 활동 상태, TOPIK 첨부 파일 정보를 확인하는 화면입니다.',
     name: '이름',
@@ -578,6 +585,10 @@ const ko: LocaleDictionary = {
     redo: '다시 실행',
   },
   staff: {
+    dragHint: '행을 끌어서 학당 소개 페이지에 표시되는 순서를 바꿀 수 있습니다.',
+    reordered: '순서를 저장했습니다.',
+    reorderFailed: '순서를 저장할 수 없습니다.',
+    dragHandle: '끌어서 순서 변경',
     adminTitle: '교직원',
     adminSubtitle: '학당 소개 페이지에 표시되는 교사와 운영진입니다. 표시 순서는 “순서” 숫자로 정합니다.',
     add: '교직원 추가',

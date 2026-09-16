@@ -354,6 +354,8 @@ export const en = {
     status: { active: 'Active', completed: 'Completed', paused: 'Paused' },
   },
   students: {
+    levelNone: 'None',
+    uploadFiles: 'Upload file',
     adminTitle: 'Students',
     adminSubtitle: 'Create student accounts, set passwords, and keep TOPIK results and notes in one place.',
     total: 'Total',
@@ -427,6 +429,10 @@ export const en = {
     removeFile: 'Remove {{name}}',
   },
   dashboard: {
+    activityEmpty: 'Nothing has changed yet.',
+    created: 'added',
+    updated: 'updated',
+    justNow: 'just now',
     greeting: 'Hello, {{name}}',
     subtitle: 'Your details, current course and materials access at a glance.',
     currentCourse: 'Current course',
@@ -461,6 +467,7 @@ export const en = {
     priorities: "Today's priorities",
   },
   profile: {
+    contactNote: 'If any of this information is wrong, please contact the administration office.',
     title: 'My profile',
     subtitle: 'Your personal details, course, status and TOPIK files.',
     name: 'Name',
@@ -612,6 +619,10 @@ export const en = {
     redo: 'Redo',
   },
   staff: {
+    dragHint: 'Drag rows to change the order shown on the About page.',
+    reordered: 'Order saved.',
+    reorderFailed: 'Could not save the order.',
+    dragHandle: 'Drag to reorder',
     adminTitle: 'Staff',
     adminSubtitle: 'Teachers and administrators shown on the About page. Drag order is by the “Order” number.',
     add: 'Add staff member',

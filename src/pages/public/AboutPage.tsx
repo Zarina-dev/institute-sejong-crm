@@ -4,6 +4,7 @@ import {
   CalendarOutlined,
   EnvironmentOutlined,
   GlobalOutlined,
+  InstagramOutlined,
   LinkOutlined,
   MailOutlined,
   PhoneOutlined,
@@ -17,6 +18,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import { assetUrl } from '../../api/client'
+import { contact, phoneHref } from '../../app/contact'
 import { usePreferences, type TranslationKey } from '../../app/preferences'
 import { usePublishedStaff } from '../../features/staff/queries'
 import type { StaffMember } from '../../features/staff/types'
@@ -41,13 +43,6 @@ const oshItems: Fact[] = [
 ]
 
 const KSIF_URL = 'https://www.ksif.or.kr/'
-
-/** Contact details are the same in every language. Demo values. */
-const contact = {
-  email: 'osh1@ksi.example',
-  phone: '+996 3222 00 000',
-  address: 'Osh, Kyrgyzstan',
-}
 
 const NO_STAFF: StaffMember[] = []
 
@@ -187,15 +182,15 @@ export function AboutPage() {
           <Paragraph>{t('about.contactCopy')}</Paragraph>
         </div>
         <div className="contact-details">
-          <a href={`mailto:${contact.email}`}>
-            <MailOutlined /> {contact.email}
-          </a>
-          <a href={`tel:${contact.phone.replace(/\s+/g, '')}`}>
-            <PhoneOutlined /> {contact.phone}
-          </a>
           <Text>
             <EnvironmentOutlined /> {contact.address}
           </Text>
+          <a href={phoneHref}>
+            <PhoneOutlined /> {contact.phone}
+          </a>
+          <a href={contact.instagram} target="_blank" rel="noopener noreferrer">
+            <InstagramOutlined /> {contact.instagramHandle}
+          </a>
         </div>
       </Card>
     </div>

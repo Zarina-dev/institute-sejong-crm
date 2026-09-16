@@ -48,14 +48,10 @@ export function StudentCoursesPage() {
         return
       }
 
+      // Contact details are filled in server-side from the student record, so a
+      // typo in the stored e-mail cannot block the application.
       createApplication.mutate(
-        {
-          courseId,
-          studentId: student.id,
-          applicantName: student.name,
-          applicantEmail: student.email,
-          phone: student.phone,
-        },
+        { courseId, studentId: student.id },
         {
           onSuccess: () => message.success(t('courses.appliedShort')),
           onError: (err) => message.error(getErrorMessage(err, t('courses.applyFailed'))),

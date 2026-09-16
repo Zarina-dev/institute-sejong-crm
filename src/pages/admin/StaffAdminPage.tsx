@@ -1,16 +1,20 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons'
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { TableProps } from 'antd'
 import { App, Avatar, Button, Card, Form, Input, InputNumber, Modal, Space, Switch, Table, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { assetUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
-import { useAllStaff, useCreateStaff, useDeleteStaff, useUpdateStaff } from '../../features/staff/queries'
+import { useAllStaff, useCreateStaff, useDeleteStaff, useReorderStaff, useUpdateStaff } from '../../features/staff/queries'
 import type { StaffMember } from '../../features/staff/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { ImageUploadField } from '../../shared/ImageUploadField'
 import { PageHeader } from '../../shared/PageHeader'
+import { DragHandle, SortableRow } from '../../shared/SortableRow'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
 
@@ -39,6 +43,7 @@ export function StaffAdminPage() {
   const createStaff = useCreateStaff()
   const updateStaff = useUpdateStaff()
   const deleteStaff = useDeleteStaff()
+  const reorderStaff = useReorderStaff()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -46,6 +51,26 @@ export function StaffAdminPage() {
   const saving = createStaff.isPending || updateStaff.isPending
 
   const rows = staff.data ?? NO_STAFF
+  const rowIds = useMemo(() => rows.map((member) => member.id), [rows])
+
+  // A small distance threshold keeps a plain click on the handle from starting a drag.
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }))
+
+  const handleDragEnd = useCallback(
+    ({ active, over }: DragEndEvent) => {
+      if (!over || active.id === over.id) {
+        return
+      }
+
+      const next = arrayMove(rowIds, rowIds.indexOf(String(active.id)), rowIds.indexOf(String(over.id)))
+
+      reorderStaff.mutate(next, {
+        onSuccess: () => message.success(t('staff.reordered')),
+        onError: (err) => message.error(getErrorMessage(err, t('staff.reorderFailed'))),
+      })
+    },
+    [message, reorderStaff, rowIds, t],
+  )
 
   const openCreateModal = useCallback(() => {
     setEditingId(null)
@@ -123,6 +148,12 @@ export function StaffAdminPage() {
 
   const columns = useMemo<NonNullable<TableProps<StaffMember>['columns']>>(
     () => [
+      {
+        key: 'drag',
+        width: 44,
+        align: 'center',
+        render: () => <DragHandle label={t('staff.dragHandle')} />,
+      },
       {
         title: t('staff.columns.member'),
         dataIndex: 'name',
@@ -208,16 +239,24 @@ export function StaffAdminPage() {
       <ErrorAlert error={staff.error} fallback={t('staff.loadFailed')} />
 
       <Card className="surface-card">
-        <Table
-          className="admin-table"
-          columns={columns}
-          dataSource={rows}
-          rowKey="id"
-          loading={staff.isPending}
-          pagination={{ pageSize: 10, showSizeChanger: false }}
-          scroll={{ x: 'max-content' }}
-          locale={{ emptyText: t('staff.empty') }}
-        />
+        <Text type="secondary" className="table-hint">
+          {t('staff.dragHint')}
+        </Text>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragEnd={handleDragEnd}>
+          <SortableContext items={rowIds} strategy={verticalListSortingStrategy}>
+            <Table
+              className="admin-table staff-table"
+              components={{ body: { row: SortableRow } }}
+              columns={columns}
+              dataSource={rows}
+              rowKey="id"
+              loading={staff.isPending}
+              pagination={false}
+              scroll={{ x: 'max-content' }}
+              locale={{ emptyText: t('staff.empty') }}
+            />
+          </SortableContext>
+        </DndContext>
       </Card>
 
       <Modal

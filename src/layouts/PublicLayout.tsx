@@ -1,11 +1,14 @@
 import {
   BookOutlined,
   CalendarOutlined,
+  EnvironmentOutlined,
   HomeOutlined,
   InfoCircleOutlined,
+  InstagramOutlined,
   LoginOutlined,
   MenuOutlined,
   MoonOutlined,
+  PhoneOutlined,
   ReadOutlined,
   SolutionOutlined,
   SunOutlined,
@@ -16,6 +19,7 @@ import { Button, Drawer, Layout, Select, Tooltip, Typography } from 'antd'
 import { useState, type ReactNode } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 
+import { contact, phoneHref } from '../app/contact'
 import { languages, usePreferences } from '../app/preferences'
 import { useSession } from '../auth/useSession'
 import { BrandMark } from '../shared/BrandMark'
@@ -156,6 +160,17 @@ export function PublicLayout() {
       </Content>
 
       <Footer className="site-footer">
+        <div className="footer-contact">
+          <Text type="secondary">
+            <EnvironmentOutlined /> {contact.address}
+          </Text>
+          <a href={phoneHref}>
+            <PhoneOutlined /> {contact.phone}
+          </a>
+          <a href={contact.instagram} target="_blank" rel="noopener noreferrer">
+            <InstagramOutlined /> {contact.instagramHandle}
+          </a>
+        </div>
         <Text type="secondary">
           {t('brand.name')} · {new Date().getFullYear()} · {t('brand.footer')}
         </Text>
