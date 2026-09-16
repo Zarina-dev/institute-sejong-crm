@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import { useCurrentStudent } from '../../auth/useCurrentStudent'
-import { useCourseOptions } from '../../features/courses/useCourseOptions'
+import { filterCourseOption, useCourseOptions } from '../../features/courses/useCourseOptions'
 import { MaterialCard } from '../../features/materials/MaterialCard'
 import { useMaterials } from '../../features/materials/queries'
 import type { MaterialsFilters } from '../../features/materials/types'
@@ -94,7 +94,7 @@ export function StudentMaterialsPage() {
               allowClear
               placeholder={t('materials.course')}
               showSearch
-              optionFilterProp="label"
+              filterOption={filterCourseOption}
               value={filters.courseId}
               onChange={(value) => patchFilters({ courseId: value })}
               options={courseOptions}

@@ -1,9 +1,10 @@
 import { SendOutlined } from '@ant-design/icons'
-import { App, Button, Card, Col, Empty, Form, Input, Modal, Row, Skeleton } from 'antd'
+import { App, Button, Form, Input, Modal } from 'antd'
 import { useCallback, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
-import { CourseCard } from '../../features/courses/CourseCard'
+import { CourseGroupList } from '../../features/courses/CourseGroupList'
+import { courseLabel } from '../../features/courses/grouping'
 import { useCourses, useCreateApplication } from '../../features/courses/queries'
 import type { CourseRecord } from '../../features/courses/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
@@ -47,7 +48,7 @@ export function CoursesPage() {
 
     try {
       await createApplication.mutateAsync({ courseId: applyingTo.id, ...values })
-      message.success(t('courses.applied', { course: applyingTo.title }))
+      message.success(t('courses.applied', { course: courseLabel(applyingTo) }))
       closeApply()
     } catch (err) {
       message.error(getErrorMessage(err, t('courses.applyFailed')))
@@ -60,39 +61,18 @@ export function CoursesPage() {
 
       <ErrorAlert error={courses.error} fallback={t('courses.loadFailed')} />
 
-      {courses.isPending ? (
-        <Row gutter={[16, 16]}>
-          {Array.from({ length: 3 }, (_, index) => (
-            <Col xs={24} md={12} lg={8} key={index}>
-              <Card className="surface-card">
-                <Skeleton active paragraph={{ rows: 5 }} />
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      ) : courses.data && courses.data.length > 0 ? (
-        <Row gutter={[16, 16]}>
-          {courses.data.map((course) => (
-            <Col xs={24} md={12} lg={8} key={course.id}>
-              <CourseCard
-                course={course}
-                footer={
-                  <Button type="primary" icon={<SendOutlined />} block onClick={() => openApply(course)}>
-                    {t('courses.apply')}
-                  </Button>
-                }
-              />
-            </Col>
-          ))}
-        </Row>
-      ) : (
-        <Card className="surface-card empty-card">
-          <Empty description={t('courses.empty')} />
-        </Card>
-      )}
-
+      <CourseGroupList
+        courses={courses.data}
+        loading={courses.isPending}
+        emptyText={t('courses.empty')}
+        renderFooter={(course) => (
+          <Button type="primary" icon={<SendOutlined />} block onClick={() => openApply(course)}>
+            {t('courses.apply')}
+          </Button>
+        )}
+      />
       <Modal
-        title={applyingTo ? t('courses.applyTitle', { course: applyingTo.title }) : t('courses.apply')}
+        title={applyingTo ? t('courses.applyTitle', { course: courseLabel(applyingTo) }) : t('courses.apply')}
         open={Boolean(applyingTo)}
         onOk={submitApplication}
         onCancel={closeApply}

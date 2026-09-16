@@ -1,5 +1,5 @@
 import { CalendarOutlined, ClockCircleOutlined, EnvironmentOutlined, UserOutlined } from '@ant-design/icons'
-import { Card, Tag, Typography } from 'antd'
+import { Card, Typography } from 'antd'
 import { memo, useMemo, type ReactNode } from 'react'
 
 import { usePreferences } from '../../app/preferences'
@@ -21,7 +21,8 @@ export const CourseCard = memo(function CourseCard({ course, footer }: CourseCar
   const sessions = useMemo(() => formatSessions(course.sessions, language, course.classroom), [course.sessions, course.classroom, language])
 
   return (
-    <Card className="surface-card course-card" title={course.title} extra={<Tag>{course.subject}</Tag>}>
+    // The class (subject) is the headline; lists are already grouped under the programme (title).
+    <Card className="surface-card course-card" title={course.subject || course.title}>
       <Paragraph type="secondary" ellipsis={{ rows: 3, tooltip: course.description ?? undefined }}>
         {course.description || t('courses.noDescription')}
       </Paragraph>

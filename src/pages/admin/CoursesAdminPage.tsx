@@ -1,12 +1,13 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, Badge, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography } from 'antd'
+import { App, AutoComplete, Badge, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import { statusLabelKey } from '../../features/courses/applicationStatus'
 import { ApplicationsTable } from '../../features/courses/ApplicationsTable'
 import { SessionsEditor } from '../../features/courses/SessionsEditor'
+import { courseTitles, groupCourses } from '../../features/courses/grouping'
 import { formatSessions } from '../../features/courses/sessions'
 import {
   useApplications,
@@ -188,17 +189,39 @@ export function CoursesAdminPage() {
 
   /* ------------------------------ columns ----------------------------- */
 
+  // Rows in programme order, with each programme's classes together; only
+  // the first row of a programme prints its name (a real rowSpan would break
+  // as soon as an expandable row opens inside the block).
+  const { rows, rowSpans } = useMemo(() => {
+    const groups = groupCourses(courses.data)
+    const rows: CourseRecord[] = []
+    const rowSpans = new Map<string, number>()
+
+    for (const group of groups) {
+      group.courses.forEach((course, index) => {
+        rows.push(course)
+        rowSpans.set(course.id, index === 0 ? group.courses.length : 0)
+      })
+    }
+
+    return { rows, rowSpans }
+  }, [courses.data])
+
+  const titleOptions = useMemo(() => courseTitles(courses.data).map((value) => ({ value })), [courses.data])
+
   const columns = useMemo<NonNullable<TableProps<CourseRecord>['columns']>>(
     () => [
       {
-        title: t('courses.columns.course'),
+        title: t('courses.form.title'),
         key: 'title',
-        render: (_, record) => (
-          <div className="cell-stack">
-            <Text strong>{record.title}</Text>
-            <Text type="secondary">{record.subject}</Text>
-          </div>
-        ),
+        width: 160,
+        onCell: (record) => ({ className: rowSpans.get(record.id) ? 'course-programme-cell' : 'course-programme-cell course-programme-cell--continued' }),
+        render: (_, record) => (rowSpans.get(record.id) ? <Text strong>{record.title}</Text> : null),
+      },
+      {
+        title: t('courses.form.subject'),
+        key: 'subject',
+        render: (_, record) => <Text strong>{record.subject}</Text>,
       },
       {
         title: t('courses.columns.operations'),
@@ -270,7 +293,7 @@ export function CoursesAdminPage() {
         ),
       },
     ],
-    [compactActions, handleDelete, handleTogglePublished, language, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, statsByCourse, t],
+    [compactActions, handleDelete, handleTogglePublished, language, openEditModal, pinActions, rowSpans, setPublished.isPending, setPublished.variables?.id, statsByCourse, t],
   )
 
   const expandedRowRender = useCallback(
@@ -331,9 +354,10 @@ export function CoursesAdminPage() {
         <Table
           className="admin-table"
           columns={columns}
-          dataSource={courses.data ?? []}
+          dataSource={rows}
           rowKey="id"
-          pagination={{ pageSize: 10, showSizeChanger: false }}
+          // No paging: a programme's classes must stay on one page for the row span to hold.
+          pagination={false}
           scroll={{ x: 'max-content' }}
           loading={courses.isPending || applications.isPending}
           expandable={{ expandedRowRender }}
@@ -352,18 +376,23 @@ export function CoursesAdminPage() {
         width={760}
       >
         <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false, sessions: [] }}>
-          <Form.Item name="title" label={t('courses.form.title')} rules={[{ required: true, message: t('courses.form.titleRequired') }]}>
-            <Input maxLength={255} />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              {/* Programme: pick an existing one to add a class under it, or type a new one. */}
+              <Form.Item name="title" label={t('courses.form.title')} extra={t('courses.form.titleHint')} rules={[{ required: true, whitespace: true, message: t('courses.form.titleRequired') }]}>
+                <AutoComplete options={titleOptions} placeholder={t('courses.form.titlePlaceholder')} maxLength={255} filterOption={(input, option) => String(option?.value ?? '').toLowerCase().includes(input.toLowerCase())} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="subject" label={t('courses.form.subject')} extra={t('courses.form.subjectHint')} rules={[{ required: true, whitespace: true, message: t('courses.form.subjectRequired') }]}>
+                <Input placeholder={t('courses.form.subjectPlaceholder')} maxLength={120} />
+              </Form.Item>
+            </Col>
+          </Row>
           <Form.Item name="description" label={t('courses.form.description')}>
             <Input.TextArea rows={4} maxLength={4000} showCount />
           </Form.Item>
           <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name="subject" label={t('courses.form.subject')} rules={[{ required: true, message: t('courses.form.subjectRequired') }]}>
-                <Input placeholder={t('courses.form.subjectPlaceholder')} maxLength={120} />
-              </Form.Item>
-            </Col>
             <Col span={12}>
               <Form.Item name="teacherName" label={t('courses.form.teacher')}>
                 <Input maxLength={150} />

@@ -1,11 +1,11 @@
 import { SendOutlined } from '@ant-design/icons'
-import { App, Button, Card, Col, Descriptions, Empty, Row, Skeleton, Typography } from 'antd'
+import { App, Button, Card, Descriptions, Empty, Typography } from 'antd'
 import { useCallback, useMemo } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import { useCurrentStudent } from '../../auth/useCurrentStudent'
 import { ApplicationStatusTag } from '../../features/courses/ApplicationStatusTag'
-import { CourseCard } from '../../features/courses/CourseCard'
+import { CourseGroupList } from '../../features/courses/CourseGroupList'
 import { useApplications, useCourses, useCreateApplication } from '../../features/courses/queries'
 import type { CourseApplicationRecord } from '../../features/courses/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
@@ -92,57 +92,32 @@ export function StudentCoursesPage() {
 
       <ErrorAlert error={courses.error ?? applications.error} fallback={t('courses.loadFailed')} />
 
-      {isPending ? (
-        <Row gutter={[16, 16]}>
-          {Array.from({ length: 3 }, (_, index) => (
-            <Col xs={24} md={12} lg={8} key={index}>
-              <Card className="surface-card">
-                <Skeleton active paragraph={{ rows: 5 }} />
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      ) : courses.data && courses.data.length > 0 ? (
-        <Row gutter={[16, 16]}>
-          {courses.data.map((course) => {
-            const application = myApplicationsByCourse.get(course.id)
-            const submitting = createApplication.isPending && createApplication.variables?.courseId === course.id
+      <CourseGroupList
+        courses={courses.data}
+        loading={isPending}
+        emptyText={t('courses.empty')}
+        renderFooter={(course) => {
+          const application = myApplicationsByCourse.get(course.id)
+          const submitting = createApplication.isPending && createApplication.variables?.courseId === course.id
 
-            return (
-              <Col xs={24} md={12} lg={8} key={course.id}>
-                <CourseCard
-                  course={course}
-                  footer={
-                    application ? (
-                      <div className="application-state">
-                        <ApplicationStatusTag status={application.status} />
-                        <Text type="secondary">
-                          {t('courses.student.appliedOn', { date: formatDate(application.createdAt, language) })}
-                        </Text>
-                      </div>
-                    ) : (
-                      <Button
-                        type="primary"
-                        icon={<SendOutlined />}
-                        block
-                        loading={submitting}
-                        disabled={createApplication.isPending && !submitting}
-                        onClick={() => handleApply(course.id)}
-                      >
-                        {t('courses.apply')}
-                      </Button>
-                    )
-                  }
-                />
-              </Col>
-            )
-          })}
-        </Row>
-      ) : (
-        <Card className="surface-card empty-card">
-          <Empty description={t('courses.empty')} />
-        </Card>
-      )}
-    </div>
+          return application ? (
+            <div className="application-state">
+              <ApplicationStatusTag status={application.status} />
+              <Text type="secondary">{t('courses.student.appliedOn', { date: formatDate(application.createdAt, language) })}</Text>
+            </div>
+          ) : (
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              block
+              loading={submitting}
+              disabled={createApplication.isPending && !submitting}
+              onClick={() => handleApply(course.id)}
+            >
+              {t('courses.apply')}
+            </Button>
+          )
+        }}
+      />    </div>
   )
 }

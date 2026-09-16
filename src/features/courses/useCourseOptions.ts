@@ -1,23 +1,38 @@
-import { useMemo } from 'react'
+﻿import { useMemo } from 'react'
 
+import { groupCourses } from './grouping'
 import { useCourses } from './queries'
 
-const NO_OPTIONS: Array<{ value: string; label: string }> = []
+type Option = { value: string; label: string; searchText: string }
+type GroupedOption = { label: string; title: string; options: Option[] }
+
+const NO_GROUPS: GroupedOption[] = []
+
+/** Matches on programme *and* class name, e.g. "한국 1" finds 한국어 · 한국어 1. */
+export const filterCourseOption = (input: string, option?: Option | GroupedOption) =>
+  Boolean(option && 'searchText' in option && option.searchText.toLowerCase().includes(input.trim().toLowerCase()))
 
 /**
- * Select options backed by real course records — for every place that used
- * to take a free-text course name (materials, students). Courses are
- * labelled "title · subject"; subjects are the distinct values across them.
+ * Select options backed by real course records, grouped the way every list
+ * shows them: programme (title) → classes (subject). Pass `showSearch` and
+ * `filterOption={filterCourseOption}` to the Select.
  */
 export function useCourseOptions(publishedOnly = false) {
   const courses = useCourses(publishedOnly)
 
-  const courseOptions = useMemo(
+  const courseOptions = useMemo<GroupedOption[]>(
     () =>
-      courses.data?.map((course) => ({
-        value: course.id,
-        label: course.subject ? `${course.title} · ${course.subject}` : course.title,
-      })) ?? NO_OPTIONS,
+      courses.data
+        ? groupCourses(courses.data).map((group) => ({
+            label: group.title,
+            title: group.title,
+            options: group.courses.map((course) => ({
+              value: course.id,
+              label: course.subject || course.title,
+              searchText: `${course.title} ${course.subject}`,
+            })),
+          }))
+        : NO_GROUPS,
     [courses.data],
   )
 

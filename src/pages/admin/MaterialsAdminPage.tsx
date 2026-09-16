@@ -31,7 +31,7 @@ import {
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
-import { useCourseOptions } from '../../features/courses/useCourseOptions'
+import { filterCourseOption, useCourseOptions } from '../../features/courses/useCourseOptions'
 import {
   useCreateMaterial,
   useDeleteMaterial,
@@ -302,7 +302,7 @@ export function MaterialsAdminPage() {
           </Col>
           <Col xs={24} sm={12} lg={6}>
             <Text>{t('materials.course')}</Text>
-            <Select allowClear showSearch optionFilterProp="label" placeholder={t('materials.course')} value={filters.courseId} onChange={setCourse} options={courseOptions} style={{ width: '100%' }} />
+            <Select allowClear showSearch filterOption={filterCourseOption} placeholder={t('materials.course')} value={filters.courseId} onChange={setCourse} options={courseOptions} style={{ width: '100%' }} />
           </Col>
         </Row>
 
@@ -361,7 +361,7 @@ export function MaterialsAdminPage() {
           </Form.Item>
           {/* Subject comes from the course record; both labels are derived server-side. */}
           <Form.Item name="courseId" label={t('materials.course')} rules={[{ required: true, message: t('materials.form.courseRequired') }]}>
-            <Select showSearch optionFilterProp="label" placeholder={t('materials.course')} options={courseOptions} />
+            <Select showSearch filterOption={filterCourseOption} placeholder={t('materials.course')} options={courseOptions} />
           </Form.Item>
           {!editingId ? (
             <Form.Item label={t('materials.form.file')} extra={t('materials.form.fileHint', { max: formatFileSize(MAX_MATERIAL_FILE_SIZE) })}>

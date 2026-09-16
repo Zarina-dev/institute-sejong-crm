@@ -5,7 +5,7 @@ import { useCallback, useMemo, useRef, useState, type ChangeEvent, type Key } fr
 
 import { authedUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
-import { useCourseOptions } from '../../features/courses/useCourseOptions'
+import { filterCourseOption, useCourseOptions } from '../../features/courses/useCourseOptions'
 import { LEVEL_NONE, type StudentApiRecord } from '../../features/students/api'
 import { formatLevel } from '../../features/students/level'
 import { DOCUMENT_ACCEPT, MAX_DOCUMENT_SIZE, uploadDocument } from '../../features/uploads/api'
@@ -455,7 +455,7 @@ export function StudentAdminPage() {
             </Col>
             <Col span={12}>
               <Form.Item name="courseId" label={t('students.form.course')}>
-                <Select allowClear showSearch optionFilterProp="label" options={courseOptions} placeholder={t('students.form.noCourse')} />
+                <Select allowClear showSearch filterOption={filterCourseOption} options={courseOptions} placeholder={t('students.form.noCourse')} />
               </Form.Item>
             </Col>
           </Row>
