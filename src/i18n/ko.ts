@@ -112,6 +112,7 @@ const ko: LocaleDictionary = {
     portalSubtitle: '성적, 개인 정보, 학업 관리를 한곳에서 하세요.',
   },
   home: {
+    programmesTitle: '개설 과정',
     heroTag: '2026 / 2027 학년도',
     heroTitle: '오시에서 배우는 한국어, 세종학당과 함께.',
     heroCopy: '초급부터 TOPIK까지의 과정, 주간 시간표, 학습 자료, 학당 소식을 한곳에서 확인하세요.',
@@ -216,10 +217,12 @@ const ko: LocaleDictionary = {
     },
   },
   courses: {
+    portalCalloutTitle: '수강을 원하시나요?',
+    portalCalloutCopy: '학생 포털에 로그인한 뒤 신청할 수 있습니다. 신규 학생은 행정실에서 계정을 받으세요.',
     classCount_one: '{{count}}개 반',
     classCount_other: '{{count}}개 반',
     publicTitle: '수강',
-    publicSubtitle: '공개 중인 수강 과정을 확인하고 신청할 수 있습니다.',
+    publicSubtitle: '현재 개설된 과정과 반을 확인할 수 있습니다.',
     adminTitle: '수강 관리',
     adminSubtitle: '수강 과정의 공개 여부, 일정, 담당교수 정보를 관리하고 학생 신청 상태를 한눈에 확인할 수 있습니다.',
     count_other: '{{count}}개의 과정',

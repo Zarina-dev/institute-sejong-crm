@@ -24,6 +24,36 @@ export function formatDate(value: string | Date | null | undefined, language: La
   return formatter.format(date)
 }
 
+const rangeFormatters = new Map<Language, Intl.DateTimeFormat>()
+
+/**
+ * "2026년 9월 1일 ~ 12월 20일" / "Sep 1 – Dec 20, 2026": the shared year is
+ * printed once. One side missing → "from …" / "until …" via the ~ form; both
+ * missing → null so the caller can show its own placeholder.
+ */
+export function formatDateRange(start: string | null | undefined, end: string | null | undefined, language: Language = 'en'): string | null {
+  const from = start ? new Date(`${start}T00:00:00`) : null
+  const to = end ? new Date(`${end}T00:00:00`) : null
+
+  if (!from && !to) {
+    return null
+  }
+
+  let formatter = rangeFormatters.get(language)
+
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(language, { year: 'numeric', month: 'short', day: 'numeric' })
+    rangeFormatters.set(language, formatter)
+  }
+
+  if (from && to) {
+    // formatRange is ES2021; the lib target is older, so the type is widened by hand.
+    return (formatter as Intl.DateTimeFormat & { formatRange(a: Date, b: Date): string }).formatRange(from, to)
+  }
+
+  return from ? `${formatter.format(from)} ~` : `~ ${formatter.format(to as Date)}`
+}
+
 export function formatFileSize(size?: number | null): string {
   if (!size) {
     return '—'

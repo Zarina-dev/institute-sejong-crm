@@ -127,6 +127,7 @@ export const en = {
     portalSubtitle: 'Review results, access personal information, and manage your studies in one secure place.',
   },
   home: {
+    programmesTitle: 'What we teach',
     heroTag: '2026 / 2027 academic year',
     heroTitle: 'Learn Korean in Osh — with King Sejong Institute.',
     heroCopy: 'Courses from beginner to TOPIK, the weekly timetable, learning materials and institute news — in one place for learners, applicants and staff.',
@@ -232,10 +233,12 @@ export const en = {
     },
   },
   courses: {
+    portalCalloutTitle: 'Want to join a class?',
+    portalCalloutCopy: 'Sign in to the student portal to apply; new students get their login from the office.',
     classCount_one: '{{count}} class',
     classCount_other: '{{count}} classes',
     publicTitle: 'Courses',
-    publicSubtitle: 'Browse the courses currently open and apply.',
+    publicSubtitle: 'Programmes and classes currently offered.',
     adminTitle: 'Course management',
     adminSubtitle: 'Manage visibility, schedule and teachers, and review applications at a glance.',
     count_one: '{{count}} course',
