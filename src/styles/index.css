@@ -2577,3 +2577,10 @@ a.activity-row:hover b {
 .staff-table .ant-table-row:hover .drag-handle {
   color: var(--color-text-muted);
 }
+
+.filter-footer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}

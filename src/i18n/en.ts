@@ -219,8 +219,10 @@ export const en = {
     fileRejectedType: 'Unsupported file type (.{{ext}}). Allowed: {{allowed}}',
     fileRejectedSize: 'File is too large ({{size}}). Maximum is {{max}}.',
     student: {
+      all: 'All materials',
+      myCourseOnly: 'My course only',
       title: 'Materials',
-      subtitle: 'Materials for your approved course, ready to download.',
+      subtitle: 'Everything your teachers have published, ready to download.',
       currentCourse: 'Your course',
       locked: 'You have no approved course yet, so materials are not available. They appear here after the administrator approves your application.',
       empty: 'No published materials for this course yet.',

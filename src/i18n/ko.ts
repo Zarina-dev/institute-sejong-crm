@@ -203,8 +203,10 @@ const ko: LocaleDictionary = {
     fileRejectedType: '지원하지 않는 파일 형식입니다 (.{{ext}}). 허용: {{allowed}}',
     fileRejectedSize: '파일이 너무 큽니다 ({{size}}). 최대 {{max}}까지 가능합니다.',
     student: {
+      all: '전체 자료',
+      myCourseOnly: '내 과정만',
       title: '자료실',
-      subtitle: '승인된 과정의 자료를 확인하고 다운로드할 수 있습니다.',
+      subtitle: '선생님이 공개한 모든 학습 자료를 내려받을 수 있습니다.',
       currentCourse: '현재 접근 가능한 과정',
       locked: '현재 승인된 과정이 없어 자료실에 접근할 수 없습니다. 관리자 승인 후 해당 과정 자료가 표시됩니다.',
       empty: '해당 과정에 공개된 자료가 없습니다.',
