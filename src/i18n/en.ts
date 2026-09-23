@@ -182,6 +182,10 @@ export const en = {
     empty: 'No open courses right now.',
     periodUnset: 'To be announced',
     form: {
+      startDateRequired: 'Choose a start date.',
+      endDateRequired: 'Choose an end date.',
+      teacherPlaceholder: 'Pick a teacher',
+      teacherEmpty: 'Add teachers under 교직원 first.',
       category: 'Type',
       categoryLanguage: 'Language course',
       categoryCulture: 'Culture class',

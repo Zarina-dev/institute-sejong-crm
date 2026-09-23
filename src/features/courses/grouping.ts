@@ -16,6 +16,16 @@ const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'bas
 
 export const compareNatural = (a: string, b: string) => collator.compare(a, b)
 
+/**
+ * Korean is what the institute exists to teach, so its programme heads every
+ * list whatever the UI language calls it; the rest follow alphabetically.
+ */
+const KOREAN_PROGRAMME = /한국어|korean|корей|корей тили/i
+
+const programmeRank = (title: string) => (KOREAN_PROGRAMME.test(title) ? 0 : 1)
+
+export const compareProgrammes = (a: string, b: string) => programmeRank(a) - programmeRank(b) || compareNatural(a, b)
+
 export function groupCourses(courses: readonly CourseRecord[] | undefined): CourseGroup[] {
   const byTitle = new Map<string, CourseRecord[]>()
 
@@ -33,7 +43,7 @@ export function groupCourses(courses: readonly CourseRecord[] | undefined): Cour
   return Array.from(byTitle, ([title, list]) => ({
     title,
     courses: [...list].sort((a, b) => compareNatural(a.subject, b.subject)),
-  })).sort((a, b) => compareNatural(a.title, b.title))
+  })).sort((a, b) => compareProgrammes(a.title, b.title))
 }
 
 /** Distinct programme titles, for the "add course" form and filters. */

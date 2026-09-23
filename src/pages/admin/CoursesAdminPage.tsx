@@ -8,6 +8,7 @@ import { SessionsEditor } from '../../features/courses/SessionsEditor'
 import { courseTitles, groupCourses } from '../../features/courses/grouping'
 import { formatSessions } from '../../features/courses/sessions'
 import { useCourses, useCreateCourse, useDeleteCourse, useSetCoursePublished, useUpdateCourse } from '../../features/courses/queries'
+import { useAllStaff } from '../../features/staff/queries'
 import type { CourseRecord, CourseSession } from '../../features/courses/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
@@ -37,6 +38,7 @@ export function CoursesAdminPage() {
   const { pinActions, compactActions } = useTableLayout()
 
   const courses = useCourses(false)
+  const staff = useAllStaff()
   const createCourse = useCreateCourse()
   const updateCourse = useUpdateCourse()
   const deleteCourse = useDeleteCourse()
@@ -147,6 +149,22 @@ export function CoursesAdminPage() {
   }, [courses.data])
 
   const titleOptions = useMemo(() => courseTitles(courses.data).map((value) => ({ value })), [courses.data])
+
+  /**
+   * Teachers come from 교직원. Names already stored on a course are kept as
+   * options too, so editing an old course never silently drops its teacher.
+   */
+  const staffOptions = useMemo(() => {
+    const names = new Set((staff.data ?? []).map((member) => member.name))
+
+    for (const course of courses.data ?? []) {
+      if (course.teacherName) {
+        names.add(course.teacherName)
+      }
+    }
+
+    return [...names].sort((a, b) => a.localeCompare(b)).map((value) => ({ value, label: value }))
+  }, [courses.data, staff.data])
 
   const columns = useMemo<NonNullable<TableProps<CourseRecord>['columns']>>(
     () => [
@@ -293,8 +311,15 @@ export function CoursesAdminPage() {
           </Form.Item>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="teacherName" label={t('courses.form.teacher')}>
-                <Input maxLength={150} />
+              <Form.Item name="teacherName" label={t('courses.form.teacher')} extra={staffOptions.length === 0 ? t('courses.form.teacherEmpty') : undefined}>
+                <Select
+                  allowClear
+                  showSearch
+                  optionFilterProp="label"
+                  placeholder={t('courses.form.teacherPlaceholder')}
+                  options={staffOptions}
+                  notFoundContent={t('courses.form.teacherEmpty')}
+                />
               </Form.Item>
             </Col>
           </Row>
@@ -306,7 +331,7 @@ export function CoursesAdminPage() {
           </Form.Item>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="startDate" label={t('courses.form.startDate')}>
+              <Form.Item name="startDate" label={t('courses.form.startDate')} rules={[{ required: true, message: t('courses.form.startDateRequired') }]}>
                 <Input type="date" />
               </Form.Item>
             </Col>
@@ -316,6 +341,7 @@ export function CoursesAdminPage() {
                 label={t('courses.form.endDate')}
                 dependencies={['startDate']}
                 rules={[
+                  { required: true, message: t('courses.form.endDateRequired') },
                   ({ getFieldValue }) => ({
                     validator: (_, value?: string) =>
                       !value || !getFieldValue('startDate') || value >= getFieldValue('startDate')

@@ -166,6 +166,10 @@ const ky: LocaleDictionary = {
     empty: 'Азыр ачык курстар жок.',
     periodUnset: 'Такталууда',
     form: {
+      startDateRequired: 'Башталуу күнүн тандаңыз.',
+      endDateRequired: 'Аяктоо күнүн тандаңыз.',
+      teacherPlaceholder: 'Мугалимди тандаңыз',
+      teacherEmpty: 'Адегенде «Кызматкерлер» бөлүмүнөн мугалим кошуңуз.',
       category: 'Түрү',
       categoryLanguage: 'Тил курсу',
       categoryCulture: 'Маданий сабак',

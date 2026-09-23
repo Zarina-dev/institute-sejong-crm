@@ -164,6 +164,10 @@ const ko: LocaleDictionary = {
     empty: '공개된 과정이 없습니다.',
     periodUnset: '미정',
     form: {
+      startDateRequired: '시작일을 선택하세요.',
+      endDateRequired: '종료일을 선택하세요.',
+      teacherPlaceholder: '강사를 선택하세요',
+      teacherEmpty: '먼저 교직원 메뉴에서 강사를 추가하세요.',
       category: '구분',
       categoryLanguage: '어학 강좌',
       categoryCulture: '문화 강좌',

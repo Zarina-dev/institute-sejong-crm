@@ -172,6 +172,10 @@ const ru: LocaleDictionary = {
     empty: 'Сейчас нет открытых курсов.',
     periodUnset: 'Уточняется',
     form: {
+      startDateRequired: 'Выберите дату начала.',
+      endDateRequired: 'Выберите дату окончания.',
+      teacherPlaceholder: 'Выберите преподавателя',
+      teacherEmpty: 'Сначала добавьте преподавателей в разделе «Сотрудники».',
       category: 'Тип',
       categoryLanguage: 'Языковой курс',
       categoryCulture: 'Культурное занятие',
