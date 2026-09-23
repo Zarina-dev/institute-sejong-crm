@@ -1,77 +1,96 @@
 import {
-  BookOutlined,
-  CalendarOutlined,
+  DownOutlined,
   EnvironmentOutlined,
-  HomeOutlined,
-  InfoCircleOutlined,
   InstagramOutlined,
   LoginOutlined,
   MenuOutlined,
   MoonOutlined,
   PhoneOutlined,
-  SolutionOutlined,
   SunOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
-import { Button, Drawer, Layout, Select, Tooltip, Typography } from 'antd'
-import { useState, type ReactNode } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { Button, Drawer, Dropdown, Layout, Select, Tooltip, Typography } from 'antd'
+import { useState } from 'react'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 
 import { contact, phoneHref } from '../app/contact'
 import { languages, usePreferences } from '../app/preferences'
 import { useSession } from '../auth/useSession'
 import { BrandMark } from '../shared/BrandMark'
+import { navigation } from './navigation'
 
 const { Header, Content, Footer } = Layout
 const { Text } = Typography
-
-type NavItem = { to: string; labelKey: 'nav.home' | 'nav.schedule' | 'nav.news' | 'nav.courses' | 'nav.about'; icon: ReactNode }
-
-const navigation: NavItem[] = [
-  { to: '/', labelKey: 'nav.home', icon: <HomeOutlined /> },
-  { to: '/courses', labelKey: 'nav.courses', icon: <SolutionOutlined /> },
-  { to: '/schedule', labelKey: 'nav.schedule', icon: <CalendarOutlined /> },
-  { to: '/news', labelKey: 'nav.news', icon: <BookOutlined /> },
-  { to: '/about', labelKey: 'nav.about', icon: <InfoCircleOutlined /> },
-]
 
 export function PublicLayout() {
   const [menuOpen, setMenuOpen] = useState(false)
   const { language, setLanguage, theme, toggleTheme, t } = usePreferences()
   const session = useSession()
+  const { pathname } = useLocation()
 
   const closeMenu = () => setMenuOpen(false)
 
-  const renderNav = (variant: 'desktop' | 'mobile') => (
-    <nav className={variant === 'mobile' ? 'mobile-nav' : 'site-nav'} aria-label={t('nav.navigation')}>
-      {/* NavLink already applies `.active` and aria-current="page". */}
-      {navigation.map((item) => (
-        <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={closeMenu}>
-          {item.icon}
-          <span>{t(item.labelKey)}</span>
-        </NavLink>
-      ))}
-    </nav>
-  )
+  /** A section is current when the route is inside it, not just on its landing page. */
+  const isCurrentSection = (to: string) => pathname === to || pathname.startsWith(`${to}/`)
 
   /**
    * The admin panel is a separate full-screen app, so it opens in its own
-   * tab and leaves the public site where it was. The sign-in page is part
-   * of the public site and navigates in place.
+   * tab and leaves the public site where it was. Same origin and an opener,
+   * so the new tab inherits the session from sessionStorage.
    */
   const portal = session
     ? { to: '/admin', label: t('session.adminPanel'), icon: <TeamOutlined />, newTab: true }
     : { to: '/login', label: t('nav.login'), icon: <LoginOutlined />, newTab: false }
-
-  // Same origin, so no noopener/noreferrer: with an opener the browser
-  // copies sessionStorage into the new tab, which is what keeps the admin
-  // panel signed in (the BroadcastChannel handshake is the fallback).
   const portalLinkProps = portal.newTab ? { target: '_blank' as const } : {}
+
   return (
     <Layout className="app-shell">
       <a className="skip-link" href="#main-content">
         {t('nav.skipToContent')}
       </a>
+
+      {/* Utility strip: contact details and preferences, above the main menu. */}
+      <div className="utility-bar">
+        <div className="utility-bar__inner">
+          <div className="utility-bar__contact">
+            <a href={phoneHref}>
+              <PhoneOutlined /> {contact.phone}
+            </a>
+            <span>
+              <EnvironmentOutlined /> {contact.address}
+            </span>
+            <a href={contact.instagram} target="_blank" rel="noopener noreferrer">
+              <InstagramOutlined /> {contact.instagramHandle}
+            </a>
+          </div>
+
+          <div className="utility-bar__actions">
+            <Tooltip title={t(theme === 'light' ? 'theme.dark' : 'theme.light')}>
+              <Button
+                type="text"
+                size="small"
+                aria-label={t('theme.label')}
+                icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
+                onClick={toggleTheme}
+              />
+            </Tooltip>
+            <Select
+              aria-label={t('language.label')}
+              className="language-select"
+              size="small"
+              variant="borderless"
+              value={language}
+              onChange={setLanguage}
+              options={languages.map(({ value, label, title }) => ({ value, label, title }))}
+            />
+            <NavLink to={portal.to} {...portalLinkProps}>
+              <Button type="primary" size="small" icon={portal.icon}>
+                {portal.label}
+              </Button>
+            </NavLink>
+          </div>
+        </div>
+      </div>
 
       <Header className="site-header">
         <div className="header-inner">
@@ -84,57 +103,66 @@ export function PublicLayout() {
             </span>
           </NavLink>
 
-          {renderNav('desktop')}
-
-          <div className="header-actions">
-            <Tooltip title={t(theme === 'light' ? 'theme.dark' : 'theme.light')}>
-              <Button
-                className="icon-button"
-                aria-label={t('theme.label')}
-                icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
-                onClick={toggleTheme}
-              />
-            </Tooltip>
-
-            <Select
-              aria-label={t('language.label')}
-              className="language-select"
-              value={language}
-              onChange={setLanguage}
-              options={languages.map(({ value, label, title }) => ({ value, label, title }))}
-            />
-
-            <NavLink to={portal.to} {...portalLinkProps}>
-              <Button type="primary" icon={portal.icon}>
-                {portal.label}
-              </Button>
+          <nav className="site-nav" aria-label={t('nav.navigation')}>
+            <NavLink to="/" end>
+              {t('siteNav.home')}
             </NavLink>
+            {navigation.map((section) => (
+              <Dropdown
+                key={section.to}
+                placement="bottomLeft"
+                menu={{
+                  items: section.children.map((child) => ({
+                    key: child.to,
+                    label: <Link to={child.to}>{t(child.labelKey)}</Link>,
+                  })),
+                }}
+              >
+                <Link
+                  to={section.to}
+                  className={isCurrentSection(section.to) ? 'active' : undefined}
+                  aria-current={isCurrentSection(section.to) ? 'page' : undefined}
+                >
+                  {t(section.labelKey)} <DownOutlined className="site-nav__caret" />
+                </Link>
+              </Dropdown>
+            ))}
+          </nav>
 
-            <Button
-              className="menu-button icon-button"
-              aria-label={t('nav.menu')}
-              aria-expanded={menuOpen}
-              icon={<MenuOutlined />}
-              onClick={() => setMenuOpen(true)}
-            />
-          </div>
+          <Button
+            className="menu-button icon-button"
+            aria-label={t('nav.menu')}
+            aria-expanded={menuOpen}
+            icon={<MenuOutlined />}
+            onClick={() => setMenuOpen(true)}
+          />
         </div>
       </Header>
 
       <Drawer title={t('nav.navigation')} placement="right" open={menuOpen} onClose={closeMenu}>
-        {renderNav('mobile')}
-        <NavLink to={portal.to} onClick={closeMenu} {...portalLinkProps}>
-          <Button type="primary" block icon={portal.icon}>
-            {portal.label}
-          </Button>
-        </NavLink>
-        {/* Below 520px the header drops these two to fit; they live here instead. */}
+        <nav className="mobile-nav" aria-label={t('nav.navigation')}>
+          <NavLink to="/" end onClick={closeMenu}>
+            {t('siteNav.home')}
+          </NavLink>
+          {navigation.map((section) => (
+            <div className="mobile-nav__section" key={section.to}>
+              <Text className="mobile-nav__label">{t(section.labelKey)}</Text>
+              {section.children.map((child) => (
+                <NavLink key={child.to} to={child.to} end onClick={closeMenu}>
+                  {t(child.labelKey)}
+                </NavLink>
+              ))}
+            </div>
+          ))}
+        </nav>
+
         <div className="drawer-preferences">
-          <Button
-            block
-            icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
-            onClick={toggleTheme}
-          >
+          <NavLink to={portal.to} onClick={closeMenu} {...portalLinkProps}>
+            <Button type="primary" block icon={portal.icon}>
+              {portal.label}
+            </Button>
+          </NavLink>
+          <Button block icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />} onClick={toggleTheme}>
             {t(theme === 'light' ? 'theme.dark' : 'theme.light')}
           </Button>
           <Select
@@ -151,18 +179,39 @@ export function PublicLayout() {
       </Content>
 
       <Footer className="site-footer">
-        <div className="footer-contact">
-          <Text type="secondary">
-            <EnvironmentOutlined /> {contact.address}
-          </Text>
-          <a href={phoneHref}>
-            <PhoneOutlined /> {contact.phone}
-          </a>
-          <a href={contact.instagram} target="_blank" rel="noopener noreferrer">
-            <InstagramOutlined /> {contact.instagramHandle}
-          </a>
+        <div className="site-footer__columns">
+          <div className="site-footer__brand">
+            <BrandMark size={36} />
+            <strong>{t('brand.name')}</strong>
+            <Text type="secondary">{t('brand.tagline')}</Text>
+          </div>
+
+          {navigation.map((section) => (
+            <div className="site-footer__column" key={section.to}>
+              <strong>{t(section.labelKey)}</strong>
+              {section.children.map((child) => (
+                <Link key={child.to} to={child.to}>
+                  {t(child.labelKey)}
+                </Link>
+              ))}
+            </div>
+          ))}
+
+          <div className="site-footer__column">
+            <strong>{t('about.contactKicker')}</strong>
+            <span>
+              <EnvironmentOutlined /> {contact.address}
+            </span>
+            <a href={phoneHref}>
+              <PhoneOutlined /> {contact.phone}
+            </a>
+            <a href={contact.instagram} target="_blank" rel="noopener noreferrer">
+              <InstagramOutlined /> {contact.instagramHandle}
+            </a>
+          </div>
         </div>
-        <Text type="secondary">
+
+        <Text type="secondary" className="site-footer__copyright">
           {t('brand.name')} · {new Date().getFullYear()} · {t('brand.footer')}
         </Text>
       </Footer>

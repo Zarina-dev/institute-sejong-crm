@@ -327,19 +327,6 @@
   padding: var(--space-10) var(--layout-gutter) var(--space-16);
 }
 
-.site-footer.ant-layout-footer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  padding: var(--space-7) var(--layout-gutter);
-  background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
-  color: var(--color-text-subtle);
-  font-size: var(--text-sm);
-}
-
 /* ==========================================================================
    Home page
    ========================================================================== */
@@ -1903,12 +1890,6 @@ a.activity-row:hover b {
     padding-inline: var(--space-3);
   }
 
-  .site-footer.ant-layout-footer {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-3);
-  }
-
 }
 
 /* ==========================================================================
@@ -2393,4 +2374,374 @@ a.activity-row:hover b {
 
 .portal-callout__actions a {
   text-decoration: none;
+}
+
+/* ==========================================================================
+   Site chrome — utility bar, dropdown nav, multi-column footer
+   (structure follows the plan: 5 sections, each with its own sub-pages)
+   ========================================================================== */
+
+.utility-bar {
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-sunken);
+  font-size: var(--text-sm);
+}
+
+.utility-bar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  max-width: var(--layout-container);
+  margin-inline: auto;
+  padding: var(--space-1) var(--layout-gutter);
+}
+
+.utility-bar__contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  color: var(--color-text-muted);
+}
+
+.utility-bar__contact a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.utility-bar__contact a:hover {
+  color: var(--color-primary-text);
+}
+
+.utility-bar__contact .anticon {
+  margin-right: var(--space-1);
+  color: var(--color-primary-text);
+}
+
+.utility-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.site-nav__caret {
+  font-size: 9px;
+  opacity: 0.6;
+}
+
+/* The section links are anchors inside a Dropdown, so they need the same
+   affordances the NavLinks get. */
+.site-nav > a {
+  cursor: pointer;
+}
+
+.mobile-nav__section {
+  display: grid;
+  gap: 2px;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.mobile-nav__label.ant-typography {
+  padding: 0 var(--space-3);
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.site-footer.ant-layout-footer {
+  padding: var(--space-10) var(--layout-gutter) var(--space-6);
+  background: var(--color-rail);
+  border-top: 0;
+  color: var(--color-rail-text);
+}
+
+.site-footer__columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-8);
+  max-width: var(--layout-container);
+  margin-inline: auto;
+  text-align: left;
+}
+
+.site-footer__brand {
+  display: grid;
+  grid-column: span 2;
+  justify-items: start;
+  gap: var(--space-2);
+}
+
+.site-footer__brand strong {
+  color: var(--neutral-0);
+  font-size: var(--text-md);
+}
+
+.site-footer__brand .ant-typography {
+  color: var(--color-rail-text-muted);
+  font-size: var(--text-sm);
+}
+
+.site-footer__column {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.site-footer__column strong {
+  margin-bottom: var(--space-1);
+  color: var(--neutral-0);
+  font-size: var(--text-base);
+}
+
+.site-footer__column a,
+.site-footer__column span {
+  color: var(--color-rail-text-muted);
+  text-decoration: none;
+}
+
+.site-footer__column a:hover {
+  color: var(--neutral-0);
+}
+
+.site-footer__column .anticon {
+  margin-right: var(--space-1);
+}
+
+.site-footer__copyright.ant-typography {
+  display: block;
+  max-width: var(--layout-container);
+  margin: var(--space-8) auto 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-rail-border);
+  color: var(--color-rail-text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* ---- Admin-written content blocks ---- */
+
+.content-card .ant-card-body {
+  padding: var(--space-8);
+}
+
+.content-card h2.ant-typography:first-child {
+  margin-top: 0;
+}
+
+/* ---- 오시는 길 ---- */
+
+.location-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: var(--space-6);
+}
+
+.location-facts dl {
+  display: grid;
+  gap: var(--space-5);
+  margin: 0 0 var(--space-6);
+}
+
+.location-facts dt {
+  margin-bottom: var(--space-1);
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.location-facts dd {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-md);
+}
+
+.location-facts .anticon {
+  margin-right: var(--space-2);
+  color: var(--color-primary-text);
+}
+
+.location-map .ant-card-body {
+  padding: 0;
+}
+
+.location-map iframe {
+  display: block;
+  width: 100%;
+  min-height: 340px;
+  height: 100%;
+  border: 0;
+  border-radius: var(--radius-xl);
+}
+
+.location-note.ant-typography {
+  display: block;
+  font-size: var(--text-sm);
+}
+
+/* ---- 행사 사진첩 ---- */
+
+.gallery-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.gallery-filters > div {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.gallery-filters__years {
+  justify-items: end;
+}
+
+.album-link {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.album-card {
+  height: 100%;
+}
+
+.album-card .ant-card-cover img,
+.album-card__placeholder {
+  height: 180px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.album-card__placeholder {
+  display: grid;
+  place-items: center;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+  font-size: 32px;
+}
+
+.album-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.album-card h4.ant-typography {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text);
+}
+
+.album-card__link {
+  color: var(--color-primary-text);
+  font-weight: var(--weight-semibold);
+}
+
+.album-thumb {
+  width: 56px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.album-thumb--empty {
+  display: inline-grid;
+  place-items: center;
+  background: var(--color-surface-sunken);
+  color: var(--color-text-faint);
+}
+
+/* ---- Site content editor ---- */
+
+.content-admin {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.content-admin__list .ant-card-body {
+  padding: var(--space-3);
+}
+
+.content-admin__list nav {
+  display: grid;
+  gap: 2px;
+}
+
+.content-admin__list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.content-admin__list button:hover {
+  background: var(--color-surface-hover);
+}
+
+.content-admin__list button.is-active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+  font-weight: var(--weight-semibold);
+}
+
+.content-admin__filled {
+  margin-left: var(--space-1);
+  color: var(--color-success);
+  font-size: 11px;
+}
+
+.content-admin__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+@media (max-width: 1100px) {
+  .utility-bar__contact span:nth-child(2) {
+    display: none;
+  }
+
+  .location-layout,
+  .content-admin {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .utility-bar__contact {
+    display: none;
+  }
+
+  .site-footer__columns {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--space-6);
+  }
+
+  .gallery-filters__years {
+    justify-items: start;
+  }
 }

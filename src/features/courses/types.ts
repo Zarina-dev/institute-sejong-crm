@@ -9,11 +9,15 @@ export type CourseSession = {
   classroom?: string | null
 }
 
+export type CourseCategory = 'language' | 'culture'
+
 export type CourseRecord = {
   id: string
   title: string
   description?: string | null
   subject: string
+  /** 강좌 안내 (language) or 문화 강좌 (culture); older rows default to language. */
+  category?: CourseCategory
   level?: string | null
   teacherName?: string | null
   /** Weekly meeting pattern; the public timetable is generated from it. */

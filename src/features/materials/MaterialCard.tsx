@@ -2,7 +2,7 @@ import { DownloadOutlined, FileTextOutlined } from '@ant-design/icons'
 import { Button, Card, Tag, Typography } from 'antd'
 import { memo } from 'react'
 
-import { authedUrl } from '../../api/client'
+import { apiUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
 import { formatDate, formatFileSize } from '../../shared/format'
 import type { MaterialItem } from './types'
@@ -40,7 +40,7 @@ export const MaterialCard = memo(function MaterialCard({ item }: { item: Materia
           size="small"
           icon={<DownloadOutlined />}
           disabled={!item.storageKey}
-          href={item.storageKey ? authedUrl(`/materials/${item.id}/download`) : undefined}
+          href={item.storageKey ? apiUrl(`/materials/${item.id}/download`) : undefined}
           target="_blank"
           rel="noopener noreferrer"
         >

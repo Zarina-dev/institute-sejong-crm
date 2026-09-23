@@ -2,12 +2,13 @@ import { CalendarOutlined, EnvironmentOutlined, FilterOutlined, LeftOutlined, Ri
 import { Button, Card, Col, Empty, Row, Select, Skeleton, Space, Tag, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 
-import { usePreferences } from '../../app/preferences'
-import { useTimetable } from '../../features/courses/queries'
-import type { TimetableEntry } from '../../features/courses/types'
-import { addDays, formatWeekLabel, startOfWeek, weekRange } from '../../features/courses/week'
-import { ErrorAlert } from '../../shared/ErrorAlert'
-import { PageHeader } from '../../shared/PageHeader'
+import { usePreferences } from '../../../app/preferences'
+import { useTimetable } from '../../../features/courses/queries'
+import type { TimetableEntry } from '../../../features/courses/types'
+import { addDays, formatWeekLabel, startOfWeek, weekRange } from '../../../features/courses/week'
+import { ContentSection } from '../../../features/content/ContentSection'
+import { ErrorAlert } from '../../../shared/ErrorAlert'
+import { PageHeader } from '../../../shared/PageHeader'
 
 const { Title, Text } = Typography
 
@@ -21,7 +22,7 @@ function toneFor(subject: string, subjects: string[]) {
   return TONES[Math.max(0, subjects.indexOf(subject)) % TONES.length]
 }
 
-export function SchedulePage() {
+export function CalendarPage() {
   const { t, language } = usePreferences()
   const [monday, setMonday] = useState(() => startOfWeek(new Date()))
   const [group, setGroup] = useState<string>()
@@ -68,7 +69,10 @@ export function SchedulePage() {
 
   return (
     <div className="page-layout">
-      <PageHeader kicker={t('schedule.kicker')} title={t('pages.scheduleTitle')} description={t('pages.scheduleSubtitle')} />
+      <PageHeader kicker={t('siteNav.programmes')} title={t('pageCopy.calendarTitle')} description={t('pageCopy.calendarSubtitle')} />
+
+      {/* Semester dates, written by the admin; the weekly grid below is generated from the courses. */}
+      <ContentSection slug="programmes.calendar" optional />
 
       <Card className="surface-card filter-card">
         <Row gutter={[16, 16]} align="bottom">

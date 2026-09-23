@@ -61,12 +61,12 @@ export function HomePage() {
             </Title>
             <Paragraph className="hero-copy">{t('home.heroCopy')}</Paragraph>
             <div className="hero-actions">
-              <Link to="/courses">
+              <Link to="/programmes">
                 <Button type="primary" size="large" icon={<SolutionOutlined />}>
                   {t('home.explore')}
                 </Button>
               </Link>
-              <Link to="/schedule">
+              <Link to="/programmes/calendar">
                 <Button className="hero-secondary" size="large" icon={<CalendarOutlined />}>
                   {t('home.calendar')}
                 </Button>
@@ -100,7 +100,7 @@ export function HomePage() {
               ) : (
                 <Title level={3}>{t('schedule.emptyWeek')}</Title>
               )}
-              <Link to="/schedule">
+              <Link to="/programmes/calendar">
                 {t('home.fullSchedule')} <ArrowRightOutlined />
               </Link>
             </Card>
@@ -113,7 +113,7 @@ export function HomePage() {
           kicker={t('nav.courses')}
           title={t('home.programmesTitle')}
           aside={
-            <Link to="/courses">
+            <Link to="/programmes">
               <Button type="link" icon={<ArrowRightOutlined />} iconPosition="end">
                 {t('common.viewAll')}
               </Button>
@@ -129,9 +129,13 @@ export function HomePage() {
                   </Card>
                 </Col>
               ))
-            : programmes.map((programme) => (
+            : programmes.map((programme) => {
+                // Culture programmes live on their own page; send the card where its classes are listed.
+                const isCulture = programme.courses.every((course) => course.category === 'culture')
+
+                return (
                 <Col xs={24} md={12} lg={8} key={programme.title}>
-                  <Link to="/courses" className="programme-link">
+                  <Link to={isCulture ? '/programmes/culture' : '/programmes'} className="programme-link">
                     <Card className="surface-card programme-card" hoverable>
                       <Title level={3}>{programme.title}</Title>
                       <Text type="secondary">{t('courses.classCount', { count: programme.courses.length })}</Text>
@@ -144,7 +148,8 @@ export function HomePage() {
                     </Card>
                   </Link>
                 </Col>
-              ))}
+                )
+              })}
         </Row>
       </section>
 
@@ -153,7 +158,7 @@ export function HomePage() {
           kicker={t('home.campusNews')}
           title={t('home.newsTitle')}
           aside={
-            <Link to="/news">
+            <Link to="/notices">
               <Button type="link" icon={<ArrowRightOutlined />} iconPosition="end">
                 {t('common.viewAll')}
               </Button>
@@ -174,7 +179,7 @@ export function HomePage() {
 
                 return (
                   <Col xs={24} md={8} key={post.id}>
-                    <Link to={`/news/${post.id}`} className="announcement-link">
+                    <Link to={`/notices/${post.id}`} className="announcement-link">
                       <Card className="surface-card news-card" hoverable cover={thumbnail ? <img src={thumbnail} alt="" loading="lazy" /> : undefined}>
                         <Text type="secondary" className="news-card__date">
                           {formatDate(post.publishedAt ?? post.createdAt, language)}

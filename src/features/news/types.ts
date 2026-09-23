@@ -1,4 +1,4 @@
-export const NEWS_CATEGORIES = ['academic', 'events', 'campus', 'admissions'] as const
+export const NEWS_CATEGORIES = ['academic', 'events', 'campus', 'admissions', 'press'] as const
 export type NewsCategory = (typeof NEWS_CATEGORIES)[number]
 
 export type NewsPost = {

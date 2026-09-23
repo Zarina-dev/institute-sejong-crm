@@ -18,6 +18,7 @@ import { useTableLayout } from '../../shared/useTableLayout'
 const { Text } = Typography
 
 type CourseFormValues = {
+  category: 'language' | 'culture'
   title: string
   description?: string
   subject: string
@@ -59,6 +60,7 @@ export function CoursesAdminPage() {
     (record: CourseRecord) => {
       setEditingId(record.id)
       form.setFieldsValue({
+        category: record.category ?? 'language',
         title: record.title,
         description: record.description ?? undefined,
         subject: record.subject,
@@ -158,7 +160,12 @@ export function CoursesAdminPage() {
       {
         title: t('courses.form.subject'),
         key: 'subject',
-        render: (_, record) => <Text strong>{record.subject}</Text>,
+        render: (_, record) => (
+          <div className="cell-stack">
+            <Text strong>{record.subject}</Text>
+            {record.category === 'culture' ? <Tag color="purple">{t('courses.form.categoryCulture')}</Tag> : null}
+          </div>
+        ),
       },
       {
         title: t('courses.columns.operations'),
@@ -259,7 +266,15 @@ export function CoursesAdminPage() {
         forceRender
         width={760}
       >
-        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false, sessions: [] }}>
+        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false, sessions: [], category: 'language' }}>
+          <Form.Item name="category" label={t('courses.form.category')}>
+            <Select
+              options={[
+                { value: 'language', label: t('courses.form.categoryLanguage') },
+                { value: 'culture', label: t('courses.form.categoryCulture') },
+              ]}
+            />
+          </Form.Item>
           <Row gutter={16}>
             <Col span={12}>
               {/* Programme: pick an existing one to add a class under it, or type a new one. */}

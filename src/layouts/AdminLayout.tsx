@@ -3,8 +3,10 @@ import {
   DashboardOutlined,
   FolderOpenOutlined,
   HomeOutlined,
+  FileTextOutlined,
   IdcardOutlined,
   LogoutOutlined,
+  PictureOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   MoonOutlined,
@@ -63,7 +65,9 @@ export function AdminLayout() {
     { to: '/admin/courses', label: t('adminNav.courses'), icon: <AppstoreOutlined /> },
     { to: '/admin/materials', label: t('adminNav.materials'), icon: <FolderOpenOutlined /> },
     { to: '/admin/news', label: t('adminNav.news'), icon: <NotificationOutlined /> },
+    { to: '/admin/gallery', label: t('adminNav.gallery'), icon: <PictureOutlined /> },
     { to: '/admin/staff', label: t('adminNav.staff'), icon: <IdcardOutlined /> },
+    { to: '/admin/content', label: t('adminNav.content'), icon: <FileTextOutlined /> },
   ]
 
   return (

@@ -22,7 +22,7 @@ export function NewsDetailPage() {
 
   return (
     <div className="page-layout article-layout">
-      <Link to="/news" className="article-back">
+      <Link to="/notices" className="article-back">
         <Button type="link" icon={<ArrowLeftOutlined />}>
           {t('news.back')}
         </Button>
