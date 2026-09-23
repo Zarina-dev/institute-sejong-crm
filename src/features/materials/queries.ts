@@ -22,7 +22,7 @@ export const materialKeys = {
 }
 
 type MaterialsQueryOptions = {
-  /** Skip the request entirely — e.g. a student with no approved course. */
+  /** Skip the request entirely — e.g. before a filter is chosen. */
   enabled?: boolean
 }
 

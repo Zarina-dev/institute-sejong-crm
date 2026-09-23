@@ -1,24 +1,14 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, AutoComplete, Badge, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography } from 'antd'
+import { App, AutoComplete, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
-import { statusLabelKey } from '../../features/courses/applicationStatus'
-import { ApplicationsTable } from '../../features/courses/ApplicationsTable'
 import { SessionsEditor } from '../../features/courses/SessionsEditor'
 import { courseTitles, groupCourses } from '../../features/courses/grouping'
 import { formatSessions } from '../../features/courses/sessions'
-import {
-  useApplications,
-  useCourses,
-  useCreateCourse,
-  useDeleteCourse,
-  useSetApplicationStatus,
-  useSetCoursePublished,
-  useUpdateCourse,
-} from '../../features/courses/queries'
-import type { ApplicationStatus, CourseApplicationRecord, CourseRecord, CourseSession } from '../../features/courses/types'
+import { useCourses, useCreateCourse, useDeleteCourse, useSetCoursePublished, useUpdateCourse } from '../../features/courses/queries'
+import type { CourseRecord, CourseSession } from '../../features/courses/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { PageHeader } from '../../shared/PageHeader'
@@ -39,10 +29,6 @@ type CourseFormValues = {
   isPublished: boolean
 }
 
-type CourseStats = Record<ApplicationStatus, number> & { total: number }
-
-const emptyStats: CourseStats = { total: 0, pending: 0, approved: 0, rejected: 0, enrolled: 0 }
-
 export function CoursesAdminPage() {
   const { t, language } = usePreferences()
   const { message } = App.useApp()
@@ -50,48 +36,16 @@ export function CoursesAdminPage() {
   const { pinActions, compactActions } = useTableLayout()
 
   const courses = useCourses(false)
-  const applications = useApplications()
   const createCourse = useCreateCourse()
   const updateCourse = useUpdateCourse()
   const deleteCourse = useDeleteCourse()
   const setPublished = useSetCoursePublished()
-  const setApplicationStatus = useSetApplicationStatus()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form] = Form.useForm<CourseFormValues>()
 
   const saving = createCourse.isPending || updateCourse.isPending
-
-  /* --------------------------- derived data --------------------------- */
-
-  const { applicationsByCourse, statsByCourse, pendingCount } = useMemo(() => {
-    const byCourse = new Map<string, CourseApplicationRecord[]>()
-    const stats = new Map<string, CourseStats>()
-    let pending = 0
-
-    for (const application of applications.data ?? []) {
-      const status = application.status ?? 'pending'
-      const list = byCourse.get(application.courseId) ?? []
-      list.push(application)
-      byCourse.set(application.courseId, list)
-
-      const current = stats.get(application.courseId) ?? { ...emptyStats }
-      current.total += 1
-      current[status] += 1
-      stats.set(application.courseId, current)
-
-      if (status === 'pending') {
-        pending += 1
-      }
-    }
-
-    for (const list of byCourse.values()) {
-      list.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    }
-
-    return { applicationsByCourse: byCourse, statsByCourse: stats, pendingCount: pending }
-  }, [applications.data])
 
   /* ------------------------------- modal ------------------------------ */
 
@@ -170,23 +124,6 @@ export function CoursesAdminPage() {
     [confirmDelete, deleteCourse, message, t],
   )
 
-  const changeApplication = useCallback(
-    (application: CourseApplicationRecord, status: 'approved' | 'rejected') => {
-      setApplicationStatus.mutate(
-        { id: application.id, status },
-        {
-          onSuccess: () =>
-            message.success(t('courses.statusChanged', { name: application.applicantName, status: t(statusLabelKey(status)) })),
-          onError: (err) => message.error(getErrorMessage(err, t('courses.statusChangeFailed'))),
-        },
-      )
-    },
-    [message, setApplicationStatus, t],
-  )
-
-  const handleApprove = useCallback((a: CourseApplicationRecord) => changeApplication(a, 'approved'), [changeApplication])
-  const handleReject = useCallback((a: CourseApplicationRecord) => changeApplication(a, 'rejected'), [changeApplication])
-
   /* ------------------------------ columns ----------------------------- */
 
   // Rows in programme order, with each programme's classes together; only
@@ -240,25 +177,6 @@ export function CoursesAdminPage() {
         ),
       },
       {
-        title: t('courses.columns.enrollment'),
-        key: 'enrollmentSummary',
-        render: (_, record) => {
-          const stats = statsByCourse.get(record.id) ?? emptyStats
-
-          return (
-            <div className="cell-stack">
-              <Text strong>{t('courses.stats.total', { count: stats.total })}</Text>
-              <Space size={4} wrap>
-                <Tag color="gold">{t('courses.stats.pending', { count: stats.pending })}</Tag>
-                <Tag color="green">{t('courses.stats.approved', { count: stats.approved })}</Tag>
-                <Tag color="blue">{t('courses.stats.enrolled', { count: stats.enrolled })}</Tag>
-                <Tag color="red">{t('courses.stats.rejected', { count: stats.rejected })}</Tag>
-              </Space>
-            </div>
-          )
-        },
-      },
-      {
         title: t('courses.columns.visibility'),
         dataIndex: 'isPublished',
         key: 'isPublished',
@@ -293,32 +211,7 @@ export function CoursesAdminPage() {
         ),
       },
     ],
-    [compactActions, handleDelete, handleTogglePublished, language, openEditModal, pinActions, rowSpans, setPublished.isPending, setPublished.variables?.id, statsByCourse, t],
-  )
-
-  const expandedRowRender = useCallback(
-    (record: CourseRecord) => {
-      const list = applicationsByCourse.get(record.id) ?? []
-
-      return (
-        <div className="expanded-panel">
-          <div className="expanded-panel-heading">
-            <Text strong>{record.title}</Text>
-            <Text type="secondary">{t('courses.expandedApplicants', { count: list.length })}</Text>
-          </div>
-          <ApplicationsTable
-            applications={list}
-            size="small"
-            showCourse={false}
-            busyId={setApplicationStatus.isPending ? setApplicationStatus.variables?.id : null}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            emptyText={t('courses.expandedEmpty')}
-          />
-        </div>
-      )
-    },
-    [applicationsByCourse, handleApprove, handleReject, setApplicationStatus.isPending, setApplicationStatus.variables?.id, t],
+    [compactActions, handleDelete, handleTogglePublished, language, openEditModal, pinActions, rowSpans, setPublished.isPending, setPublished.variables?.id, t],
   )
 
   /* ------------------------------- render ----------------------------- */
@@ -329,26 +222,18 @@ export function CoursesAdminPage() {
         kicker={t('common.admin')}
         title={t('courses.adminTitle')}
         description={t('courses.adminSubtitle')}
-        extra={
-          <Badge
-            status={pendingCount > 0 ? 'warning' : 'success'}
-            text={pendingCount > 0 ? t('courses.pendingBadge', { count: pendingCount }) : t('courses.noPending')}
-          />
-        }
       />
 
       <Card className="surface-card filter-card">
         <div className="filter-footer">
-          <Text>
-            {t('courses.count', { count: courses.data?.length ?? 0 })} · {t('courses.applications', { count: applications.data?.length ?? 0 })}
-          </Text>
+          <Text>{t('courses.count', { count: courses.data?.length ?? 0 })}</Text>
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
             {t('courses.add')}
           </Button>
         </div>
       </Card>
 
-      <ErrorAlert error={courses.error ?? applications.error} fallback={t('courses.loadFailed')} />
+      <ErrorAlert error={courses.error} fallback={t('courses.loadFailed')} />
 
       <Card className="surface-card">
         <Table
@@ -359,8 +244,7 @@ export function CoursesAdminPage() {
           // No paging: a programme's classes must stay on one page for the row span to hold.
           pagination={false}
           scroll={{ x: 'max-content' }}
-          loading={courses.isPending || applications.isPending}
-          expandable={{ expandedRowRender }}
+          loading={courses.isPending}
         />
       </Card>
 

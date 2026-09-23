@@ -1,34 +1,34 @@
-import { LockOutlined, SafetyCertificateOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Card, Checkbox, Form, Input, Space, Typography } from 'antd'
+import { LockOutlined, SafetyCertificateOutlined, TeamOutlined } from '@ant-design/icons'
+import { Button, Card, Form, Input, Space, Typography } from 'antd'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { usePreferences } from '../../app/preferences'
-import { clearSession, setSession, type DemoRole } from '../../auth/demoAuth'
+import { clearSession, setSession } from '../../auth/session'
 import { useSession } from '../../auth/useSession'
 import { useLogin } from '../../features/auth/queries'
-import { BrandMark } from '../../shared/BrandMark'
 import { ErrorAlert } from '../../shared/ErrorAlert'
+import { BrandMark } from '../../shared/BrandMark'
+import { PageHeader } from '../../shared/PageHeader'
 
 const { Title, Paragraph, Text } = Typography
 
 type LoginValues = { username: string; password?: string }
 
-/** Where a signed-in user belongs — used by both the redirect and the CTA. */
-const homeFor = (role: DemoRole) => (role === 'admin' ? '/admin' : '/student')
-
-export function StudentPortalPage() {
+/**
+ * Staff sign-in. The site has one account — the administrator — so this is
+ * the only door into the admin panel; visitors never need it.
+ */
+export function LoginPage() {
   const { t } = usePreferences()
   const navigate = useNavigate()
   const session = useSession()
   const login = useLogin()
-  // Local-only failures (empty id) that never reach the API and therefore
-  // never appear in `login.error`.
+  // An empty id never reaches the API, so it never appears in `login.error`.
   const [localError, setLocalError] = useState<string | null>(null)
 
   const onFinish = async (values: LoginValues) => {
     const username = values.username.trim()
-    const password = values.password ?? ''
     setLocalError(null)
 
     if (!username) {
@@ -37,25 +37,10 @@ export function StudentPortalPage() {
     }
 
     try {
-      // Admin and students go through the same endpoint; the API answers
-      // with a bearer token that every later request carries.
-      const result = await login.mutateAsync({ username, password })
-
-      if (result.role === 'admin') {
-        setSession({ username, role: 'admin', displayName: 'Admin', token: result.token })
-        navigate(homeFor('admin'), { replace: true })
-        return
-      }
-
-      setSession({
-        username: result.student.studentId,
-        role: 'student',
-        displayName: result.student.name,
-        studentId: result.student.studentId,
-        student: result.student,
-        token: result.token,
-      })
-      navigate(homeFor('student'), { replace: true })    } catch {
+      const result = await login.mutateAsync({ username, password: values.password ?? '' })
+      setSession({ username, token: result.token })
+      navigate('/admin', { replace: true })
+    } catch {
       // Rendered through <ErrorAlert error={login.error}> below.
     }
   }
@@ -67,12 +52,10 @@ export function StudentPortalPage() {
   }
 
   return (
-    <div className="portal-page">
+    <div className="page-layout portal-page">
       <section className="portal-intro">
         <BrandMark size={48} />
-        <Text className="section-kicker">{t('session.studentPortal')}</Text>
-        <Title level={1}>{t('login.portalTitle')}</Title>
-        <Paragraph>{t('login.portalSubtitle')}</Paragraph>
+        <PageHeader kicker={t('session.adminPanel')} title={t('login.portalTitle')} description={t('login.portalSubtitle')} />
         <div>
           <SafetyCertificateOutlined /> {t('login.dataProtected')}
         </div>
@@ -81,15 +64,14 @@ export function StudentPortalPage() {
       <Card className="surface-card login-card">
         {session ? (
           <>
-            <Title level={2}>{session.displayName}</Title>
+            <Title level={2}>{session.username}</Title>
             <Paragraph type="secondary">
-              {t('session.signedInAs')} · {t(session.role === 'admin' ? 'session.roleAdmin' : 'session.roleStudent')}
+              {t('session.signedInAs')} · {t('session.roleAdmin')}
             </Paragraph>
             <Space wrap>
-              {/* Opens in its own tab, matching the portal button in the
-                  header; the sign-in page stays where it was. */}
-              <Link to={homeFor(session.role)} target="_blank" rel="noreferrer">
-                <Button type="primary" icon={<UserOutlined />}>
+              {/* Opens in its own tab, matching the header button; this page stays put. */}
+              <Link to="/admin" target="_blank">
+                <Button type="primary" icon={<TeamOutlined />}>
                   {t('login.continue')}
                 </Button>
               </Link>
@@ -112,10 +94,6 @@ export function StudentPortalPage() {
               <Form.Item label={t('login.passwordLabel')} name="password">
                 <Input.Password size="large" autoComplete="current-password" placeholder={t('login.passwordPlaceholder')} />
               </Form.Item>
-              <div className="login-options">
-                <Checkbox>{t('login.remember')}</Checkbox>
-                <a href="#help">{t('login.needHelp')}</a>
-              </div>
               <Button type="primary" size="large" block icon={<LockOutlined />} htmlType="submit" loading={login.isPending}>
                 {t('login.submit')}
               </Button>

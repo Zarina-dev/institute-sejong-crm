@@ -1,49 +1,87 @@
-import { ArrowUpOutlined, BookOutlined, CalendarOutlined, FileTextOutlined, TeamOutlined } from '@ant-design/icons'
+import { AppstoreOutlined, BookOutlined, IdcardOutlined, NotificationOutlined } from '@ant-design/icons'
 import { Card, Col, Empty, Row, Skeleton, Tag, Typography } from 'antd'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import { usePreferences, type TranslationKey } from '../../app/preferences'
-import { useApplications, useCourses } from '../../features/courses/queries'
+import { groupCourses } from '../../features/courses/grouping'
+import { useCourses } from '../../features/courses/queries'
 import { useRecentActivity, type ActivityKind } from '../../features/dashboard/useRecentActivity'
 import { useMaterials } from '../../features/materials/queries'
-import { useStudents } from '../../features/students/queries'
+import { useAllNews } from '../../features/news/queries'
+import { useAllStaff } from '../../features/staff/queries'
 import { formatRelativeTime } from '../../shared/format'
 
 const { Title, Text } = Typography
 
 /** Which admin menu each feed entry belongs to. */
 const KIND_LABEL: Record<ActivityKind, TranslationKey> = {
-  student: 'adminNav.students',
   course: 'adminNav.courses',
-  application: 'adminNav.applications',
   material: 'adminNav.materials',
   news: 'adminNav.news',
   staff: 'adminNav.staff',
 }
 
-type Stat = { title: TranslationKey; value: number | string; delta: TranslationKey; icon: ReactNode; tone: 'blue' | 'violet' | 'orange' | 'green' }
+type Stat = {
+  title: TranslationKey
+  value: number | string
+  hint: string
+  icon: ReactNode
+  tone: 'blue' | 'violet' | 'orange' | 'green'
+  to: string
+}
 
 /**
- * Admin landing. The four counters are live (same queries the admin pages
- * use, so they are already cached once any of those pages was opened); the
- * activity feed merges the newest rows of every admin-managed table.
+ * Admin landing: one counter per managed area (the same queries those pages
+ * use, so they are already cached once any of them was opened) and a feed
+ * that merges the newest rows of every table.
  */
 export function DashboardPage() {
   const { t, language } = usePreferences()
   const activity = useRecentActivity()
-  const students = useStudents()
   const courses = useCourses(false)
-  const applications = useApplications()
   const materials = useMaterials({ page: 1, limit: 1, published: 'all' })
+  const news = useAllNews()
+  const staff = useAllStaff()
 
-  const pending = (applications.data ?? []).filter((a) => (a.status ?? 'pending') === 'pending').length
+  const programmes = groupCourses(courses.data).length
+  const drafts = (courses.data ?? []).filter((course) => !course.isPublished).length
+  const unpublishedNews = (news.data ?? []).filter((post) => !post.isPublished).length
+  const hiddenStaff = (staff.data ?? []).filter((member) => !member.isPublished).length
 
   const stats: Stat[] = [
-    { title: 'dashboard.statStudents', value: students.data?.length ?? '…', delta: 'dashboard.statStudentsDelta', icon: <TeamOutlined />, tone: 'blue' },
-    { title: 'adminNav.courses', value: courses.data?.length ?? '…', delta: 'dashboard.statClassesDelta', icon: <CalendarOutlined />, tone: 'violet' },
-    { title: 'adminNav.applications', value: applications.data?.length ?? '…', delta: 'courses.noPending', icon: <FileTextOutlined />, tone: 'orange' },
-    { title: 'dashboard.statResources', value: materials.data?.total ?? '…', delta: 'dashboard.statResourcesDelta', icon: <BookOutlined />, tone: 'green' },
+    {
+      title: 'adminNav.courses',
+      value: courses.data?.length ?? '…',
+      hint: t('dashboard.programmeCount', { count: programmes }),
+      icon: <AppstoreOutlined />,
+      tone: 'violet',
+      to: '/admin/courses',
+    },
+    {
+      title: 'adminNav.materials',
+      value: materials.data?.total ?? '…',
+      hint: t('dashboard.statResourcesDelta'),
+      icon: <BookOutlined />,
+      tone: 'green',
+      to: '/admin/materials',
+    },
+    {
+      title: 'adminNav.news',
+      value: news.data?.length ?? '…',
+      hint: unpublishedNews > 0 ? t('dashboard.draftCount', { count: unpublishedNews }) : t('common.published'),
+      icon: <NotificationOutlined />,
+      tone: 'blue',
+      to: '/admin/news',
+    },
+    {
+      title: 'adminNav.staff',
+      value: staff.data?.length ?? '…',
+      hint: hiddenStaff > 0 ? t('dashboard.hiddenCount', { count: hiddenStaff }) : t('common.published'),
+      icon: <IdcardOutlined />,
+      tone: 'orange',
+      to: '/admin/staff',
+    },
   ]
 
   return (
@@ -57,22 +95,16 @@ export function DashboardPage() {
       <Row gutter={[18, 18]}>
         {stats.map((stat) => (
           <Col xs={24} sm={12} xl={6} key={stat.title}>
-            <Card className={`surface-card stat-card ${stat.tone}`}>
-              <div className="stat-icon" aria-hidden="true">
-                {stat.icon}
-              </div>
-              <Text type="secondary">{t(stat.title)}</Text>
-              <strong>{stat.value}</strong>
-              <span>
-                {stat.title === 'adminNav.applications' ? (
-                  pending > 0 ? t('courses.pendingBadge', { count: pending }) : t('courses.noPending')
-                ) : (
-                  <>
-                    <ArrowUpOutlined /> {t(stat.delta)}
-                  </>
-                )}
-              </span>
-            </Card>
+            <Link to={stat.to}>
+              <Card className={`surface-card stat-card ${stat.tone}`}>
+                <div className="stat-icon" aria-hidden="true">
+                  {stat.icon}
+                </div>
+                <Text type="secondary">{t(stat.title)}</Text>
+                <strong>{stat.value}</strong>
+                <span>{stat.hint}</span>
+              </Card>
+            </Link>
           </Col>
         ))}
       </Row>
@@ -117,8 +149,8 @@ export function DashboardPage() {
             <Text className="section-kicker">{t('dashboard.atAGlance')}</Text>
             <Title level={3}>{t('dashboard.priorities')}</Title>
             <ul>
-              <li>{pending > 0 ? t('courses.waitingReview', { count: pending }) : t('courses.noWaiting')}</li>
-              <li>{t('courses.count', { count: courses.data?.filter((c) => !c.isPublished).length ?? 0 })} · {t('common.unpublished')}</li>
+              <li>{drafts > 0 ? t('dashboard.draftCourses', { count: drafts }) : t('dashboard.allCoursesPublished')}</li>
+              <li>{unpublishedNews > 0 ? t('dashboard.draftNews', { count: unpublishedNews }) : t('dashboard.allNewsPublished')}</li>
             </ul>
           </Card>
         </Col>

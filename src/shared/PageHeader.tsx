@@ -16,7 +16,7 @@ type PageHeaderProps = {
 
 /**
  * The one page heading. Before this, public/admin pages used
- * `.page-heading` with an h1 and the student portal used a bare h2 with a
+ * `.page-heading` with an h1 and other pages used a bare h2 with a
  * different rhythm — same app, two headers.
  */
 export const PageHeader = memo(function PageHeader({

@@ -4,7 +4,7 @@
  * The base URL comes from `VITE_API_BASE_URL` (see .env.example); the
  * localhost fallback exists so `npm run dev` works with no .env at all.
  */
-import { clearSession, getAuthToken } from '../auth/demoAuth'
+import { clearSession, getAuthToken } from '../auth/session'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api').replace(/\/+$/, '')
 

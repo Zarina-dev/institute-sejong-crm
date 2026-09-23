@@ -1,7 +1,7 @@
-﻿import { LoginOutlined } from '@ant-design/icons'
+import { EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons'
 import { Button, Card, Typography } from 'antd'
-import { Link } from 'react-router-dom'
 
+import { contact, phoneHref } from '../../app/contact'
 import { usePreferences } from '../../app/preferences'
 import { CourseGroupList } from '../../features/courses/CourseGroupList'
 import { useCourses } from '../../features/courses/queries'
@@ -11,9 +11,9 @@ import { PageHeader } from '../../shared/PageHeader'
 const { Text } = Typography
 
 /**
- * Public catalogue: programmes and their classes, read-only. Applying
- * happens in the student portal after signing in, so there is no apply
- * button here — just a pointer to the portal.
+ * Public catalogue: programmes and their classes, read-only. Enrolment is
+ * handled at the institute, so the page ends with its contact details
+ * rather than an apply button.
  */
 export function CoursesPage() {
   const { t } = usePreferences()
@@ -25,18 +25,23 @@ export function CoursesPage() {
 
       <ErrorAlert error={courses.error} fallback={t('courses.loadFailed')} />
 
-      <CourseGroupList courses={courses.data} loading={courses.isPending} emptyText={t('courses.empty')} renderFooter={() => null} />
+      <CourseGroupList courses={courses.data} loading={courses.isPending} emptyText={t('courses.empty')} />
 
       <Card className="surface-card portal-callout">
         <div>
-          <Text strong>{t('courses.portalCalloutTitle')}</Text>
-          <Text type="secondary">{t('courses.portalCalloutCopy')}</Text>
+          <Text strong>{t('courses.contactCalloutTitle')}</Text>
+          <Text type="secondary">{t('courses.contactCalloutCopy')}</Text>
         </div>
-        <Link to="/login">
-          <Button type="primary" icon={<LoginOutlined />}>
-            {t('nav.login')}
-          </Button>
-        </Link>
+        <div className="portal-callout__actions">
+          <a href={phoneHref}>
+            <Button type="primary" icon={<PhoneOutlined />}>
+              {contact.phone}
+            </Button>
+          </a>
+          <Text type="secondary">
+            <EnvironmentOutlined /> {contact.address}
+          </Text>
+        </div>
       </Card>
     </div>
   )

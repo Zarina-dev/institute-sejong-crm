@@ -12,7 +12,6 @@ import {
   SolutionOutlined,
   SunOutlined,
   TeamOutlined,
-  UserOutlined,
 } from '@ant-design/icons'
 import { Button, Drawer, Layout, Select, Tooltip, Typography } from 'antd'
 import { useState, type ReactNode } from 'react'
@@ -56,24 +55,18 @@ export function PublicLayout() {
   )
 
   /**
-   * The admin panel and the student portal are separate full-screen apps, so
-   * they open in their own tab and leave the public site where it was. The
-   * sign-in page is part of the public site and navigates in place.
+   * The admin panel is a separate full-screen app, so it opens in its own
+   * tab and leaves the public site where it was. The sign-in page is part
+   * of the public site and navigates in place.
    */
   const portal = session
-    ? {
-        to: session.role === 'admin' ? '/admin' : '/student',
-        label: t(session.role === 'admin' ? 'session.roleAdmin' : 'session.roleStudent'),
-        icon: session.role === 'admin' ? <TeamOutlined /> : <UserOutlined />,
-        newTab: true,
-      }
+    ? { to: '/admin', label: t('session.adminPanel'), icon: <TeamOutlined />, newTab: true }
     : { to: '/login', label: t('nav.login'), icon: <LoginOutlined />, newTab: false }
 
   // Same origin, so no noopener/noreferrer: with an opener the browser
   // copies sessionStorage into the new tab, which is what keeps the admin
   // panel signed in (the BroadcastChannel handshake is the fallback).
   const portalLinkProps = portal.newTab ? { target: '_blank' as const } : {}
-
   return (
     <Layout className="app-shell">
       <a className="skip-link" href="#main-content">

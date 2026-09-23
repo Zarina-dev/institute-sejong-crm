@@ -11,14 +11,14 @@ const { Title, Text } = Typography
 type CourseGroupListProps = {
   courses: CourseRecord[] | undefined
   loading: boolean
-  /** Per-card action area (apply button, status…). */
-  renderFooter: (course: CourseRecord) => ReactNode
+  /** Optional per-card action area. */
+  renderFooter?: (course: CourseRecord) => ReactNode
   emptyText: string
 }
 
 /**
  * Courses as programme sections — "한국어" with 한국어 1/2/3 under it, then
- * "영어", "기타"… Used by the public 수강 page and the student portal.
+ * "영어", "기타"… Used by the public 수강 page.
  */
 export function CourseGroupList({ courses, loading, renderFooter, emptyText }: CourseGroupListProps) {
   const { t } = usePreferences()
@@ -59,7 +59,7 @@ export function CourseGroupList({ courses, loading, renderFooter, emptyText }: C
           <Row gutter={[16, 16]}>
             {group.courses.map((course) => (
               <Col xs={24} md={12} lg={8} key={course.id}>
-                <CourseCard course={course} footer={renderFooter(course)} />
+                <CourseCard course={course} footer={renderFooter?.(course)} />
               </Col>
             ))}
           </Row>

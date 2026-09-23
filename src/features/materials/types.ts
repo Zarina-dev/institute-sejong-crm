@@ -11,7 +11,6 @@ export type MaterialsFilters = {
   /** Filter by course record — preferred over the free-text `course` label. */
   courseId?: string
   published?: 'true' | 'false' | 'all'
-  studentId?: string
   sortBy?: 'title' | 'updatedAt' | 'createdAt'
   sortOrder?: 'ASC' | 'DESC'
 }

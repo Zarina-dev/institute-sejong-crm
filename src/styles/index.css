@@ -133,18 +133,6 @@
 }
 
 /* Nested applications table inside an expanded course row. */
-.expanded-panel {
-  padding: var(--space-2) var(--space-2) var(--space-1);
-}
-
-.expanded-panel-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-2);
-}
-
 .filter-footer--inline {
   margin-top: 0;
   padding-top: 0;
@@ -506,8 +494,7 @@
 .news-card,
 .material-card,
 .announcement-card,
-.value-card,
-.student-admin-stat.ant-card {
+.value-card {
   height: 100%;
 }
 
@@ -888,7 +875,7 @@
   flex: 1;
 }
 
-/* --- Course cards (public + student portal) --- */
+/* --- Course cards --- */
 
 .course-card .ant-card-body {
   display: flex;
@@ -961,25 +948,6 @@
   border-top: 1px solid var(--color-border-subtle);
 }
 
-.application-state {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-}
-
-/* --- Student dashboard --- */
-
-.dash-card .ant-card-head-title .anticon {
-  margin-right: var(--space-2);
-  color: var(--color-primary-text);
-}
-
-.dash-card p.ant-typography:last-child {
-  margin-bottom: 0;
-}
-
 .material-footer .ant-btn-link {
   padding-right: 0;
 }
@@ -1036,7 +1004,7 @@
 }
 
 /* ==========================================================================
-   Student portal / login
+   Staff sign-in
    ========================================================================== */
 
 .portal-page {
@@ -1054,7 +1022,7 @@
   border-radius: var(--radius-lg);
 }
 
-.portal-intro h1.ant-typography {
+.portal-intro .page-heading h1.ant-typography {
   margin: 0 0 var(--space-3);
   color: var(--color-text);
   font-size: clamp(34px, 4.5vw, 48px);
@@ -1415,7 +1383,7 @@
   }
 }
 /* ==========================================================================
-   Admin / student shells
+   Admin shell
    ========================================================================== */
 
 .admin-shell {
@@ -1621,69 +1589,8 @@
 
 /* --- Admin stat cards --- */
 
-.student-admin-stat .ant-card-body {
-  padding: var(--space-5) var(--space-6);
-}
-
 @media (max-width: 760px) {
-  .student-admin-stat .ant-card-body {
-    padding: var(--space-3) var(--space-3);
-  }
-
-  .student-admin-stat .ant-statistic-title {
-    font-size: var(--text-xs);
-  }
-
-  .student-admin-stat .ant-statistic-content {
-    font-size: var(--text-xl);
-  }
-}
-
-.student-admin-stat-label {
-  display: block;
-  color: var(--color-text-subtle);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-}
-
-.student-admin-stat-value.ant-typography {
-  margin: var(--space-3) 0 var(--space-2);
-  color: var(--color-text);
-}
-
-.student-admin-file-list {
-  display: grid;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-}
-
-.student-admin-file-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-sunken);
-}
-
-.student-admin-file-item span {
-  flex: 1;
-  color: var(--color-text);
-  font-weight: var(--weight-semibold);
-}
-
-.student-admin-file-item small {
-  color: var(--color-text-subtle);
-}
-
-.student-admin-file-empty {
-  margin-top: var(--space-3);
-  color: var(--color-text-faint);
-  font-size: var(--text-sm);
-}
+      }
 
 /* ==========================================================================
    Admin dashboard
@@ -2478,4 +2385,12 @@ a.activity-row:hover b {
 .portal-callout .ant-card-body > div {
   display: grid;
   gap: 2px;
+}
+
+.portal-callout__actions {
+  justify-items: end;
+}
+
+.portal-callout__actions a {
+  text-decoration: none;
 }

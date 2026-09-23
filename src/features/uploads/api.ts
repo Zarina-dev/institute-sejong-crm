@@ -16,15 +16,3 @@ export function uploadImage(file: File) {
   formData.append('file', file)
   return apiPost<UploadedImage>('/uploads/images', formData)
 }
-
-export type UploadedDocument = UploadedImage & { name: string }
-
-export const DOCUMENT_ACCEPT = '.pdf,.jpg,.jpeg,.png,.webp'
-export const MAX_DOCUMENT_SIZE = MAX_IMAGE_SIZE
-
-/** `POST /uploads/documents` — TOPIK certificates and other student documents. */
-export function uploadDocument(file: File) {
-  const formData = new FormData()
-  formData.append('file', file)
-  return apiPost<UploadedDocument>('/uploads/documents', formData)
-}
