@@ -107,10 +107,13 @@ export function PublicLayout() {
             <NavLink to="/" end>
               {t('siteNav.home')}
             </NavLink>
+            {/* A section tab only opens its menu — hovering or clicking it never
+                leaves the current page; the sub-item does the navigating. */}
             {navigation.map((section) => (
               <Dropdown
                 key={section.to}
                 placement="bottomLeft"
+                trigger={['hover', 'click']}
                 menu={{
                   items: section.children.map((child) => ({
                     key: child.to,
@@ -118,13 +121,14 @@ export function PublicLayout() {
                   })),
                 }}
               >
-                <Link
-                  to={section.to}
-                  className={isCurrentSection(section.to) ? 'active' : undefined}
+                <button
+                  type="button"
+                  className={isCurrentSection(section.to) ? 'site-nav__section active' : 'site-nav__section'}
                   aria-current={isCurrentSection(section.to) ? 'page' : undefined}
+                  aria-haspopup="menu"
                 >
                   {t(section.labelKey)} <DownOutlined className="site-nav__caret" />
-                </Link>
+                </button>
               </Dropdown>
             ))}
           </nav>

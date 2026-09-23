@@ -246,6 +246,7 @@
 }
 
 .site-nav a,
+.site-nav__section,
 .mobile-nav a {
   display: flex;
   align-items: center;
@@ -262,6 +263,8 @@
 
 .site-nav a:hover,
 .site-nav a.active,
+.site-nav__section:hover,
+.site-nav__section.active,
 .mobile-nav a:hover,
 .mobile-nav a.active {
   color: var(--color-primary-text);
@@ -2431,9 +2434,12 @@ a.activity-row:hover b {
   opacity: 0.6;
 }
 
-/* The section links are anchors inside a Dropdown, so they need the same
-   affordances the NavLinks get. */
-.site-nav > a {
+/* Section tabs are buttons: they open the menu and never navigate, so they
+   need the NavLink look without the anchor behaviour. */
+.site-nav__section {
+  border: 0;
+  background: transparent;
+  font-family: inherit;
   cursor: pointer;
 }
 
