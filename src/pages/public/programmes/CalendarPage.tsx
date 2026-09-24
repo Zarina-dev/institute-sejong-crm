@@ -5,7 +5,6 @@ import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 
 import { usePreferences } from '../../../app/preferences'
-import { ContentSection } from '../../../features/content/ContentSection'
 import { useCourses, useTimetable } from '../../../features/courses/queries'
 import { SemesterTable } from '../../../features/courses/SemesterTable'
 import type { TimetableEntry } from '../../../features/courses/types'
@@ -81,9 +80,6 @@ export function CalendarPage() {
   return (
     <div className="page-layout">
       <PageHeader kicker={t('siteNav.programmes')} title={t('pageCopy.calendarTitle')} description={t('pageCopy.calendarSubtitle')} />
-
-      {/* Semester dates, written by the admin; the weekly grid below is generated from the courses. */}
-      <ContentSection slug="programmes.calendar" optional />
 
       <ErrorAlert error={schedule.error ?? monthQuery.error ?? courses.error} fallback={t('schedule.loadFailed')} />
 

@@ -1,6 +1,6 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FileExcelOutlined, MoreOutlined, PlusOutlined, PrinterOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, AutoComplete, Button, Card, Col, Dropdown, Form, Input, InputNumber, Modal, Row, Select, Space, Table, Tag, Typography } from 'antd'
+import { App, AutoComplete, Button, Card, Col, Dropdown, Empty, Form, Input, InputNumber, Modal, Row, Select, Skeleton, Space, Table, Tag, Typography } from 'antd'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
@@ -16,9 +16,12 @@ import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
 
-const { Text } = Typography
+const { Title, Text } = Typography
 
 const dash = <Text type="secondary">—</Text>
+
+const sumOf = (courses: CourseRecord[], field: 'expectedStudents' | 'actualStudents') =>
+  courses.reduce((sum, course) => sum + (course[field] ?? 0), 0)
 
 type CourseFormValues = {
   category: 'language' | 'culture'
@@ -156,37 +159,12 @@ export function CoursesAdminPage() {
 
   /* ------------------------------ columns ----------------------------- */
 
-  // Rows in programme order, with each programme's classes together; only
-  // the first row of a programme prints its name (a real rowSpan would break
-  // as soon as an expandable row opens inside the block).
-  const { rows, rowSpans } = useMemo(() => {
-    const groups = groupCourses(courses.data)
-    const rows: CourseRecord[] = []
-    const rowSpans = new Map<string, number>()
-
-    for (const group of groups) {
-      group.courses.forEach((course, index) => {
-        rows.push(course)
-        rowSpans.set(course.id, index === 0 ? group.courses.length : 0)
-      })
-    }
-
-    return { rows, rowSpans }
-  }, [courses.data])
+  // One table per programme, so the head counts add up per programme the
+  // way the office reports them (한국어 / 영어 / 기타 …).
+  const programmes = useMemo(() => groupCourses(courses.data), [courses.data])
+  const rows = useMemo(() => programmes.flatMap((programme) => programme.courses), [programmes])
 
   const titleOptions = useMemo(() => courseTitles(courses.data).map((value) => ({ value })), [courses.data])
-
-  const totals = useMemo(
-    () =>
-      rows.reduce(
-        (sum, course) => ({
-          expected: sum.expected + (course.expectedStudents ?? 0),
-          actual: sum.actual + (course.actualStudents ?? 0),
-        }),
-        { expected: 0, actual: 0 },
-      ),
-    [rows],
-  )
 
   const handleExcel = useCallback(async () => {
     setExporting(true)
@@ -219,13 +197,6 @@ export function CoursesAdminPage() {
 
   const columns = useMemo<NonNullable<TableProps<CourseRecord>['columns']>>(
     () => [
-      {
-        title: t('courses.form.title'),
-        key: 'title',
-        width: 160,
-        onCell: (record) => ({ className: rowSpans.get(record.id) ? 'course-programme-cell' : 'course-programme-cell course-programme-cell--continued' }),
-        render: (_, record) => (rowSpans.get(record.id) ? <Text strong>{record.title}</Text> : null),
-      },
       {
         title: t('courses.form.subject'),
         key: 'subject',
@@ -352,7 +323,7 @@ export function CoursesAdminPage() {
         ),
       },
     ],
-    [handleDelete, handleTogglePublished, language, openEditModal, pinActions, rowSpans, setPublished.isPending, setPublished.variables?.id, t],
+    [handleDelete, handleTogglePublished, language, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, t],
   )
 
   /* ------------------------------- render ----------------------------- */
@@ -392,35 +363,57 @@ export function CoursesAdminPage() {
 
       <ErrorAlert error={courses.error} fallback={t('courses.loadFailed')} />
 
-      <Card className="surface-card">
-        <Table
-          className="admin-table"
-          columns={columns}
-          dataSource={rows}
-          rowKey="id"
-          // No paging: a programme's classes must stay on one page for the row span to hold.
-          pagination={false}
-          scroll={{ x: 'max-content' }}
-          /* The report ends with the same 계 the paper table carries. */
-          summary={() => (
-            <Table.Summary fixed>
-              <Table.Summary.Row className="semester-table__total">
-                <Table.Summary.Cell index={0} colSpan={6} align="right">
-                  <Text strong>{t('courses.table.total')}</Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={6} align="center">
-                  <Text strong>{totals.expected}</Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={7} align="center">
-                  <Text strong>{totals.actual}</Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={8} colSpan={4} />
-              </Table.Summary.Row>
-            </Table.Summary>
-          )}
-          loading={courses.isPending}
-        />
-      </Card>
+      {courses.isPending ? (
+        <Card className="surface-card">
+          <Skeleton active paragraph={{ rows: 6 }} />
+        </Card>
+      ) : programmes.length === 0 ? (
+        <Card className="surface-card empty-card">
+          <Empty description={t('courses.empty')} />
+        </Card>
+      ) : (
+        <div className="semester-tables">
+          {programmes.map((programme) => (
+            <section key={programme.title} aria-labelledby={`courses-${programme.title}`}>
+              <div className="semester-heading">
+                <Title level={3} id={`courses-${programme.title}`}>
+                  {programme.title}
+                </Title>
+                <Text type="secondary">{t('courses.classCount', { count: programme.courses.length })}</Text>
+              </div>
+
+              <Card className="surface-card">
+                <Table
+                  className="admin-table semester-table"
+                  columns={columns}
+                  dataSource={programme.courses}
+                  rowKey="id"
+                  // No paging: the office reads a programme as one block.
+                  pagination={false}
+                  scroll={{ x: 'max-content' }}
+                  /* Each programme closes with its own 계, as on the paper form. */
+                  summary={() => (
+                    <Table.Summary fixed>
+                      <Table.Summary.Row className="semester-table__total">
+                        <Table.Summary.Cell index={0} colSpan={5} align="right">
+                          <Text strong>{t('courses.table.total')}</Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell index={5} align="center">
+                          <Text strong>{sumOf(programme.courses, 'expectedStudents')}</Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell index={6} align="center">
+                          <Text strong>{sumOf(programme.courses, 'actualStudents')}</Text>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell index={7} colSpan={4} />
+                      </Table.Summary.Row>
+                    </Table.Summary>
+                  )}
+                />
+              </Card>
+            </section>
+          ))}
+        </div>
+      )}
 
       <Modal
         title={editingId ? t('courses.editTitle') : t('courses.addTitle')}

@@ -3,10 +3,6 @@ import { apiGet, apiRequest } from '../../api/client'
 /** Blocks of site copy the admin edits; see backend `CONTENT_SLUGS`. */
 export const CONTENT_SLUGS = [
   'about.greeting',
-  'about.location',
-  'programmes.courses',
-  'programmes.calendar',
-  'programmes.culture',
   'notices.faq',
   'resources.textbooks',
   'resources.links',

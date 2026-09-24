@@ -8,7 +8,6 @@ import type { CourseRecord } from './types'
 type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string
 
 const HEADER_KEYS: TranslationKey[] = [
-  'courses.form.title',
   'courses.form.subject',
   'courses.form.teacher',
   'courses.form.expectedStudents',
@@ -22,7 +21,10 @@ const HEADER_KEYS: TranslationKey[] = [
   'courses.columns.visibility',
 ]
 
-const COLUMN_WIDTHS = [16, 18, 14, 10, 10, 14, 16, 12, 10, 14, 14, 12].map((width) => ({ width }))
+const COLUMN_WIDTHS = [18, 14, 10, 10, 14, 16, 12, 10, 14, 14, 12].map((width) => ({ width }))
+
+/** Excel sheet names are limited to 31 characters and a few are illegal. */
+const sheetName = (title: string) => title.replace(/[:\\/?*[\]]/g, ' ').slice(0, 31) || 'Sheet'
 
 /** Empty cells stay empty rather than printing 0. */
 const numberCell = (value: number | null | undefined) => (value == null ? null : { value, type: Number as NumberConstructor })
@@ -32,9 +34,9 @@ const joinParts = (parts: Array<{ days: string; time: string }>, key: 'days' | '
   parts.map((part) => part[key]).join('\n')
 
 /**
- * The 수강 관리 table as a spreadsheet: classes grouped by programme, each
- * block closed by its 계 row — the same shape the office reads on screen, so
- * an exported file can be handed over as a report.
+ * The 수강 관리 table as a spreadsheet — one sheet per programme (한국어,
+ * 영어 …), each closed by its 계 row, so head counts can be read per
+ * programme the way the office needs them.
  */
 export async function exportCoursesToExcel(courses: CourseRecord[], t: Translate, language: string, fileName: string) {
   const header: Row = HEADER_KEYS.map((key) => ({
@@ -44,14 +46,19 @@ export async function exportCoursesToExcel(courses: CourseRecord[], t: Translate
     backgroundColor: '#EEF1F7',
   }))
 
-  const data: SheetData = [header]
+  const programmes = groupCourses(courses)
 
-  for (const programme of groupCourses(courses)) {
+  if (programmes.length === 0) {
+    return
+  }
+
+  const sheets = programmes.map((programme) => {
+    const data: SheetData = [header]
+
     for (const course of programme.courses) {
       const parts = sessionParts(course.sessions, language)
 
       data.push([
-        { value: programme.title },
         { value: course.subject },
         { value: course.teacherName ?? '' },
         numberCell(course.expectedStudents),
@@ -70,14 +77,14 @@ export async function exportCoursesToExcel(courses: CourseRecord[], t: Translate
       programme.courses.reduce((total, course) => total + (course[field] ?? 0), 0)
 
     data.push([
-      { value: `${programme.title} · ${t('courses.table.total')}`, fontWeight: 'bold' as const },
-      null,
+      { value: t('courses.table.total'), fontWeight: 'bold' as const, align: 'right' as const },
       null,
       { value: sum('expectedStudents'), type: Number as NumberConstructor, fontWeight: 'bold' as const },
       { value: sum('actualStudents'), type: Number as NumberConstructor, fontWeight: 'bold' as const },
     ])
-  }
 
-  // v4 returns a writer; 	oFile triggers the browser download.
-  await writeXlsxFile(data, { columns: COLUMN_WIDTHS, sheet: t('courses.adminTitle') }).toFile(fileName)
+    return { data, columns: COLUMN_WIDTHS, sheet: sheetName(programme.title) }
+  })
+
+  await writeXlsxFile(sheets).toFile(fileName)
 }

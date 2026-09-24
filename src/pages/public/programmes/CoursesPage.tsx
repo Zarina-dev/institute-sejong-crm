@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react'
 
 import { contact, phoneHref } from '../../../app/contact'
 import { usePreferences } from '../../../app/preferences'
-import { ContentSection } from '../../../features/content/ContentSection'
 import { CourseGroupList } from '../../../features/courses/CourseGroupList'
 import { compareNatural } from '../../../features/courses/grouping'
 import { useCourses } from '../../../features/courses/queries'
@@ -68,8 +67,6 @@ export function CoursesPage({ category }: CoursesPageProps) {
         title={t(category === 'culture' ? 'pageCopy.cultureTitle' : 'pageCopy.coursesTitle')}
         description={t(category === 'culture' ? 'pageCopy.cultureSubtitle' : 'pageCopy.coursesSubtitle')}
       />
-
-      <ContentSection slug={category === 'culture' ? 'programmes.culture' : 'programmes.courses'} optional />
 
       <ErrorAlert error={courses.error} fallback={t('courses.loadFailed')} />
 

@@ -3,7 +3,6 @@ import { Card, Typography } from 'antd'
 
 import { contact, phoneHref } from '../../../app/contact'
 import { usePreferences } from '../../../app/preferences'
-import { ContentSection } from '../../../features/content/ContentSection'
 import { PageHeader } from '../../../shared/PageHeader'
 
 const { Text } = Typography
@@ -58,9 +57,6 @@ export function LocationPage() {
           <iframe title={t('pageCopy.locationTitle')} src={MAP_EMBED} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
         </Card>
       </div>
-
-      {/* Optional extra directions (landmarks, bus numbers) — the address and map above stand alone. */}
-      <ContentSection slug="about.location" optional />
 
       <Text type="secondary" className="location-note">
         {t('about.contactCopy')}

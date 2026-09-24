@@ -22,10 +22,6 @@ type ContentFormValues = { title: string; body: string }
  */
 const SLUG_LABEL: Record<ContentSlug, TranslationKey> = {
   'about.greeting': 'content.slugs.aboutGreeting',
-  'about.location': 'content.slugs.aboutLocation',
-  'programmes.courses': 'content.slugs.programmesCourses',
-  'programmes.calendar': 'content.slugs.programmesCalendar',
-  'programmes.culture': 'content.slugs.programmesCulture',
   'notices.faq': 'content.slugs.noticesFaq',
   'resources.textbooks': 'content.slugs.resourcesTextbooks',
   'resources.links': 'content.slugs.resourcesLinks',
