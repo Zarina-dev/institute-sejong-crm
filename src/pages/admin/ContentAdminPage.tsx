@@ -3,6 +3,7 @@ import { App, Button, Card, Form, Input, Tabs, Tag, Typography } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 
 import { languages, usePreferences } from '../../app/preferences'
+import type { TranslationKey } from '../../app/preferences'
 import { CONTENT_SLUGS, type ContentSlug } from '../../features/content/api'
 import { useAllContent, useSaveContent } from '../../features/content/queries'
 import { ErrorAlert } from '../../shared/ErrorAlert'
@@ -13,6 +14,23 @@ import { RichTextEditor } from '../../shared/RichTextEditor'
 const { Text } = Typography
 
 type ContentFormValues = { title: string; body: string }
+
+/**
+ * Each block is labelled with its place in the public menu, e.g.
+ * "학당 소개 › 인사말". The slugs contain dots and `t()` reads a dot as a
+ * path separator, so the label keys are dot-free versions of them.
+ */
+const SLUG_LABEL: Record<ContentSlug, TranslationKey> = {
+  'about.greeting': 'content.slugs.aboutGreeting',
+  'about.location': 'content.slugs.aboutLocation',
+  'programmes.courses': 'content.slugs.programmesCourses',
+  'programmes.calendar': 'content.slugs.programmesCalendar',
+  'programmes.culture': 'content.slugs.programmesCulture',
+  'notices.faq': 'content.slugs.noticesFaq',
+  'resources.textbooks': 'content.slugs.resourcesTextbooks',
+  'resources.links': 'content.slugs.resourcesLinks',
+  'history.intro': 'content.slugs.historyIntro',
+}
 
 /**
  * Editor for the fixed text of the public site. Two axes — block and
@@ -66,7 +84,7 @@ export function ContentAdminPage() {
 
               return (
                 <button key={value} type="button" className={value === slug ? 'is-active' : undefined} onClick={() => setSlug(value)}>
-                  <span>{t(`content.slugs.${value}`)}</span>
+                  <span>{t(SLUG_LABEL[value])}</span>
                   <Tag color={filledLocales > 0 ? 'green' : 'default'}>
                     {filledLocales}/{languages.length}
                   </Tag>

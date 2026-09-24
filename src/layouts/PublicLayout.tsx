@@ -190,17 +190,6 @@ export function PublicLayout() {
             <Text type="secondary">{t('brand.tagline')}</Text>
           </div>
 
-          {navigation.map((section) => (
-            <div className="site-footer__column" key={section.to}>
-              <strong>{t(section.labelKey)}</strong>
-              {section.children.map((child) => (
-                <Link key={child.to} to={child.to}>
-                  {t(child.labelKey)}
-                </Link>
-              ))}
-            </div>
-          ))}
-
           <div className="site-footer__column">
             <strong>{t('about.contactKicker')}</strong>
             <span>

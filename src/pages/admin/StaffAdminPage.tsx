@@ -3,7 +3,7 @@ import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type D
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { TableProps } from 'antd'
-import { App, Avatar, Button, Card, Form, Input, InputNumber, Modal, Space, Switch, Table, Tag, Typography } from 'antd'
+import { App, Avatar, Button, Card, Form, Input, Modal, Space, Switch, Table, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { assetUrl } from '../../api/client'
@@ -75,7 +75,7 @@ export function StaffAdminPage() {
   const openCreateModal = useCallback(() => {
     setEditingId(null)
     form.resetFields()
-    // New members go to the end of the list by default.
+    // Order is set by dragging rows, not typed in — a new member goes last.
     form.setFieldValue('sortOrder', rows.length ? Math.max(...rows.map((member) => member.sortOrder)) + 1 : 0)
     setModalOpen(true)
   }, [form, rows])
@@ -285,9 +285,6 @@ export function StaffAdminPage() {
           </Form.Item>
           <Form.Item name="email" label={t('staff.form.email')} rules={[{ type: 'email', message: t('staff.form.emailInvalid') }]}>
             <Input type="email" maxLength={255} />
-          </Form.Item>
-          <Form.Item name="sortOrder" label={t('staff.form.sortOrder')} extra={t('staff.form.sortOrderHint')}>
-            <InputNumber min={0} max={999} style={{ width: 120 }} />
           </Form.Item>
           <Form.Item name="isPublished" label={t('staff.form.published')} valuePropName="checked">
             <Switch />

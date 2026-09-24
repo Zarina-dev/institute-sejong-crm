@@ -253,6 +253,9 @@
   gap: var(--space-2);
   white-space: nowrap;
   padding: var(--space-2) var(--space-3);
+  /* The antd Header sets line-height: 72px; links would inherit it and grow
+     twice as tall as the section buttons. */
+  line-height: var(--leading-normal);
   border-radius: var(--radius-sm);
   color: var(--color-text-muted);
   font-size: var(--text-base);
