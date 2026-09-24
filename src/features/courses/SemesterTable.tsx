@@ -7,7 +7,7 @@ import { groupCourses } from './grouping'
 import { sessionParts, weeklyHoursFromSessions } from './sessions'
 import type { CourseRecord } from './types'
 
-const { Text } = Typography
+const { Title, Text } = Typography
 
 type SemesterTableProps = {
   courses: CourseRecord[] | undefined
@@ -17,43 +17,18 @@ type SemesterTableProps = {
 
 const dash = <Text type="secondary">—</Text>
 
+const sumOf = (courses: CourseRecord[], field: 'expectedStudents' | 'actualStudents') =>
+  courses.reduce((sum, course) => sum + (course[field] ?? 0), 0)
+
 /**
- * The semester overview the office keeps on paper: one row per class, laid
- * out like the admin 수강 관리 table — programme, class, teacher, planned and
- * actual head count, meeting pattern and hours, with totals underneath.
- * Rows are grouped by programme (Korean first), not by date, so a new class
- * simply joins its block.
+ * The semester overview the office keeps on paper — one table per programme
+ * (한국어, TOPIK, 기타 …), each closed by its own 계 row: class, teacher,
+ * planned and actual head count, meeting pattern and hours. A new class
+ * simply joins its programme's table.
  */
 export function SemesterTable({ courses, loading, emptyText }: SemesterTableProps) {
   const { t, language } = usePreferences()
-
-  // Classes in programme order; only the first row of a programme prints its
-  // name, exactly as the admin table does.
-  const { rows, rowSpans } = useMemo(() => {
-    const list: CourseRecord[] = []
-    const spans = new Map<string, number>()
-
-    for (const group of groupCourses(courses)) {
-      group.courses.forEach((course, index) => {
-        list.push(course)
-        spans.set(course.id, index === 0 ? group.courses.length : 0)
-      })
-    }
-
-    return { rows: list, rowSpans: spans }
-  }, [courses])
-
-  const totals = useMemo(
-    () =>
-      rows.reduce(
-        (sum, course) => ({
-          expected: sum.expected + (course.expectedStudents ?? 0),
-          actual: sum.actual + (course.actualStudents ?? 0),
-        }),
-        { expected: 0, actual: 0 },
-      ),
-    [rows],
-  )
+  const programmes = useMemo(() => groupCourses(courses), [courses])
 
   const columns = useMemo<NonNullable<TableProps<CourseRecord>['columns']>>(
     () => [
@@ -63,15 +38,6 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
         width: 48,
         align: 'center',
         render: (_, __, index) => <Text type="secondary">{index + 1}</Text>,
-      },
-      {
-        title: t('courses.form.title'),
-        key: 'title',
-        width: 140,
-        onCell: (course) => ({
-          className: rowSpans.get(course.id) ? 'course-programme-cell' : 'course-programme-cell course-programme-cell--continued',
-        }),
-        render: (_, course) => (rowSpans.get(course.id) ? <Text strong>{course.title}</Text> : null),
       },
       {
         title: t('courses.form.subject'),
@@ -136,7 +102,7 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
         render: (_, course) => course.weeklyHours ?? weeklyHoursFromSessions(course.sessions) ?? dash,
       },
     ],
-    [language, rowSpans, t],
+    [language, t],
   )
 
   if (loading) {
@@ -147,7 +113,7 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
     )
   }
 
-  if (rows.length === 0) {
+  if (programmes.length === 0) {
     return (
       <Card className="surface-card empty-card">
         <Empty description={emptyText} />
@@ -156,33 +122,46 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
   }
 
   return (
-    <Card className="surface-card">
-      <Table
-        className="admin-table semester-table"
-        columns={columns}
-        dataSource={rows}
-        rowKey="id"
-        size="middle"
-        pagination={false}
-        scroll={{ x: 'max-content' }}
-        /* The paper table ends with a 계 row; so does this one. */
-        summary={() => (
-          <Table.Summary fixed>
-            <Table.Summary.Row className="semester-table__total">
-              <Table.Summary.Cell index={0} colSpan={4} align="right">
-                <Text strong>{t('courses.table.total')}</Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={4} align="center">
-                <Text strong>{totals.expected}</Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={5} align="center">
-                <Text strong>{totals.actual}</Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={6} colSpan={4} />
-            </Table.Summary.Row>
-          </Table.Summary>
-        )}
-      />
-    </Card>
+    <div className="semester-tables">
+      {programmes.map((programme) => (
+        <section key={programme.title} aria-labelledby={`semester-${programme.title}`}>
+          <div className="semester-heading">
+            <Title level={3} id={`semester-${programme.title}`}>
+              {programme.title}
+            </Title>
+            <Text type="secondary">{t('courses.classCount', { count: programme.courses.length })}</Text>
+          </div>
+
+          <Card className="surface-card">
+            <Table
+              className="admin-table semester-table"
+              columns={columns}
+              dataSource={programme.courses}
+              rowKey="id"
+              size="middle"
+              pagination={false}
+              scroll={{ x: 'max-content' }}
+              /* The paper table ends each programme with a 계 row; so does this one. */
+              summary={() => (
+                <Table.Summary fixed>
+                  <Table.Summary.Row className="semester-table__total">
+                    <Table.Summary.Cell index={0} colSpan={3} align="right">
+                      <Text strong>{t('courses.table.total')}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={3} align="center">
+                      <Text strong>{sumOf(programme.courses, 'expectedStudents')}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={4} align="center">
+                      <Text strong>{sumOf(programme.courses, 'actualStudents')}</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={5} colSpan={4} />
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )}
+            />
+          </Card>
+        </section>
+      ))}
+    </div>
   )
 }
