@@ -2754,3 +2754,106 @@ a.activity-row:hover b {
     justify-items: start;
   }
 }
+
+/* ---- Mobile header: the burger holds the right edge ---- */
+
+/* `.site-nav` carries margin-left:auto on desktop; once it is hidden the
+   burger has to take over, or it sits right next to the brand. */
+.menu-button.ant-btn {
+  margin-left: auto;
+  flex: none;
+}
+
+/* ---- 학사 일정: week list + month calendar ---- */
+
+.calendar-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.calendar-layout__week {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.week-bar .ant-card-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+}
+
+.calendar-panel {
+  position: sticky;
+  top: calc(var(--layout-header-height) + var(--space-4));
+}
+
+.calendar-panel .ant-card-body {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.calendar-panel__hint.ant-typography {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.schedule-calendar .ant-picker-calendar-date-value {
+  display: none;
+}
+
+.calendar-cell {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 4px 0 2px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.calendar-cell.in-week {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+  font-weight: var(--weight-semibold);
+}
+
+.calendar-cell i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.calendar-cell.in-week i {
+  background: var(--color-primary-text);
+}
+
+.ant-picker-cell-selected .calendar-cell,
+.ant-picker-cell-selected .calendar-cell.in-week {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.ant-picker-cell-selected .calendar-cell i {
+  background: var(--color-on-primary);
+}
+
+.ant-picker-cell-disabled .calendar-cell {
+  color: var(--color-text-faint);
+}
+
+@media (max-width: 1100px) {
+  .calendar-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-panel {
+    position: static;
+  }
+}

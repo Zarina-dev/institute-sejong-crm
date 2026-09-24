@@ -140,6 +140,9 @@ const ko: LocaleDictionary = {
     fileRejectedSize: '파일이 너무 큽니다 ({{size}}). 최대 {{max}}까지 가능합니다.',
   },
   courses: {
+    allSubjects: '전체 세부 과정',
+    allTeachers: '전체 강사',
+    emptyFiltered: '조건에 맞는 반이 없습니다.',
     columns: { operations: '운영 정보', visibility: '공개 상태' },
     contactCalloutCopy: '학당으로 전화하거나 방문해 주세요. 행정실에서 수준에 맞는 반을 안내해 드립니다.',
     contactCalloutTitle: '수강을 원하시나요?',
@@ -266,6 +269,7 @@ const ko: LocaleDictionary = {
     columns: { title: '제목', category: '분류', status: '상태', publishedAt: '게시일' },
   },
   schedule: {
+    calendarHint: '날짜를 선택하면 해당 주간이 열립니다. 점은 수업이 있는 날입니다.',
     kicker: '학생 도구',
     week: '주',
     prevWeek: '이전 주',

@@ -1,11 +1,12 @@
-import { EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons'
-import { Button, Card, Typography } from 'antd'
-import { useMemo } from 'react'
+import { EnvironmentOutlined, PhoneOutlined, SyncOutlined } from '@ant-design/icons'
+import { Button, Card, Col, Row, Select, Typography } from 'antd'
+import { useMemo, useState } from 'react'
 
 import { contact, phoneHref } from '../../../app/contact'
 import { usePreferences } from '../../../app/preferences'
 import { ContentSection } from '../../../features/content/ContentSection'
 import { CourseGroupList } from '../../../features/courses/CourseGroupList'
+import { compareNatural } from '../../../features/courses/grouping'
 import { useCourses } from '../../../features/courses/queries'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { PageHeader } from '../../../shared/PageHeader'
@@ -18,18 +19,47 @@ type CoursesPageProps = {
 }
 
 /**
- * Public catalogue: programmes and their classes, read-only. Enrolment is
- * handled at the institute, so the page ends with its contact details
- * rather than an apply button.
+ * Public catalogue: programmes and their classes, read-only, filterable by
+ * subject and teacher. Enrolment is handled at the institute, so the page
+ * ends with its contact details rather than an apply button.
  */
 export function CoursesPage({ category }: CoursesPageProps) {
   const { t } = usePreferences()
   const courses = useCourses(true)
+  const [subject, setSubject] = useState<string>()
+  const [teacher, setTeacher] = useState<string>()
 
-  const filtered = useMemo(
-    () => courses.data?.filter((course) => (course.category ?? 'language') === category),
+  const inCategory = useMemo(
+    () => courses.data?.filter((course) => (course.category ?? 'language') === category) ?? [],
     [courses.data, category],
   )
+
+  // Options describe what this page actually holds, so a filter can never
+  // produce an empty list by accident.
+  const { subjectOptions, teacherOptions } = useMemo(() => {
+    const subjects = new Set<string>()
+    const teachers = new Set<string>()
+
+    for (const course of inCategory) {
+      subjects.add(course.subject)
+
+      if (course.teacherName) {
+        teachers.add(course.teacherName)
+      }
+    }
+
+    const toOptions = (values: Set<string>) =>
+      [...values].sort(compareNatural).map((value) => ({ value, label: value }))
+
+    return { subjectOptions: toOptions(subjects), teacherOptions: toOptions(teachers) }
+  }, [inCategory])
+
+  const filtered = useMemo(
+    () => inCategory.filter((course) => (!subject || course.subject === subject) && (!teacher || course.teacherName === teacher)),
+    [inCategory, subject, teacher],
+  )
+
+  const filtersActive = Boolean(subject || teacher)
 
   return (
     <div className="page-layout">
@@ -43,7 +73,58 @@ export function CoursesPage({ category }: CoursesPageProps) {
 
       <ErrorAlert error={courses.error} fallback={t('courses.loadFailed')} />
 
-      <CourseGroupList courses={filtered} loading={courses.isPending} emptyText={t('courses.empty')} />
+      <Card className="surface-card filter-card">
+        <Row gutter={[16, 16]}>
+          <Col xs={24} md={12}>
+            <Text>{t('courses.form.subject')}</Text>
+            <Select
+              size="large"
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder={t('courses.allSubjects')}
+              value={subject}
+              onChange={setSubject}
+              options={subjectOptions}
+            />
+          </Col>
+          <Col xs={24} md={12}>
+            <Text>{t('courses.form.teacher')}</Text>
+            <Select
+              size="large"
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder={t('courses.allTeachers')}
+              value={teacher}
+              onChange={setTeacher}
+              options={teacherOptions}
+            />
+          </Col>
+        </Row>
+
+        <div className="filter-footer">
+          <Text>{t('courses.classCount', { count: filtered.length })}</Text>
+          {filtersActive ? (
+            <Button
+              type="link"
+              icon={<SyncOutlined />}
+              onClick={() => {
+                setSubject(undefined)
+                setTeacher(undefined)
+              }}
+            >
+              {t('common.resetFilters')}
+            </Button>
+          ) : null}
+        </div>
+      </Card>
+
+      <CourseGroupList
+        courses={filtered}
+        loading={courses.isPending}
+        emptyText={filtersActive ? t('courses.emptyFiltered') : t('courses.empty')}
+      />
 
       <Card className="surface-card portal-callout">
         <div>

@@ -141,6 +141,9 @@ const ky: LocaleDictionary = {
     fileRejectedSize: 'Файл өтө чоң ({{size}}). Максимум — {{max}}.',
   },
   courses: {
+    allSubjects: 'Бардык класстар',
+    allTeachers: 'Бардык мугалимдер',
+    emptyFiltered: 'Бул чыпкаларга ылайык класс жок.',
     columns: { operations: 'Расписание', visibility: 'Көрүнүшү' },
     contactCalloutCopy: 'Институтка чалыңыз же келиңиз — администрация деңгээлиңизге ылайык классты сунуштайт.',
     contactCalloutTitle: 'Класска жазылгыңыз келеби?',
@@ -269,6 +272,7 @@ const ky: LocaleDictionary = {
     columns: { title: 'Аталышы', category: 'Категория', status: 'Абалы', publishedAt: 'Жарыяланды' },
   },
   schedule: {
+    calendarHint: 'Күндү тандасаңыз, ошол жума ачылат. Чекиттер — сабак бар күндөр.',
     kicker: 'Студент куралдары',
     week: 'Апта',
     prevWeek: 'Мурунку апта',

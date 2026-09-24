@@ -157,6 +157,9 @@ export const en = {
     fileRejectedSize: 'File is too large ({{size}}). Maximum is {{max}}.',
   },
   courses: {
+    allSubjects: 'All classes',
+    allTeachers: 'All teachers',
+    emptyFiltered: 'No classes match these filters.',
     columns: { operations: 'Schedule', visibility: 'Visibility' },
     contactCalloutCopy: 'Call or visit the institute to enrol — the office will help you pick the right level.',
     contactCalloutTitle: 'Interested in a class?',
@@ -285,6 +288,7 @@ export const en = {
     columns: { title: 'Title', category: 'Category', status: 'Status', publishedAt: 'Published' },
   },
   schedule: {
+    calendarHint: 'Pick a day to jump to that week. Dots mark days with classes.',
     kicker: 'Student tools',
     week: 'Week',
     prevWeek: 'Previous week',

@@ -143,6 +143,9 @@ const ru: LocaleDictionary = {
     fileRejectedSize: 'Файл слишком большой ({{size}}). Максимум — {{max}}.',
   },
   courses: {
+    allSubjects: 'Все классы',
+    allTeachers: 'Все преподаватели',
+    emptyFiltered: 'Нет классов по этим фильтрам.',
     columns: { operations: 'Расписание', visibility: 'Видимость' },
     contactCalloutCopy: 'Позвоните или приходите в институт — администрация поможет выбрать уровень.',
     contactCalloutTitle: 'Хотите записаться?',
@@ -287,6 +290,7 @@ const ru: LocaleDictionary = {
     columns: { title: 'Заголовок', category: 'Категория', status: 'Статус', publishedAt: 'Опубликовано' },
   },
   schedule: {
+    calendarHint: 'Выберите день, чтобы открыть его неделю. Точки — дни с занятиями.',
     kicker: 'Инструменты студента',
     week: 'Неделя',
     prevWeek: 'Предыдущая неделя',
