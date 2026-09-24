@@ -1,6 +1,6 @@
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, AutoComplete, Button, Card, Col, Form, Input, InputNumber, Modal, Row, Select, Space, Table, Tag, Typography } from 'antd'
+import { App, AutoComplete, Button, Card, Col, Dropdown, Form, Input, InputNumber, Modal, Row, Select, Table, Tag, Typography } from 'antd'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
@@ -17,6 +17,8 @@ import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
 
 const { Text } = Typography
+
+const dash = <Text type="secondary">—</Text>
 
 type CourseFormValues = {
   category: 'language' | 'culture'
@@ -39,7 +41,7 @@ export function CoursesAdminPage() {
   const { t, language } = usePreferences()
   const { message } = App.useApp()
   const confirmDelete = useConfirmDelete()
-  const { pinActions, compactActions } = useTableLayout()
+  const { pinActions } = useTableLayout()
 
   const courses = useCourses(false)
   const staff = useAllStaff()
@@ -224,42 +226,87 @@ export function CoursesAdminPage() {
           </div>
         ),
       },
+      /* ---- Semester figures (the office's own numbers) ---- */
+      {
+        title: t('courses.form.expectedStudents'),
+        dataIndex: 'expectedStudents',
+        key: 'expectedStudents',
+        width: 80,
+        align: 'center',
+        responsive: ['lg'],
+        render: (value: number | null) => value ?? dash,
+      },
+      {
+        title: t('courses.form.actualStudents'),
+        dataIndex: 'actualStudents',
+        key: 'actualStudents',
+        width: 80,
+        align: 'center',
+        responsive: ['lg'],
+        render: (value: number | null) => value ?? dash,
+      },
+      {
+        title: t('courses.form.totalHours'),
+        dataIndex: 'totalHours',
+        key: 'totalHours',
+        width: 90,
+        align: 'center',
+        responsive: ['xl'],
+        render: (value: number | null) => value ?? dash,
+      },
+      {
+        title: t('courses.form.weeklyHours'),
+        key: 'weeklyHours',
+        width: 80,
+        align: 'center',
+        responsive: ['xl'],
+        render: (_, record) => record.weeklyHours ?? weeklyHoursFromSessions(record.sessions) ?? dash,
+      },
       {
         title: t('courses.columns.visibility'),
         dataIndex: 'isPublished',
         key: 'isPublished',
-        width: 120,
+        width: 110,
         render: (value: boolean) => (
           <Tag color={value ? 'green' : 'gold'}>{value ? t('common.published') : t('common.unpublished')}</Tag>
         ),
       },
       {
+        // With the semester figures on screen the row is wide, so the three
+        // buttons collapse into one menu.
         title: t('common.actions'),
         key: 'actions',
         fixed: pinActions,
-        width: compactActions ? 120 : 260,
+        width: 90,
+        align: 'center',
         render: (_, record) => (
-          <Space>
-            <Button size="small" icon={<EditOutlined />} aria-label={t('common.edit')} onClick={() => openEditModal(record)}>
-              {compactActions ? null : t('common.edit')}
-            </Button>
+          <Dropdown
+            trigger={['click']}
+            menu={{
+              items: [
+                { key: 'edit', icon: <EditOutlined />, label: t('common.edit'), onClick: () => openEditModal(record) },
+                {
+                  key: 'publish',
+                  icon: record.isPublished ? <EyeInvisibleOutlined /> : <EyeOutlined />,
+                  label: record.isPublished ? t('common.unpublish') : t('common.publish'),
+                  onClick: () => handleTogglePublished(record),
+                },
+                { type: 'divider' },
+                { key: 'delete', icon: <DeleteOutlined />, label: t('common.delete'), danger: true, onClick: () => handleDelete(record) },
+              ],
+            }}
+          >
             <Button
               size="small"
-              icon={record.isPublished ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              icon={<MoreOutlined />}
+              aria-label={t('common.actions')}
               loading={setPublished.isPending && setPublished.variables?.id === record.id}
-              onClick={() => handleTogglePublished(record)}
-              aria-label={record.isPublished ? t('common.unpublish') : t('common.publish')}
-            >
-              {compactActions ? null : record.isPublished ? t('common.unpublish') : t('common.publish')}
-            </Button>
-            <Button size="small" danger icon={<DeleteOutlined />} aria-label={t('common.delete')} onClick={() => handleDelete(record)}>
-              {compactActions ? null : t('common.delete')}
-            </Button>
-          </Space>
+            />
+          </Dropdown>
         ),
       },
     ],
-    [compactActions, handleDelete, handleTogglePublished, language, openEditModal, pinActions, rowSpans, setPublished.isPending, setPublished.variables?.id, t],
+    [handleDelete, handleTogglePublished, language, openEditModal, pinActions, rowSpans, setPublished.isPending, setPublished.variables?.id, t],
   )
 
   /* ------------------------------- render ----------------------------- */

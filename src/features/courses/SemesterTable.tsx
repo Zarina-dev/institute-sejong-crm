@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import { groupCourses } from './grouping'
-import { sessionParts, weeklyHoursFromSessions } from './sessions'
+import { sessionParts } from './sessions'
 import type { CourseRecord } from './types'
 
 const { Title, Text } = Typography
@@ -17,14 +17,13 @@ type SemesterTableProps = {
 
 const dash = <Text type="secondary">—</Text>
 
-const sumOf = (courses: CourseRecord[], field: 'expectedStudents' | 'actualStudents') =>
-  courses.reduce((sum, course) => sum + (course[field] ?? 0), 0)
+const sumExpected = (courses: CourseRecord[]) => courses.reduce((sum, course) => sum + (course.expectedStudents ?? 0), 0)
 
 /**
- * The semester overview the office keeps on paper — one table per programme
- * (한국어, TOPIK, 기타 …), each closed by its own 계 row: class, teacher,
- * planned and actual head count, meeting pattern and hours. A new class
- * simply joins its programme's table.
+ * The semester overview for visitors — one table per programme (한국어,
+ * TOPIK, 기타 …) with the class, its teacher, the places planned and when it
+ * meets, closed by a 계 row. Enrolment counts and teaching hours are the
+ * office's own figures and stay in 수강 관리.
  */
 export function SemesterTable({ courses, loading, emptyText }: SemesterTableProps) {
   const { t, language } = usePreferences()
@@ -61,14 +60,6 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
         render: (value: number | null) => value ?? dash,
       },
       {
-        title: t('courses.form.actualStudents'),
-        dataIndex: 'actualStudents',
-        key: 'actualStudents',
-        width: 90,
-        align: 'center',
-        render: (value: number | null) => value ?? dash,
-      },
-      {
         title: t('courses.table.days'),
         key: 'days',
         width: 110,
@@ -85,21 +76,6 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
           const parts = sessionParts(course.sessions, language)
           return parts.length ? parts.map((part) => <div key={part.days + part.time}>{part.time}</div>) : dash
         },
-      },
-      {
-        title: t('courses.form.totalHours'),
-        dataIndex: 'totalHours',
-        key: 'totalHours',
-        width: 110,
-        align: 'center',
-        render: (value: number | null) => value ?? dash,
-      },
-      {
-        title: t('courses.form.weeklyHours'),
-        key: 'weeklyHours',
-        width: 90,
-        align: 'center',
-        render: (_, course) => course.weeklyHours ?? weeklyHoursFromSessions(course.sessions) ?? dash,
       },
     ],
     [language, t],
@@ -149,12 +125,9 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
                       <Text strong>{t('courses.table.total')}</Text>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={3} align="center">
-                      <Text strong>{sumOf(programme.courses, 'expectedStudents')}</Text>
+                      <Text strong>{sumExpected(programme.courses)}</Text>
                     </Table.Summary.Cell>
-                    <Table.Summary.Cell index={4} align="center">
-                      <Text strong>{sumOf(programme.courses, 'actualStudents')}</Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell index={5} colSpan={4} />
+                    <Table.Summary.Cell index={4} colSpan={2} />
                   </Table.Summary.Row>
                 </Table.Summary>
               )}
