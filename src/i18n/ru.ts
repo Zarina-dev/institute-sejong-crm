@@ -143,7 +143,13 @@ const ru: LocaleDictionary = {
     fileRejectedSize: 'Файл слишком большой ({{size}}). Максимум — {{max}}.',
   },
   courses: {
+    export: {
+      excel: 'Excel',
+      pdf: 'Печать / PDF',
+      failed: 'Не удалось выгрузить таблицу.',
+    },
     table: {
+      period: 'Период',
       total: 'Итого',
       days: 'Дни',
       time: 'Время',

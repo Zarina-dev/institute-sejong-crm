@@ -1,0 +1,83 @@
+import writeXlsxFile, { type Row, type SheetData } from 'write-excel-file/browser'
+
+import type { TranslationKey } from '../../app/preferences'
+import { groupCourses } from './grouping'
+import { sessionParts, weeklyHoursFromSessions } from './sessions'
+import type { CourseRecord } from './types'
+
+type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string
+
+const HEADER_KEYS: TranslationKey[] = [
+  'courses.form.title',
+  'courses.form.subject',
+  'courses.form.teacher',
+  'courses.form.expectedStudents',
+  'courses.form.actualStudents',
+  'courses.table.days',
+  'courses.table.time',
+  'courses.form.totalHours',
+  'courses.form.weeklyHours',
+  'courses.form.startDate',
+  'courses.form.endDate',
+  'courses.columns.visibility',
+]
+
+const COLUMN_WIDTHS = [16, 18, 14, 10, 10, 14, 16, 12, 10, 14, 14, 12].map((width) => ({ width }))
+
+/** Empty cells stay empty rather than printing 0. */
+const numberCell = (value: number | null | undefined) => (value == null ? null : { value, type: Number as NumberConstructor })
+
+/** One line per slot, so "월·수 / 화" and "09:00–10:30" line up in a cell. */
+const joinParts = (parts: Array<{ days: string; time: string }>, key: 'days' | 'time') =>
+  parts.map((part) => part[key]).join('\n')
+
+/**
+ * The 수강 관리 table as a spreadsheet: classes grouped by programme, each
+ * block closed by its 계 row — the same shape the office reads on screen, so
+ * an exported file can be handed over as a report.
+ */
+export async function exportCoursesToExcel(courses: CourseRecord[], t: Translate, language: string, fileName: string) {
+  const header: Row = HEADER_KEYS.map((key) => ({
+    value: t(key),
+    fontWeight: 'bold' as const,
+    align: 'center' as const,
+    backgroundColor: '#EEF1F7',
+  }))
+
+  const data: SheetData = [header]
+
+  for (const programme of groupCourses(courses)) {
+    for (const course of programme.courses) {
+      const parts = sessionParts(course.sessions, language)
+
+      data.push([
+        { value: programme.title },
+        { value: course.subject },
+        { value: course.teacherName ?? '' },
+        numberCell(course.expectedStudents),
+        numberCell(course.actualStudents),
+        { value: joinParts(parts, 'days'), wrap: true },
+        { value: joinParts(parts, 'time'), wrap: true },
+        numberCell(course.totalHours),
+        numberCell(course.weeklyHours ?? weeklyHoursFromSessions(course.sessions)),
+        { value: course.startDate ?? '' },
+        { value: course.endDate ?? '' },
+        { value: course.isPublished ? t('common.published') : t('common.unpublished') },
+      ])
+    }
+
+    const sum = (field: 'expectedStudents' | 'actualStudents') =>
+      programme.courses.reduce((total, course) => total + (course[field] ?? 0), 0)
+
+    data.push([
+      { value: `${programme.title} · ${t('courses.table.total')}`, fontWeight: 'bold' as const },
+      null,
+      null,
+      { value: sum('expectedStudents'), type: Number as NumberConstructor, fontWeight: 'bold' as const },
+      { value: sum('actualStudents'), type: Number as NumberConstructor, fontWeight: 'bold' as const },
+    ])
+  }
+
+  // v4 returns a writer; 	oFile triggers the browser download.
+  await writeXlsxFile(data, { columns: COLUMN_WIDTHS, sheet: t('courses.adminTitle') }).toFile(fileName)
+}

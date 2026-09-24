@@ -157,7 +157,13 @@ export const en = {
     fileRejectedSize: 'File is too large ({{size}}). Maximum is {{max}}.',
   },
   courses: {
+    export: {
+      excel: 'Excel',
+      pdf: 'Print / PDF',
+      failed: 'Could not export the table.',
+    },
     table: {
+      period: 'Term',
       total: 'Total',
       days: 'Days',
       time: 'Time',

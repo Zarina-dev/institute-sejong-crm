@@ -2894,3 +2894,83 @@ a.activity-row:hover b {
 .semester-table__total > td {
   background: var(--color-surface-sunken);
 }
+
+/* ==========================================================================
+   Print — the 수강 관리 table doubles as the office's semester report,
+   so "PDF" is the browser's own print-to-PDF with the chrome stripped.
+   ========================================================================== */
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  .no-print,
+  .admin-sider,
+  .admin-header,
+  .skip-link,
+  .ant-table-filter-column-title + .ant-table-filter-trigger,
+  th.ant-table-cell:last-child,
+  td.ant-table-cell:last-child {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  .print-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-2);
+    border-bottom: 2px solid #000;
+    font-size: 12pt;
+  }
+
+  .print-heading strong {
+    font-size: 14pt;
+  }
+
+  /* Ant Design paints its own surfaces; flatten them for paper. */
+  .admin-shell,
+  .admin-content,
+  .surface-card,
+  .ant-card,
+  .ant-table {
+    background: #fff !important;
+    box-shadow: none !important;
+    border: 0 !important;
+  }
+
+  .admin-content {
+    padding: 0 !important;
+  }
+
+  .ant-table-cell {
+    padding: 4px 6px !important;
+    font-size: 9pt !important;
+    border-color: #999 !important;
+  }
+
+  .ant-table-thead > tr > th {
+    background: #eee !important;
+  }
+
+  .ant-table-wrapper,
+  .ant-table-content {
+    overflow: visible !important;
+  }
+
+  .semester-table__total > td {
+    background: #f3f3f3 !important;
+    font-weight: 700;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+}

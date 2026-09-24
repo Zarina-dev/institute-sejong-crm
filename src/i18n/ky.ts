@@ -141,7 +141,13 @@ const ky: LocaleDictionary = {
     fileRejectedSize: 'Файл өтө чоң ({{size}}). Максимум — {{max}}.',
   },
   courses: {
+    export: {
+      excel: 'Excel',
+      pdf: 'Басып чыгаруу / PDF',
+      failed: 'Таблицаны чыгаруу мүмкүн болбоду.',
+    },
     table: {
+      period: 'Мөөнөтү',
       total: 'Жыйынтык',
       days: 'Күндөр',
       time: 'Убакыт',

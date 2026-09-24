@@ -140,7 +140,13 @@ const ko: LocaleDictionary = {
     fileRejectedSize: '파일이 너무 큽니다 ({{size}}). 최대 {{max}}까지 가능합니다.',
   },
   courses: {
+    export: {
+      excel: '엑셀 저장',
+      pdf: '인쇄 / PDF',
+      failed: '표를 내보낼 수 없습니다.',
+    },
     table: {
+      period: '기간',
       total: '계',
       days: '수업 요일',
       time: '수업 시간',

@@ -1,12 +1,12 @@
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FileExcelOutlined, MoreOutlined, PlusOutlined, PrinterOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, AutoComplete, Button, Card, Col, Dropdown, Form, Input, InputNumber, Modal, Row, Select, Table, Tag, Typography } from 'antd'
+import { App, AutoComplete, Button, Card, Col, Dropdown, Form, Input, InputNumber, Modal, Row, Select, Space, Table, Tag, Typography } from 'antd'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import { SessionsEditor } from '../../features/courses/SessionsEditor'
 import { courseTitles, groupCourses } from '../../features/courses/grouping'
-import { formatSessions, weeklyHoursFromSessions } from '../../features/courses/sessions'
+import { sessionParts, weeklyHoursFromSessions } from '../../features/courses/sessions'
 import { useCourses, useCreateCourse, useDeleteCourse, useSetCoursePublished, useUpdateCourse } from '../../features/courses/queries'
 import { useAllStaff } from '../../features/staff/queries'
 import type { CourseRecord, CourseSession } from '../../features/courses/types'
@@ -53,6 +53,7 @@ export function CoursesAdminPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form] = Form.useForm<CourseFormValues>()
+  const [exporting, setExporting] = useState(false)
   // Once the admin types a figure we stop overwriting it; institutes count
   // teaching periods their own way and the computed hours are only a default.
   const weeklyHoursEdited = useRef(false)
@@ -175,6 +176,31 @@ export function CoursesAdminPage() {
 
   const titleOptions = useMemo(() => courseTitles(courses.data).map((value) => ({ value })), [courses.data])
 
+  const totals = useMemo(
+    () =>
+      rows.reduce(
+        (sum, course) => ({
+          expected: sum.expected + (course.expectedStudents ?? 0),
+          actual: sum.actual + (course.actualStudents ?? 0),
+        }),
+        { expected: 0, actual: 0 },
+      ),
+    [rows],
+  )
+
+  const handleExcel = useCallback(async () => {
+    setExporting(true)
+
+    try {
+      const { exportCoursesToExcel } = await import('../../features/courses/exportCourses')
+      await exportCoursesToExcel(rows, t, language, `${t('courses.adminTitle')}-${new Date().toISOString().slice(0, 10)}.xlsx`)
+    } catch (err) {
+      message.error(getErrorMessage(err, t('courses.export.failed')))
+    } finally {
+      setExporting(false)
+    }
+  }, [language, message, rows, t])
+
   /**
    * Teachers come from 교직원. Names already stored on a course are kept as
    * options too, so editing an old course never silently drops its teacher.
@@ -211,19 +237,39 @@ export function CoursesAdminPage() {
         ),
       },
       {
-        title: t('courses.columns.operations'),
-        key: 'scheduleInfo',
-        responsive: ['md'],
+        title: t('courses.form.teacher'),
+        dataIndex: 'teacherName',
+        key: 'teacherName',
+        width: 120,
+        render: (value: string | null) => value || dash,
+      },
+      {
+        title: t('courses.table.days'),
+        key: 'days',
+        width: 100,
+        render: (_, record) => {
+          const parts = sessionParts(record.sessions, language)
+          return parts.length ? parts.map((part) => <div key={part.days + part.time}>{part.days}</div>) : dash
+        },
+      },
+      {
+        title: t('courses.table.time'),
+        key: 'time',
+        width: 130,
+        render: (_, record) => {
+          const parts = sessionParts(record.sessions, language)
+          return parts.length ? parts.map((part) => <div key={part.days + part.time}>{part.time}</div>) : dash
+        },
+      },
+      {
+        title: t('courses.table.period'),
+        key: 'period',
+        width: 170,
+        responsive: ['xl'],
         render: (_, record) => (
-          <div className="cell-stack">
-            <Text>{record.teacherName || '-'}</Text>
-            {formatSessions(record.sessions, language, record.classroom).map((line) => (
-              <Text type="secondary" key={line}>{line}</Text>
-            ))}
-            <Text type="secondary">
-              {record.startDate || '-'} ~ {record.endDate || '-'}
-            </Text>
-          </div>
+          <Text type="secondary">
+            {record.startDate || '-'} ~ {record.endDate || '-'}
+          </Text>
         ),
       },
       /* ---- Semester figures (the office's own numbers) ---- */
@@ -312,19 +358,35 @@ export function CoursesAdminPage() {
   /* ------------------------------- render ----------------------------- */
 
   return (
-    <div className="page-layout">
+    <div className="page-layout courses-admin">
+      <div className="print-only print-heading">
+        <strong>{t('brand.name')}</strong>
+        <span>
+          {t('courses.adminTitle')} · {new Date().toLocaleDateString(language)}
+        </span>
+      </div>
+
       <PageHeader
         kicker={t('common.admin')}
         title={t('courses.adminTitle')}
         description={t('courses.adminSubtitle')}
       />
 
-      <Card className="surface-card filter-card">
+      <Card className="surface-card filter-card no-print">
         <div className="filter-footer">
           <Text>{t('courses.count', { count: courses.data?.length ?? 0 })}</Text>
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
-            {t('courses.add')}
-          </Button>
+          <Space wrap>
+            {/* The table doubles as the office's semester report. */}
+            <Button icon={<FileExcelOutlined />} loading={exporting} onClick={handleExcel}>
+              {t('courses.export.excel')}
+            </Button>
+            <Button icon={<PrinterOutlined />} onClick={() => window.print()}>
+              {t('courses.export.pdf')}
+            </Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
+              {t('courses.add')}
+            </Button>
+          </Space>
         </div>
       </Card>
 
@@ -339,6 +401,23 @@ export function CoursesAdminPage() {
           // No paging: a programme's classes must stay on one page for the row span to hold.
           pagination={false}
           scroll={{ x: 'max-content' }}
+          /* The report ends with the same 계 the paper table carries. */
+          summary={() => (
+            <Table.Summary fixed>
+              <Table.Summary.Row className="semester-table__total">
+                <Table.Summary.Cell index={0} colSpan={6} align="right">
+                  <Text strong>{t('courses.table.total')}</Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={6} align="center">
+                  <Text strong>{totals.expected}</Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={7} align="center">
+                  <Text strong>{totals.actual}</Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={8} colSpan={4} />
+              </Table.Summary.Row>
+            </Table.Summary>
+          )}
           loading={courses.isPending}
         />
       </Card>
