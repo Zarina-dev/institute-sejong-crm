@@ -3,12 +3,11 @@ import type { TableProps } from 'antd'
 import { useMemo } from 'react'
 
 import { usePreferences } from '../../app/preferences'
-import { formatDateRange } from '../../shared/format'
-import { compareNatural } from './grouping'
+import { groupCourses } from './grouping'
 import { sessionParts, weeklyHoursFromSessions } from './sessions'
 import type { CourseRecord } from './types'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
 type SemesterTableProps = {
   courses: CourseRecord[] | undefined
@@ -16,43 +15,45 @@ type SemesterTableProps = {
   emptyText: string
 }
 
-/** Courses sharing a start and end date are one semester. */
-type Semester = { key: string; startDate: string | null; endDate: string | null; courses: CourseRecord[] }
-
-function groupBySemester(courses: readonly CourseRecord[] | undefined): Semester[] {
-  const map = new Map<string, Semester>()
-
-  for (const course of courses ?? []) {
-    const key = `${course.startDate ?? ''}~${course.endDate ?? ''}`
-    const semester = map.get(key)
-
-    if (semester) {
-      semester.courses.push(course)
-    } else {
-      map.set(key, { key, startDate: course.startDate ?? null, endDate: course.endDate ?? null, courses: [course] })
-    }
-  }
-
-  // Newest term first; inside a term, by programme then class name.
-  return [...map.values()]
-    .sort((a, b) => (b.startDate ?? '').localeCompare(a.startDate ?? ''))
-    .map((semester) => ({
-      ...semester,
-      courses: [...semester.courses].sort((a, b) => compareNatural(a.title, b.title) || compareNatural(a.subject, b.subject)),
-    }))
-}
-
-const total = (courses: CourseRecord[], field: 'expectedStudents' | 'actualStudents') =>
-  courses.reduce((sum, course) => sum + (course[field] ?? 0), 0)
+const dash = <Text type="secondary">—</Text>
 
 /**
- * 학사 일정 — the semester overview the office keeps on paper: one row per
- * class with its teacher, planned and actual head count, meeting pattern and
- * hours. Numbers the admin has not filled in show as "—" rather than zero.
+ * The semester overview the office keeps on paper: one row per class, laid
+ * out like the admin 수강 관리 table — programme, class, teacher, planned and
+ * actual head count, meeting pattern and hours, with totals underneath.
+ * Rows are grouped by programme (Korean first), not by date, so a new class
+ * simply joins its block.
  */
 export function SemesterTable({ courses, loading, emptyText }: SemesterTableProps) {
   const { t, language } = usePreferences()
-  const semesters = useMemo(() => groupBySemester(courses), [courses])
+
+  // Classes in programme order; only the first row of a programme prints its
+  // name, exactly as the admin table does.
+  const { rows, rowSpans } = useMemo(() => {
+    const list: CourseRecord[] = []
+    const spans = new Map<string, number>()
+
+    for (const group of groupCourses(courses)) {
+      group.courses.forEach((course, index) => {
+        list.push(course)
+        spans.set(course.id, index === 0 ? group.courses.length : 0)
+      })
+    }
+
+    return { rows: list, rowSpans: spans }
+  }, [courses])
+
+  const totals = useMemo(
+    () =>
+      rows.reduce(
+        (sum, course) => ({
+          expected: sum.expected + (course.expectedStudents ?? 0),
+          actual: sum.actual + (course.actualStudents ?? 0),
+        }),
+        { expected: 0, actual: 0 },
+      ),
+    [rows],
+  )
 
   const columns = useMemo<NonNullable<TableProps<CourseRecord>['columns']>>(
     () => [
@@ -64,21 +65,26 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
         render: (_, __, index) => <Text type="secondary">{index + 1}</Text>,
       },
       {
+        title: t('courses.form.title'),
+        key: 'title',
+        width: 140,
+        onCell: (course) => ({
+          className: rowSpans.get(course.id) ? 'course-programme-cell' : 'course-programme-cell course-programme-cell--continued',
+        }),
+        render: (_, course) => (rowSpans.get(course.id) ? <Text strong>{course.title}</Text> : null),
+      },
+      {
         title: t('courses.form.subject'),
+        dataIndex: 'subject',
         key: 'subject',
-        render: (_, course) => (
-          <div className="cell-stack">
-            <Text strong>{course.subject}</Text>
-            <Text type="secondary">{course.title}</Text>
-          </div>
-        ),
+        render: (value: string) => <Text strong>{value}</Text>,
       },
       {
         title: t('courses.form.teacher'),
         dataIndex: 'teacherName',
         key: 'teacherName',
         width: 130,
-        render: (value: string | null) => value || <Text type="secondary">—</Text>,
+        render: (value: string | null) => value || dash,
       },
       {
         title: t('courses.form.expectedStudents'),
@@ -86,7 +92,7 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
         key: 'expectedStudents',
         width: 90,
         align: 'center',
-        render: (value: number | null) => value ?? <Text type="secondary">—</Text>,
+        render: (value: number | null) => value ?? dash,
       },
       {
         title: t('courses.form.actualStudents'),
@@ -94,7 +100,7 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
         key: 'actualStudents',
         width: 90,
         align: 'center',
-        render: (value: number | null) => value ?? <Text type="secondary">—</Text>,
+        render: (value: number | null) => value ?? dash,
       },
       {
         title: t('courses.table.days'),
@@ -102,7 +108,7 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
         width: 110,
         render: (_, course) => {
           const parts = sessionParts(course.sessions, language)
-          return parts.length ? parts.map((part) => <div key={part.days + part.time}>{part.days}</div>) : <Text type="secondary">—</Text>
+          return parts.length ? parts.map((part) => <div key={part.days + part.time}>{part.days}</div>) : dash
         },
       },
       {
@@ -111,7 +117,7 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
         width: 140,
         render: (_, course) => {
           const parts = sessionParts(course.sessions, language)
-          return parts.length ? parts.map((part) => <div key={part.days + part.time}>{part.time}</div>) : <Text type="secondary">—</Text>
+          return parts.length ? parts.map((part) => <div key={part.days + part.time}>{part.time}</div>) : dash
         },
       },
       {
@@ -120,17 +126,17 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
         key: 'totalHours',
         width: 110,
         align: 'center',
-        render: (value: number | null) => value ?? <Text type="secondary">—</Text>,
+        render: (value: number | null) => value ?? dash,
       },
       {
         title: t('courses.form.weeklyHours'),
         key: 'weeklyHours',
         width: 90,
         align: 'center',
-        render: (_, course) => course.weeklyHours ?? weeklyHoursFromSessions(course.sessions) ?? <Text type="secondary">—</Text>,
+        render: (_, course) => course.weeklyHours ?? weeklyHoursFromSessions(course.sessions) ?? dash,
       },
     ],
-    [language, t],
+    [language, rowSpans, t],
   )
 
   if (loading) {
@@ -141,7 +147,7 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
     )
   }
 
-  if (semesters.length === 0) {
+  if (rows.length === 0) {
     return (
       <Card className="surface-card empty-card">
         <Empty description={emptyText} />
@@ -150,35 +156,33 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
   }
 
   return (
-    <div className="semester-tables">
-      {semesters.map((semester) => (
-        <section key={semester.key} aria-labelledby={`semester-${semester.key}`}>
-          <div className="semester-heading">
-            <Title level={3} id={`semester-${semester.key}`}>
-              {formatDateRange(semester.startDate, semester.endDate, language) ?? t('courses.periodUnset')}
-            </Title>
-            <Text type="secondary">
-              {t('courses.classCount', { count: semester.courses.length })} ·{' '}
-              {t('courses.table.studentTotals', {
-                expected: total(semester.courses, 'expectedStudents'),
-                actual: total(semester.courses, 'actualStudents'),
-              })}
-            </Text>
-          </div>
-
-          <Card className="surface-card">
-            <Table
-              className="admin-table semester-table"
-              columns={columns}
-              dataSource={semester.courses}
-              rowKey="id"
-              size="middle"
-              pagination={false}
-              scroll={{ x: 'max-content' }}
-            />
-          </Card>
-        </section>
-      ))}
-    </div>
+    <Card className="surface-card">
+      <Table
+        className="admin-table semester-table"
+        columns={columns}
+        dataSource={rows}
+        rowKey="id"
+        size="middle"
+        pagination={false}
+        scroll={{ x: 'max-content' }}
+        /* The paper table ends with a 계 row; so does this one. */
+        summary={() => (
+          <Table.Summary fixed>
+            <Table.Summary.Row className="semester-table__total">
+              <Table.Summary.Cell index={0} colSpan={4} align="right">
+                <Text strong>{t('courses.table.total')}</Text>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={4} align="center">
+                <Text strong>{totals.expected}</Text>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={5} align="center">
+                <Text strong>{totals.actual}</Text>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={6} colSpan={4} />
+            </Table.Summary.Row>
+          </Table.Summary>
+        )}
+      />
+    </Card>
   )
 }

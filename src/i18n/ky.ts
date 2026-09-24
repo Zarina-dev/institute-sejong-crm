@@ -142,6 +142,7 @@ const ky: LocaleDictionary = {
   },
   courses: {
     table: {
+      total: 'Жыйынтык',
       days: 'Күндөр',
       time: 'Убакыт',
       studentTotals: 'план {{expected}} · чыныгы {{actual}}',

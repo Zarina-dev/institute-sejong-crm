@@ -144,6 +144,7 @@ const ru: LocaleDictionary = {
   },
   courses: {
     table: {
+      total: 'Итого',
       days: 'Дни',
       time: 'Время',
       studentTotals: 'план {{expected}} · факт {{actual}}',

@@ -141,6 +141,7 @@ const ko: LocaleDictionary = {
   },
   courses: {
     table: {
+      total: '계',
       days: '수업 요일',
       time: '수업 시간',
       studentTotals: '예상 {{expected}}명 · 실제 {{actual}}명',

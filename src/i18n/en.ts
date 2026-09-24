@@ -158,6 +158,7 @@ export const en = {
   },
   courses: {
     table: {
+      total: 'Total',
       days: 'Days',
       time: 'Time',
       studentTotals: 'planned {{expected}} · enrolled {{actual}}',
