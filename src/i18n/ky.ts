@@ -141,6 +141,11 @@ const ky: LocaleDictionary = {
     fileRejectedSize: 'Файл өтө чоң ({{size}}). Максимум — {{max}}.',
   },
   courses: {
+    table: {
+      days: 'Күндөр',
+      time: 'Убакыт',
+      studentTotals: 'план {{expected}} · чыныгы {{actual}}',
+    },
     allSubjects: 'Бардык класстар',
     allTeachers: 'Бардык мугалимдер',
     emptyFiltered: 'Бул чыпкаларга ылайык класс жок.',
@@ -169,6 +174,11 @@ const ky: LocaleDictionary = {
     empty: 'Азыр ачык курстар жок.',
     periodUnset: 'Такталууда',
     form: {
+      expectedStudents: 'Пландалган',
+      actualStudents: 'Чыныгы',
+      totalHours: 'Жалпы сааттар',
+      weeklyHours: 'Жумасына саат',
+      weeklyHoursHint: 'Жумалык сабактардан эсептелет; институт башкача эсептесе, өзгөртүңүз.',
       startDateRequired: 'Башталуу күнүн тандаңыз.',
       endDateRequired: 'Аяктоо күнүн тандаңыз.',
       teacherPlaceholder: 'Мугалимди тандаңыз',

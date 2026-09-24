@@ -27,6 +27,15 @@ export type CourseRecord = {
   startDate?: string | null
   endDate?: string | null
   capacity: number
+  /* ---- Semester table (학사 일정) ---- */
+  /** 예상수 */
+  expectedStudents?: number | null
+  /** 실제수 */
+  actualStudents?: number | null
+  /** 총 시간수 — teaching hours for the whole semester. */
+  totalHours?: number | null
+  /** 주 시간 — derived from the sessions unless the admin overrode it. */
+  weeklyHours?: number | null
   isPublished: boolean
   createdAt: string
   updatedAt: string

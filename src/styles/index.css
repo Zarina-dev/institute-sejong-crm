@@ -2857,3 +2857,36 @@ a.activity-row:hover b {
     position: static;
   }
 }
+
+/* ---- 학사 일정: semester tables ---- */
+
+.semester-tables {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.semester-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--color-primary-soft-hover);
+}
+
+.semester-heading h3.ant-typography {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-tight);
+}
+
+.semester-table .ant-table-thead > tr > th {
+  white-space: nowrap;
+  font-size: var(--text-sm);
+}
+
+.semester-table .ant-table-tbody > tr > td {
+  font-size: var(--text-base);
+}

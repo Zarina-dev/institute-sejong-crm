@@ -6,7 +6,8 @@ import { useMemo, useState } from 'react'
 
 import { usePreferences } from '../../../app/preferences'
 import { ContentSection } from '../../../features/content/ContentSection'
-import { useTimetable } from '../../../features/courses/queries'
+import { useCourses, useTimetable } from '../../../features/courses/queries'
+import { SemesterTable } from '../../../features/courses/SemesterTable'
 import type { TimetableEntry } from '../../../features/courses/types'
 import { addDays, formatWeekLabel, monthRange, startOfWeek, toIsoDate, weekRange } from '../../../features/courses/week'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
@@ -34,6 +35,8 @@ export function CalendarPage() {
   const { t, language } = usePreferences()
   const [monday, setMonday] = useState(() => startOfWeek(new Date()))
   const [month, setMonth] = useState(() => dayjs())
+
+  const courses = useCourses(true)
 
   const range = useMemo(() => weekRange(monday), [monday])
   const schedule = useTimetable(range)
@@ -82,7 +85,10 @@ export function CalendarPage() {
       {/* Semester dates, written by the admin; the weekly grid below is generated from the courses. */}
       <ContentSection slug="programmes.calendar" optional />
 
-      <ErrorAlert error={schedule.error ?? monthQuery.error} fallback={t('schedule.loadFailed')} />
+      <ErrorAlert error={schedule.error ?? monthQuery.error ?? courses.error} fallback={t('schedule.loadFailed')} />
+
+      {/* The semester overview the office keeps: one row per class. */}
+      <SemesterTable courses={courses.data} loading={courses.isPending} emptyText={t('courses.empty')} />
 
       <div className="calendar-layout">
         <div className="calendar-layout__week">

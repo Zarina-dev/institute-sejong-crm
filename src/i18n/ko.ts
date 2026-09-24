@@ -140,6 +140,11 @@ const ko: LocaleDictionary = {
     fileRejectedSize: '파일이 너무 큽니다 ({{size}}). 최대 {{max}}까지 가능합니다.',
   },
   courses: {
+    table: {
+      days: '수업 요일',
+      time: '수업 시간',
+      studentTotals: '예상 {{expected}}명 · 실제 {{actual}}명',
+    },
     allSubjects: '전체 세부 과정',
     allTeachers: '전체 강사',
     emptyFiltered: '조건에 맞는 반이 없습니다.',
@@ -167,6 +172,11 @@ const ko: LocaleDictionary = {
     empty: '공개된 과정이 없습니다.',
     periodUnset: '미정',
     form: {
+      expectedStudents: '예상수',
+      actualStudents: '실제수',
+      totalHours: '총 시간수',
+      weeklyHours: '주 시간',
+      weeklyHoursHint: '주간 수업에서 자동 계산됩니다. 학당 기준이 다르면 직접 수정하세요.',
       startDateRequired: '시작일을 선택하세요.',
       endDateRequired: '종료일을 선택하세요.',
       teacherPlaceholder: '강사를 선택하세요',

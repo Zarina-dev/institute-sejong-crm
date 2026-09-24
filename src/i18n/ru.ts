@@ -143,6 +143,11 @@ const ru: LocaleDictionary = {
     fileRejectedSize: 'Файл слишком большой ({{size}}). Максимум — {{max}}.',
   },
   courses: {
+    table: {
+      days: 'Дни',
+      time: 'Время',
+      studentTotals: 'план {{expected}} · факт {{actual}}',
+    },
     allSubjects: 'Все классы',
     allTeachers: 'Все преподаватели',
     emptyFiltered: 'Нет классов по этим фильтрам.',
@@ -175,6 +180,11 @@ const ru: LocaleDictionary = {
     empty: 'Сейчас нет открытых курсов.',
     periodUnset: 'Уточняется',
     form: {
+      expectedStudents: 'План',
+      actualStudents: 'Факт',
+      totalHours: 'Всего часов',
+      weeklyHours: 'Часов в неделю',
+      weeklyHoursHint: 'Считается по занятиям недели; исправьте, если институт считает часы иначе.',
       startDateRequired: 'Выберите дату начала.',
       endDateRequired: 'Выберите дату окончания.',
       teacherPlaceholder: 'Выберите преподавателя',

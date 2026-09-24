@@ -54,3 +54,49 @@ export function formatSessions(sessions: CourseSession[] | undefined, language: 
       return `${days} ${group.startTime}–${group.endTime}${group.classroom ? ` · ${group.classroom}` : ''}`
     })
 }
+
+const minutesOf = (time: string) => {
+  const [hours, mins] = time.split(':').map(Number)
+  return hours * 60 + mins
+}
+
+/**
+ * Clock hours a weekly pattern adds up to (월·수 09:00–10:30 → 3), rounded
+ * to one decimal. Only a suggestion for 주 시간: institutes count teaching
+ * periods their own way, so the field stays editable.
+ */
+export function weeklyHoursFromSessions(sessions: CourseSession[] | undefined): number | null {
+  if (!sessions?.length) {
+    return null
+  }
+
+  const total = sessions.reduce((sum, session) => sum + Math.max(0, minutesOf(session.endTime) - minutesOf(session.startTime)), 0)
+  return Math.round((total / 60) * 10) / 10
+}
+
+/**
+ * The weekly pattern split the way the semester table prints it:
+ * `{ days: "월·수", time: "15:00–16:20" }` per distinct slot.
+ */
+export function sessionParts(sessions: CourseSession[] | undefined, language: string): Array<{ days: string; time: string }> {
+  if (!sessions?.length) {
+    return []
+  }
+
+  const names = weekdayNames(language)
+  const groups = new Map<string, { days: Weekday[]; startTime: string; endTime: string }>()
+
+  for (const session of [...sessions].sort((a, b) => a.weekday - b.weekday)) {
+    const key = `${session.startTime}-${session.endTime}`
+    const group = groups.get(key) ?? { days: [], startTime: session.startTime, endTime: session.endTime }
+    group.days.push(session.weekday)
+    groups.set(key, group)
+  }
+
+  return [...groups.values()]
+    .sort((a, b) => a.days[0] - b.days[0] || a.startTime.localeCompare(b.startTime))
+    .map((group) => ({
+      days: group.days.map((day) => names.get(day)).join('·'),
+      time: `${group.startTime}–${group.endTime}`,
+    }))
+}

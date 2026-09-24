@@ -1,12 +1,12 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, AutoComplete, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography } from 'antd'
-import { useCallback, useMemo, useState } from 'react'
+import { App, AutoComplete, Button, Card, Col, Form, Input, InputNumber, Modal, Row, Select, Space, Table, Tag, Typography } from 'antd'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import { SessionsEditor } from '../../features/courses/SessionsEditor'
 import { courseTitles, groupCourses } from '../../features/courses/grouping'
-import { formatSessions } from '../../features/courses/sessions'
+import { formatSessions, weeklyHoursFromSessions } from '../../features/courses/sessions'
 import { useCourses, useCreateCourse, useDeleteCourse, useSetCoursePublished, useUpdateCourse } from '../../features/courses/queries'
 import { useAllStaff } from '../../features/staff/queries'
 import type { CourseRecord, CourseSession } from '../../features/courses/types'
@@ -28,6 +28,10 @@ type CourseFormValues = {
   classroom?: string
   startDate?: string
   endDate?: string
+  expectedStudents?: number | null
+  actualStudents?: number | null
+  totalHours?: number | null
+  weeklyHours?: number | null
   isPublished: boolean
 }
 
@@ -47,6 +51,18 @@ export function CoursesAdminPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form] = Form.useForm<CourseFormValues>()
+  // Once the admin types a figure we stop overwriting it; institutes count
+  // teaching periods their own way and the computed hours are only a default.
+  const weeklyHoursEdited = useRef(false)
+  const sessions = Form.useWatch('sessions', form)
+
+  useEffect(() => {
+    if (!modalOpen || weeklyHoursEdited.current) {
+      return
+    }
+
+    form.setFieldValue('weeklyHours', weeklyHoursFromSessions(sessions))
+  }, [form, modalOpen, sessions])
 
   const saving = createCourse.isPending || updateCourse.isPending
 
@@ -54,6 +70,7 @@ export function CoursesAdminPage() {
 
   const openCreateModal = useCallback(() => {
     setEditingId(null)
+    weeklyHoursEdited.current = false
     form.resetFields()
     setModalOpen(true)
   }, [form])
@@ -61,6 +78,8 @@ export function CoursesAdminPage() {
   const openEditModal = useCallback(
     (record: CourseRecord) => {
       setEditingId(record.id)
+      // An existing figure is the admin's; keep it until they clear the field.
+      weeklyHoursEdited.current = record.weeklyHours != null
       form.setFieldsValue({
         category: record.category ?? 'language',
         title: record.title,
@@ -71,6 +90,10 @@ export function CoursesAdminPage() {
         classroom: record.classroom ?? undefined,
         startDate: record.startDate ?? undefined,
         endDate: record.endDate ?? undefined,
+        expectedStudents: record.expectedStudents ?? null,
+        actualStudents: record.actualStudents ?? null,
+        totalHours: record.totalHours ?? null,
+        weeklyHours: record.weeklyHours ?? null,
         isPublished: record.isPublished,
       })
       setModalOpen(true)
@@ -351,6 +374,37 @@ export function CoursesAdminPage() {
                 ]}
               >
                 <Input type="date" />
+              </Form.Item>
+            </Col>
+          </Row>
+          {/* Semester table (학사 일정): 예상수 · 실제수 · 총 시간수 · 주 시간 */}
+          <Row gutter={16}>
+            <Col xs={12} md={6}>
+              <Form.Item name="expectedStudents" label={t('courses.form.expectedStudents')}>
+                <InputNumber min={0} max={999} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col xs={12} md={6}>
+              <Form.Item name="actualStudents" label={t('courses.form.actualStudents')}>
+                <InputNumber min={0} max={999} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col xs={12} md={6}>
+              <Form.Item name="totalHours" label={t('courses.form.totalHours')}>
+                <InputNumber min={0} max={9999} step={0.5} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col xs={12} md={6}>
+              <Form.Item name="weeklyHours" label={t('courses.form.weeklyHours')} extra={t('courses.form.weeklyHoursHint')}>
+                <InputNumber
+                  min={0}
+                  max={168}
+                  step={0.5}
+                  style={{ width: '100%' }}
+                  onChange={() => {
+                    weeklyHoursEdited.current = true
+                  }}
+                />
               </Form.Item>
             </Col>
           </Row>

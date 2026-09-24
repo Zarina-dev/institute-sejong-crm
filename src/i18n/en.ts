@@ -157,6 +157,11 @@ export const en = {
     fileRejectedSize: 'File is too large ({{size}}). Maximum is {{max}}.',
   },
   courses: {
+    table: {
+      days: 'Days',
+      time: 'Time',
+      studentTotals: 'planned {{expected}} · enrolled {{actual}}',
+    },
     allSubjects: 'All classes',
     allTeachers: 'All teachers',
     emptyFiltered: 'No classes match these filters.',
@@ -185,6 +190,11 @@ export const en = {
     empty: 'No open courses right now.',
     periodUnset: 'To be announced',
     form: {
+      expectedStudents: 'Planned',
+      actualStudents: 'Enrolled',
+      totalHours: 'Total hours',
+      weeklyHours: 'Hours / week',
+      weeklyHoursHint: 'Filled in from the weekly sessions; edit it if the institute counts periods differently.',
       startDateRequired: 'Choose a start date.',
       endDateRequired: 'Choose an end date.',
       teacherPlaceholder: 'Pick a teacher',
