@@ -151,11 +151,13 @@ const ko: LocaleDictionary = {
   },
   courses: {
     export: {
+      allSheet: '전체 과정',
       excel: '엑셀 저장',
       pdf: '인쇄 / PDF',
       failed: '표를 내보낼 수 없습니다.',
     },
     table: {
+      grandTotal: '총계',
       period: '기간',
       total: '계',
       days: '수업 요일',

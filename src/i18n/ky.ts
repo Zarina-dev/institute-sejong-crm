@@ -152,11 +152,13 @@ const ky: LocaleDictionary = {
   },
   courses: {
     export: {
+      allSheet: 'Бардык программалар',
       excel: 'Excel',
       pdf: 'Басып чыгаруу / PDF',
       failed: 'Таблицаны чыгаруу мүмкүн болбоду.',
     },
     table: {
+      grandTotal: 'Жалпы',
       period: 'Мөөнөтү',
       total: 'Жыйынтык',
       days: 'Күндөр',

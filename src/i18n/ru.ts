@@ -154,11 +154,13 @@ const ru: LocaleDictionary = {
   },
   courses: {
     export: {
+      allSheet: 'Все программы',
       excel: 'Excel',
       pdf: 'Печать / PDF',
       failed: 'Не удалось выгрузить таблицу.',
     },
     table: {
+      grandTotal: 'Итого',
       period: 'Период',
       total: 'Итого',
       days: 'Дни',

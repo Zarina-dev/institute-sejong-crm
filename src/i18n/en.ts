@@ -160,11 +160,13 @@ export const en = {
   },
   courses: {
     export: {
+      allSheet: 'All programmes',
       excel: 'Excel',
       pdf: 'Print / PDF',
       failed: 'Could not export the table.',
     },
     table: {
+      grandTotal: 'Grand total',
       period: 'Term',
       total: 'Total',
       days: 'Days',
