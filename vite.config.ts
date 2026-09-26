@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       // tsconfig.app.json already declares this path mapping, but Vite had no
-      // matching alias вЂ” so any `@/...` import type-checked and then failed
+      // matching alias — so any `@/...` import type-checked and then failed
       // to resolve at build time.
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
@@ -19,6 +19,17 @@ export default defineConfig({
   preview: {
     port: 4173,
     host: '0.0.0.0',
+    /**
+     * `npm run preview` doubles as the demo server: built with
+     * `VITE_API_BASE_URL=/api`, the site, the API and the uploaded files all
+     * answer on one origin, so a single tunnel URL is enough to show the
+     * whole thing. `allowedHosts` lets that tunnel's hostname through.
+     */
+    allowedHosts: ['.trycloudflare.com', '.loca.lt', '.ngrok-free.app'],
+    proxy: {
+      '/api': { target: 'http://localhost:3000', changeOrigin: true },
+      '/uploads': { target: 'http://localhost:3000', changeOrigin: true },
+    },
   },
   build: {
     sourcemap: true,
