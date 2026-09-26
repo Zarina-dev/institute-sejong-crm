@@ -2,9 +2,8 @@ import {
   AppstoreOutlined,
   BookOutlined,
   DashboardOutlined,
-  FolderOpenOutlined,
+  DownOutlined,
   HomeOutlined,
-  FileTextOutlined,
   IdcardOutlined,
   LogoutOutlined,
   PictureOutlined,
@@ -15,28 +14,50 @@ import {
   SunOutlined,
 } from '@ant-design/icons'
 import { Avatar, Button, Layout, Select, Spin, Tooltip, Typography } from 'antd'
-import { useState, type ReactNode } from 'react'
-import { Link, Navigate, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useState, type ReactNode } from 'react'
+import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { languages, usePreferences } from '../app/preferences'
 import { clearSession } from '../auth/session'
 import { useSession, useSessionResolving } from '../auth/useSession'
 import { BrandMark } from '../shared/BrandMark'
-import { adminNavigation } from './adminNavigation'
+import { adminDashboard, adminNavigation, type AdminNavGroup } from './adminNavigation'
 
 const { Content, Header, Sider } = Layout
 const { Title } = Typography
 
 /** Icons live here rather than in the nav data, which stays free of JSX. */
-const ADMIN_NAV_ICON: Record<string, ReactNode> = {
-  '/admin': <DashboardOutlined />,
-  '/admin/staff': <IdcardOutlined />,
-  '/admin/content': <FileTextOutlined />,
-  '/admin/courses': <AppstoreOutlined />,
-  '/admin/news': <NotificationOutlined />,
-  '/admin/textbooks': <BookOutlined />,
-  '/admin/materials': <FolderOpenOutlined />,
-  '/admin/gallery': <PictureOutlined />,
+const SECTION_ICON: Record<string, ReactNode> = {
+  'siteNav.about': <IdcardOutlined />,
+  'siteNav.programmes': <AppstoreOutlined />,
+  'siteNav.notices': <NotificationOutlined />,
+  'siteNav.resources': <BookOutlined />,
+  'siteNav.history': <PictureOutlined />,
+}
+
+/** A section owns the current page when one of its entries points at it. */
+const holdsRoute = (group: AdminNavGroup, pathname: string, search: string) =>
+  group.items.some((item) => item.to === `${pathname}${search}` || item.to.split('?')[0] === pathname)
+
+/**
+ * Sections open and close; the one holding the current page opens itself.
+ * Kept as a set so an admin can keep two sections open at once.
+ */
+function useOpenSections(pathname: string, search: string) {
+  const [open, setOpen] = useState<string[]>([])
+
+  useEffect(() => {
+    const current = adminNavigation.find((group) => holdsRoute(group, pathname, search))
+
+    if (current) {
+      setOpen((sections) => (sections.includes(current.labelKey) ? sections : [...sections, current.labelKey]))
+    }
+  }, [pathname, search])
+
+  const toggle = (labelKey: string) =>
+    setOpen((sections) => (sections.includes(labelKey) ? sections.filter((key) => key !== labelKey) : [...sections, labelKey]))
+
+  return { open, toggle }
 }
 
 /**
@@ -49,6 +70,8 @@ export function AdminLayout() {
   const resolving = useSessionResolving()
   const navigate = useNavigate()
   const { language, setLanguage, theme, toggleTheme, t } = usePreferences()
+  const { pathname, search } = useLocation()
+  const { open, toggle } = useOpenSections(pathname, search)
   const [collapsed, setCollapsed] = useState(false)
 
   // A tab opened from the public site receives the session over the
@@ -91,23 +114,54 @@ export function AdminLayout() {
             </span>
           </Link>
 
-          {/* Grouped like the public menu, so a section of the site and the
-              page that feeds it carry the same name. */}
+          {/* The public menu, section by section: open a section and its
+              pages are listed under it with the names visitors see. */}
           <nav className="rail-nav" aria-label={t('nav.navigation')}>
-            {adminNavigation.map((group, index) => (
-              <div className="rail-group" key={group.labelKey ?? index}>
-                {group.labelKey ? <span className="rail-group__label">{t(group.labelKey)}</span> : null}
-                {group.items.map((item) => (
-                  <NavLink key={item.to} to={item.to} end={item.end}>
-                    {ADMIN_NAV_ICON[item.to]}
-                    <span>
-                      <strong>{t(item.labelKey)}</strong>
-                      {item.hintKey ? <small>{t(item.hintKey)}</small> : null}
-                    </span>
-                  </NavLink>
-                ))}
-              </div>
-            ))}
+            <NavLink className="rail-link" to={adminDashboard.to} end={adminDashboard.end}>
+              <DashboardOutlined />
+              <span>{t(adminDashboard.labelKey)}</span>
+            </NavLink>
+
+            {adminNavigation.map((group) => {
+              const expanded = open.includes(group.labelKey)
+              const current = holdsRoute(group, pathname, search)
+
+              return (
+                <div
+                  className={`rail-group${expanded ? ' is-open' : ''}${current ? ' is-current' : ''}`}
+                  key={group.labelKey}
+                >
+                  <button
+                    type="button"
+                    className="rail-group__toggle"
+                    aria-expanded={expanded}
+                    onClick={() => toggle(group.labelKey)}
+                  >
+                    {SECTION_ICON[group.labelKey]}
+                    <span className="rail-group__title">{t(group.labelKey)}</span>
+                    <DownOutlined className="rail-group__chevron" />
+                  </button>
+
+                  {expanded ? (
+                    <div className="rail-group__items">
+                      {group.items.map((item) => (
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          // NavLink matches on the path alone and several
+                          // entries share a page, so the full URL — query
+                          // included — decides which one is active. The
+                          // callback form also suppresses NavLink's own class.
+                          className={() => (item.to === `${pathname}${search}` ? 'rail-sublink active' : 'rail-sublink')}
+                        >
+                          {t(item.labelKey)}
+                        </NavLink>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              )
+            })}
           </nav>
 
           <div className="rail-user">

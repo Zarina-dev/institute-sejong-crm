@@ -1,6 +1,7 @@
 import { CheckCircleFilled, SaveOutlined } from '@ant-design/icons'
 import { App, Button, Card, Form, Input, Tabs, Tag, Typography } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { languages, usePreferences } from '../../app/preferences'
 import type { TranslationKey } from '../../app/preferences'
@@ -38,9 +39,23 @@ export function ContentAdminPage() {
   const rows = useAllContent()
   const saveContent = useSaveContent()
 
-  const [slug, setSlug] = useState<ContentSlug>(CONTENT_SLUGS[0])
+  // The block lives in the URL: the admin menu lists 인사말, FAQ and 유용한
+  // 링크 as separate entries that all land here.
+  const [params, setParams] = useSearchParams()
+  const requested = params.get('block') as ContentSlug | null
+  const slug = requested && CONTENT_SLUGS.includes(requested) ? requested : CONTENT_SLUGS[0]
+  const setSlug = (value: ContentSlug) => setParams({ block: value })
+
   const [locale, setLocale] = useState<string>(language)
   const [form] = Form.useForm<ContentFormValues>()
+
+  // Spell the block out even when the page was opened without one, so the
+  // menu can mark the entry the admin is on.
+  useEffect(() => {
+    if (requested !== slug) {
+      setParams({ block: slug }, { replace: true })
+    }
+  }, [requested, setParams, slug])
 
   const byKey = useMemo(() => new Map((rows.data ?? []).map((row) => [`${row.slug}:${row.locale}`, row])), [rows.data])
   const current = byKey.get(`${slug}:${locale}`)
@@ -67,7 +82,7 @@ export function ContentAdminPage() {
 
   return (
     <div className="page-layout">
-      <PageHeader kicker={t('common.admin')} title={t('content.adminTitle')} description={t('content.adminSubtitle')} />
+      <PageHeader kicker={t('content.adminTitle')} title={t(SLUG_LABEL[slug])} description={t('content.adminSubtitle')} />
 
       <ErrorAlert error={rows.error} fallback={t('content.loadFailed')} />
 

@@ -30,6 +30,7 @@ const ru: LocaleDictionary = {
     signedInAs: 'Вы вошли как',
   },
   adminNav: {
+    historyIntro: 'Вступительный текст',
     textbooks: 'Учебники',
     content: 'Содержимое',
     gallery: 'Фотоальбомы',
@@ -38,15 +39,6 @@ const ru: LocaleDictionary = {
     courses: 'Курсы',
     materials: 'Учебные материалы',
     news: 'Новости',
-    hints: {
-      staff: 'Преподаватели',
-      content: 'Приветствие · FAQ · Полезные ссылки',
-      courses: 'Курсы · Учебный календарь · Культурные занятия',
-      news: 'Объявления · СМИ о нас',
-      textbooks: 'Учебники',
-      materials: 'Учебные материалы',
-      gallery: 'Фотоальбомы',
-    },
   },
   common: {
     save: 'Сохранить',
@@ -479,7 +471,7 @@ const ru: LocaleDictionary = {
       programmesCulture: 'Обучение › Культурные занятия',
       noticesFaq: 'Объявления › FAQ',
       resourcesLinks: 'Материалы › Полезные ссылки',
-      historyIntro: 'История › Фотоальбомы',
+      historyIntro: 'История › Вступительный текст',
     },
   },
   about: {

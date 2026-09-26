@@ -30,6 +30,7 @@ const ky: LocaleDictionary = {
     signedInAs: 'Кирген колдонуучу',
   },
   adminNav: {
+    historyIntro: 'Киришүү тексти',
     textbooks: 'Окуу китептери',
     content: 'Мазмун',
     gallery: 'Альбомдор',
@@ -38,15 +39,6 @@ const ky: LocaleDictionary = {
     courses: 'Курстар',
     materials: 'Окуу материалдары',
     news: 'Жаңылыктар',
-    hints: {
-      staff: 'Мугалимдер',
-      content: 'Куттуктоо · FAQ · Пайдалуу шилтемелер',
-      courses: 'Курстар · Окуу календары · Маданий сабактар',
-      news: 'Жарыялар · Басма сөздө',
-      textbooks: 'Окуу китептери',
-      materials: 'Окуу материалдары',
-      gallery: 'Сүрөт альбомдору',
-    },
   },
   common: {
     save: 'Сактоо',
@@ -455,7 +447,7 @@ const ky: LocaleDictionary = {
       programmesCulture: 'Окуу › Маданий сабактар',
       noticesFaq: 'Жарыялар › FAQ',
       resourcesLinks: 'Материалдар › Пайдалуу шилтемелер',
-      historyIntro: 'Тарых › Сүрөт альбомдору',
+      historyIntro: 'Тарых › Киришүү тексти',
     },
   },
   about: {

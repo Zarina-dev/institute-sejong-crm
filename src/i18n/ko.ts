@@ -30,6 +30,7 @@ const ko: LocaleDictionary = {
     signedInAs: '로그인 계정',
   },
   adminNav: {
+    historyIntro: '페이지 소개글',
     textbooks: '교재 안내',
     content: '사이트 콘텐츠',
     gallery: '사진첩',
@@ -38,15 +39,6 @@ const ko: LocaleDictionary = {
     courses: '수강 관리',
     materials: '학습 보조 자료',
     news: '뉴스·공지',
-    hints: {
-      staff: '강사 소개',
-      content: '인사말 · FAQ · 유용한 링크',
-      courses: '강좌 안내 · 학사 일정 · 문화 강좌',
-      news: '공지사항 · 보도 자료',
-      textbooks: '교재 안내',
-      materials: '학습 보조 자료',
-      gallery: '행사 사진첩',
-    },
   },
   common: {
     save: '저장',
@@ -450,7 +442,7 @@ const ko: LocaleDictionary = {
       programmesCulture: '교육과정 › 문화 강좌',
       noticesFaq: '알림마당 › FAQ',
       resourcesLinks: '학습자료실 › 유용한 링크',
-      historyIntro: '학당 발자취 › 행사 사진첩',
+      historyIntro: '학당 발자취 › 페이지 소개글',
     },
   },
   about: {

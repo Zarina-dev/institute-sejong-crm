@@ -1438,18 +1438,66 @@
   gap: 2px;
 }
 
-.rail-group + .rail-group {
-  margin-top: var(--space-4);
+/* A section of the public menu: click it to list that section's pages. */
+.rail-group__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-rail-text);
+  font: inherit;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  text-align: start;
+  cursor: pointer;
+  transition: var(--transition-colors);
 }
 
-/* Names the section of the public site the entries below feed. */
-.rail-group__label {
-  padding: 0 var(--space-3) var(--space-1);
-  color: var(--color-rail-text-muted);
-  font-size: var(--text-2xs);
+.rail-group__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.rail-group__toggle .anticon {
+  font-size: var(--text-md);
+  opacity: 0.75;
+}
+
+.rail-group__toggle:hover {
+  background: var(--color-rail-hover);
+  color: var(--neutral-0);
+}
+
+.rail-group.is-open > .rail-group__toggle,
+.rail-group.is-current > .rail-group__toggle {
+  color: var(--neutral-0);
+}
+
+/* The section holding the current page stays marked, open or closed. */
+.rail-group.is-current > .rail-group__toggle {
   font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-wider);
-  text-transform: uppercase;
+}
+
+.rail-group__chevron {
+  font-size: var(--text-2xs);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.rail-group.is-open .rail-group__chevron {
+  transform: rotate(180deg);
+}
+
+/* The pages of an open section, hung off a guide line. */
+.rail-group__items {
+  display: grid;
+  gap: 2px;
+  margin: 2px 0 var(--space-2) var(--space-6);
+  padding-left: var(--space-2);
+  border-left: 1px solid var(--color-rail-border);
 }
 
 .rail-nav a {
@@ -1471,26 +1519,13 @@
 }
 
 .rail-nav a > span {
-  display: grid;
   min-width: 0;
 }
 
-.rail-nav a strong {
-  font-weight: inherit;
-}
-
-/* The public page this entry feeds, in small print under the label. */
-.rail-nav a small {
-  overflow: hidden;
+.rail-nav a.rail-sublink {
   color: var(--color-rail-text-muted);
-  font-size: var(--text-2xs);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.rail-nav a.active small {
-  color: var(--color-rail-active-text);
-  opacity: 0.72;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
 }
 
 .rail-nav a:hover {

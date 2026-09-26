@@ -1,9 +1,11 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FileExcelOutlined, MoreOutlined, PlusOutlined, PrinterOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, AutoComplete, Button, Card, Col, Dropdown, Empty, Form, Input, InputNumber, Modal, Row, Select, Skeleton, Space, Table, Tag, Typography } from 'antd'
+import { App, AutoComplete, Button, Card, Col, Dropdown, Empty, Form, Input, InputNumber, Modal, Row, Segmented, Select, Skeleton, Space, Table, Tag, Typography } from 'antd'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { usePreferences } from '../../app/preferences'
+import type { TranslationKey } from '../../app/preferences'
 import { SessionsEditor } from '../../features/courses/SessionsEditor'
 import { courseTitles, groupCourses } from '../../features/courses/grouping'
 import { sessionParts, weeklyHoursFromSessions } from '../../features/courses/sessions'
@@ -22,6 +24,21 @@ const dash = <Text type="secondary">—</Text>
 
 const sumOf = (courses: CourseRecord[], field: 'expectedStudents' | 'actualStudents') =>
   courses.reduce((sum, course) => sum + (course[field] ?? 0), 0)
+
+/**
+ * One table, three readings of it — the three public pages it feeds.
+ * 학사 일정 is every course, because the calendar is built from all of them.
+ */
+type CourseView = 'language' | 'schedule' | 'culture'
+
+const COURSE_VIEWS: Record<CourseView, TranslationKey> = {
+  language: 'siteNav.programmesCourses',
+  schedule: 'siteNav.programmesCalendar',
+  culture: 'siteNav.programmesCulture',
+}
+
+const inView = (record: CourseRecord, view: CourseView) =>
+  view === 'schedule' ? true : view === 'culture' ? record.category === 'culture' : record.category !== 'culture'
 
 type CourseFormValues = {
   category: 'language' | 'culture'
@@ -57,6 +74,19 @@ export function CoursesAdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form] = Form.useForm<CourseFormValues>()
   const [exporting, setExporting] = useState(false)
+
+  // The view is in the URL, so 강좌 안내 · 학사 일정 · 문화 강좌 in the admin
+  // menu land on the reading of this table they manage.
+  const [params, setParams] = useSearchParams()
+  const requested = params.get('view') as CourseView | null
+  const view: CourseView = requested && requested in COURSE_VIEWS ? requested : 'language'
+
+  useEffect(() => {
+    if (requested !== view) {
+      setParams({ view }, { replace: true })
+    }
+  }, [requested, setParams, view])
+
   // Once the admin types a figure we stop overwriting it; institutes count
   // teaching periods their own way and the computed hours are only a default.
   const weeklyHoursEdited = useRef(false)
@@ -78,8 +108,10 @@ export function CoursesAdminPage() {
     setEditingId(null)
     weeklyHoursEdited.current = false
     form.resetFields()
+    // A class added from 문화 강좌 is a culture class.
+    form.setFieldValue('category', view === 'culture' ? 'culture' : 'language')
     setModalOpen(true)
-  }, [form])
+  }, [form, view])
 
   const openEditModal = useCallback(
     (record: CourseRecord) => {
@@ -161,7 +193,10 @@ export function CoursesAdminPage() {
 
   // One table per programme, so the head counts add up per programme the
   // way the office reports them (한국어 / 영어 / 기타 …).
-  const programmes = useMemo(() => groupCourses(courses.data), [courses.data])
+  const programmes = useMemo(
+    () => groupCourses((courses.data ?? []).filter((record) => inView(record, view))),
+    [courses.data, view],
+  )
   const rows = useMemo(() => programmes.flatMap((programme) => programme.courses), [programmes])
 
   const titleOptions = useMemo(() => courseTitles(courses.data).map((value) => ({ value })), [courses.data])
@@ -171,13 +206,13 @@ export function CoursesAdminPage() {
 
     try {
       const { exportCoursesToExcel } = await import('../../features/courses/exportCourses')
-      await exportCoursesToExcel(rows, t, language, `${t('courses.adminTitle')}-${new Date().toISOString().slice(0, 10)}.xlsx`)
+      await exportCoursesToExcel(rows, t, language, `${t(COURSE_VIEWS[view])}-${new Date().toISOString().slice(0, 10)}.xlsx`)
     } catch (err) {
       message.error(getErrorMessage(err, t('courses.export.failed')))
     } finally {
       setExporting(false)
     }
-  }, [language, message, rows, t])
+  }, [language, message, rows, t, view])
 
   /**
    * Teachers come from 교직원. Names already stored on a course are kept as
@@ -333,20 +368,25 @@ export function CoursesAdminPage() {
       <div className="print-only print-heading">
         <strong>{t('brand.name')}</strong>
         <span>
-          {t('courses.adminTitle')} · {new Date().toLocaleDateString(language)}
+          {t(COURSE_VIEWS[view])} · {new Date().toLocaleDateString(language)}
         </span>
       </div>
 
       <PageHeader
-        kicker={t('common.admin')}
-        title={t('courses.adminTitle')}
+        kicker={t('courses.adminTitle')}
+        title={t(COURSE_VIEWS[view])}
         description={t('courses.adminSubtitle')}
       />
 
       <Card className="surface-card filter-card no-print">
         <div className="filter-footer">
-          <Text>{t('courses.count', { count: courses.data?.length ?? 0 })}</Text>
+          <Segmented
+            value={view}
+            onChange={(value) => setParams({ view: value as CourseView })}
+            options={Object.entries(COURSE_VIEWS).map(([value, labelKey]) => ({ value, label: t(labelKey) }))}
+          />
           <Space wrap>
+            <Text>{t('courses.count', { count: rows.length })}</Text>
             {/* The table doubles as the office's semester report. */}
             <Button icon={<FileExcelOutlined />} loading={exporting} onClick={handleExcel}>
               {t('courses.export.excel')}

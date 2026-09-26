@@ -38,15 +38,7 @@ export const en = {
     signedInAs: 'Signed in as',
   },
   adminNav: {
-    hints: {
-      staff: 'Our teachers',
-      content: 'Greeting · FAQ · Useful links',
-      courses: 'Courses · Academic calendar · Culture classes',
-      news: 'Announcements · Press',
-      textbooks: 'Textbooks',
-      materials: 'Study materials',
-      gallery: 'Photo albums',
-    },
+    historyIntro: 'Page introduction',
     textbooks: 'Textbooks',
     content: 'Site content',
     gallery: 'Photo albums',
@@ -463,7 +455,7 @@ export const en = {
       programmesCulture: 'Programmes › Culture classes',
       noticesFaq: 'Notices › FAQ',
       resourcesLinks: 'Resources › Useful links',
-      historyIntro: 'Our story › Photo albums',
+      historyIntro: 'Our story › Page introduction',
     },
   },
   about: {
