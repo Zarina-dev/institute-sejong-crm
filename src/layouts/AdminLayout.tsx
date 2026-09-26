@@ -22,16 +22,21 @@ import { languages, usePreferences } from '../app/preferences'
 import { clearSession } from '../auth/session'
 import { useSession, useSessionResolving } from '../auth/useSession'
 import { BrandMark } from '../shared/BrandMark'
+import { adminNavigation } from './adminNavigation'
 
 const { Content, Header, Sider } = Layout
 const { Title } = Typography
 
-type NavItem = {
-  to: string
-  label: string
-  icon: ReactNode
-  /** Match only this exact path — needed for the index route `/admin`. */
-  end?: boolean
+/** Icons live here rather than in the nav data, which stays free of JSX. */
+const ADMIN_NAV_ICON: Record<string, ReactNode> = {
+  '/admin': <DashboardOutlined />,
+  '/admin/staff': <IdcardOutlined />,
+  '/admin/content': <FileTextOutlined />,
+  '/admin/courses': <AppstoreOutlined />,
+  '/admin/news': <NotificationOutlined />,
+  '/admin/textbooks': <BookOutlined />,
+  '/admin/materials': <FolderOpenOutlined />,
+  '/admin/gallery': <PictureOutlined />,
 }
 
 /**
@@ -61,17 +66,6 @@ export function AdminLayout() {
     navigate('/login', { replace: true })
   }
 
-  const navItems: NavItem[] = [
-    { to: '/admin', label: t('adminNav.dashboard'), icon: <DashboardOutlined />, end: true },
-    { to: '/admin/courses', label: t('adminNav.courses'), icon: <AppstoreOutlined /> },
-    { to: '/admin/news', label: t('adminNav.news'), icon: <NotificationOutlined /> },
-    { to: '/admin/gallery', label: t('adminNav.gallery'), icon: <PictureOutlined /> },
-    { to: '/admin/staff', label: t('adminNav.staff'), icon: <IdcardOutlined /> },
-    // Site copy and the two libraries it introduces sit together.
-    { to: '/admin/content', label: t('adminNav.content'), icon: <FileTextOutlined /> },
-    { to: '/admin/textbooks', label: t('adminNav.textbooks'), icon: <BookOutlined /> },
-    { to: '/admin/materials', label: t('adminNav.materials'), icon: <FolderOpenOutlined /> },
-  ]
 
   return (
     <Layout className="admin-shell" hasSider>
@@ -97,12 +91,22 @@ export function AdminLayout() {
             </span>
           </Link>
 
+          {/* Grouped like the public menu, so a section of the site and the
+              page that feeds it carry the same name. */}
           <nav className="rail-nav" aria-label={t('nav.navigation')}>
-            {navItems.map((item) => (
-              <NavLink key={item.to} to={item.to} end={item.end}>
-                {item.icon}
-                <span>{item.label}</span>
-              </NavLink>
+            {adminNavigation.map((group, index) => (
+              <div className="rail-group" key={group.labelKey ?? index}>
+                {group.labelKey ? <span className="rail-group__label">{t(group.labelKey)}</span> : null}
+                {group.items.map((item) => (
+                  <NavLink key={item.to} to={item.to} end={item.end}>
+                    {ADMIN_NAV_ICON[item.to]}
+                    <span>
+                      <strong>{t(item.labelKey)}</strong>
+                      {item.hintKey ? <small>{t(item.hintKey)}</small> : null}
+                    </span>
+                  </NavLink>
+                ))}
+              </div>
             ))}
           </nav>
 

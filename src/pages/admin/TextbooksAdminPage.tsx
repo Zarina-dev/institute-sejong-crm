@@ -1,16 +1,20 @@
 import { BookOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, LinkOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, Button, Card, Dropdown, Form, Input, InputNumber, Modal, Space, Switch, Table, Tag, Typography } from 'antd'
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { App, Button, Card, Dropdown, Form, Input, Modal, Space, Switch, Table, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { assetUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
-import { useAllTextbooks, useCreateTextbook, useDeleteTextbook, useUpdateTextbook } from '../../features/textbooks/queries'
+import { useAllTextbooks, useCreateTextbook, useDeleteTextbook, useReorderTextbooks, useUpdateTextbook } from '../../features/textbooks/queries'
 import type { Textbook } from '../../features/textbooks/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { ImageUploadField } from '../../shared/ImageUploadField'
 import { PageHeader } from '../../shared/PageHeader'
+import { DragHandle, SortableRow } from '../../shared/SortableRow'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
 
@@ -22,7 +26,6 @@ type TextbookFormValues = {
   coverImage: string | null
   purchasePlace?: string
   purchaseUrl?: string | null
-  sortOrder: number
   isPublished: boolean
 }
 
@@ -43,6 +46,7 @@ export function TextbooksAdminPage() {
   const createTextbook = useCreateTextbook()
   const updateTextbook = useUpdateTextbook()
   const deleteTextbook = useDeleteTextbook()
+  const reorderTextbooks = useReorderTextbooks()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -50,14 +54,32 @@ export function TextbooksAdminPage() {
   const saving = createTextbook.isPending || updateTextbook.isPending
 
   const rows = textbooks.data ?? NO_TEXTBOOKS
+  const rowIds = useMemo(() => rows.map((textbook) => textbook.id), [rows])
+
+  // A small distance threshold keeps a plain click on the handle from starting a drag.
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }))
+
+  const handleDragEnd = useCallback(
+    ({ active, over }: DragEndEvent) => {
+      if (!over || active.id === over.id) {
+        return
+      }
+
+      const next = arrayMove(rowIds, rowIds.indexOf(String(active.id)), rowIds.indexOf(String(over.id)))
+
+      reorderTextbooks.mutate(next, {
+        onSuccess: () => message.success(t('textbooks.reordered')),
+        onError: (err) => message.error(getErrorMessage(err, t('textbooks.reorderFailed'))),
+      })
+    },
+    [message, reorderTextbooks, rowIds, t],
+  )
 
   const openCreateModal = useCallback(() => {
     setEditingId(null)
     form.resetFields()
-    // New entries go to the end of the list.
-    form.setFieldValue('sortOrder', rows.length ? Math.max(...rows.map((book) => book.sortOrder)) + 1 : 0)
     setModalOpen(true)
-  }, [form, rows])
+  }, [form])
 
   const openEditModal = useCallback(
     (textbook: Textbook) => {
@@ -68,7 +90,6 @@ export function TextbooksAdminPage() {
         coverImage: textbook.coverImage,
         purchasePlace: textbook.purchasePlace,
         purchaseUrl: textbook.purchaseUrl ?? '',
-        sortOrder: textbook.sortOrder,
         isPublished: textbook.isPublished,
       })
       setModalOpen(true)
@@ -128,6 +149,12 @@ export function TextbooksAdminPage() {
   const columns = useMemo<NonNullable<TableProps<Textbook>['columns']>>(
     () => [
       {
+        key: 'drag',
+        width: 44,
+        align: 'center',
+        render: () => <DragHandle label={t('staff.dragHandle')} />,
+      },
+      {
         title: t('textbooks.columns.textbook'),
         dataIndex: 'title',
         key: 'title',
@@ -164,14 +191,7 @@ export function TextbooksAdminPage() {
             textbook.purchasePlace || <Text type="secondary">—</Text>
           ),
       },
-      {
-        title: t('textbooks.form.sortOrder'),
-        dataIndex: 'sortOrder',
-        key: 'sortOrder',
-        width: 90,
-        align: 'center',
-        responsive: ['lg'],
-      },
+
       {
         title: t('courses.columns.visibility'),
         dataIndex: 'isPublished',
@@ -231,16 +251,24 @@ export function TextbooksAdminPage() {
       <ErrorAlert error={textbooks.error} fallback={t('textbooks.loadFailed')} />
 
       <Card className="surface-card">
-        <Table
-          className="admin-table"
-          columns={columns}
-          dataSource={rows}
-          rowKey="id"
-          loading={textbooks.isPending}
-          pagination={{ pageSize: 10, showSizeChanger: false }}
-          scroll={{ x: 'max-content' }}
-          locale={{ emptyText: t('textbooks.empty') }}
-        />
+        <Text type="secondary" className="table-hint">
+          {t('textbooks.dragHint')}
+        </Text>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragEnd={handleDragEnd}>
+          <SortableContext items={rowIds} strategy={verticalListSortingStrategy}>
+            <Table
+              className="admin-table staff-table"
+              components={{ body: { row: SortableRow } }}
+              columns={columns}
+              dataSource={rows}
+              rowKey="id"
+              loading={textbooks.isPending}
+              pagination={false}
+              scroll={{ x: 'max-content' }}
+              locale={{ emptyText: t('textbooks.empty') }}
+            />
+          </SortableContext>
+        </DndContext>
       </Card>
 
       <Modal
@@ -256,7 +284,7 @@ export function TextbooksAdminPage() {
       >
         {/* The same four questions for every textbook — that is what keeps
             the public page uniform. */}
-        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: true, sortOrder: 0, coverImage: null }}>
+        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: true, coverImage: null }}>
           <Form.Item name="coverImage" label={t('textbooks.form.cover')}>
             <ImageUploadField shape="wide" hint={t('textbooks.form.coverHint')} />
           </Form.Item>
@@ -271,9 +299,6 @@ export function TextbooksAdminPage() {
           </Form.Item>
           <Form.Item name="purchaseUrl" label={t('textbooks.form.purchaseUrl')}>
             <Input placeholder="https://" maxLength={500} />
-          </Form.Item>
-          <Form.Item name="sortOrder" label={t('textbooks.form.sortOrder')} extra={t('staff.form.sortOrderHint')}>
-            <InputNumber min={0} max={999} style={{ width: 120 }} />
           </Form.Item>
           <Form.Item name="isPublished" label={t('textbooks.form.published')} valuePropName="checked">
             <Switch />

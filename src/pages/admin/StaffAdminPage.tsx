@@ -180,14 +180,6 @@ export function StaffAdminPage() {
         responsive: ['md'],
       },
       {
-        title: t('staff.columns.order'),
-        dataIndex: 'sortOrder',
-        key: 'sortOrder',
-        width: 90,
-        align: 'center',
-        responsive: ['lg'],
-      },
-      {
         title: t('staff.columns.status'),
         dataIndex: 'isPublished',
         key: 'isPublished',

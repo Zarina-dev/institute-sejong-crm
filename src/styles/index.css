@@ -1433,11 +1433,30 @@
   overflow-y: auto;
 }
 
+.rail-group {
+  display: grid;
+  gap: 2px;
+}
+
+.rail-group + .rail-group {
+  margin-top: var(--space-4);
+}
+
+/* Names the section of the public site the entries below feed. */
+.rail-group__label {
+  padding: 0 var(--space-3) var(--space-1);
+  color: var(--color-rail-text-muted);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+
 .rail-nav a {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3);
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   color: var(--color-rail-text);
   font-size: var(--text-base);
@@ -1449,6 +1468,29 @@
 .rail-nav a .anticon {
   font-size: var(--text-md);
   opacity: 0.75;
+}
+
+.rail-nav a > span {
+  display: grid;
+  min-width: 0;
+}
+
+.rail-nav a strong {
+  font-weight: inherit;
+}
+
+/* The public page this entry feeds, in small print under the label. */
+.rail-nav a small {
+  overflow: hidden;
+  color: var(--color-rail-text-muted);
+  font-size: var(--text-2xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rail-nav a.active small {
+  color: var(--color-rail-active-text);
+  opacity: 0.72;
 }
 
 .rail-nav a:hover {
@@ -3075,4 +3117,12 @@ a.activity-row:hover b {
     width: 100%;
     height: 220px;
   }
+}
+
+/* One magnifier instead of a filter bar (학습 보조 자료). */
+.material-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: min(320px, 60vw);
 }
