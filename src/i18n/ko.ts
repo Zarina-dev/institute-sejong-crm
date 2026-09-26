@@ -425,7 +425,7 @@ const ko: LocaleDictionary = {
   },
   content: {
     adminTitle: '사이트 콘텐츠',
-    adminSubtitle: '인사말, FAQ, 교재 안내 등 공개 사이트의 고정 문구를 편집합니다.',
+    adminSubtitle: '이 페이지에 표시되는 고정 문구를 언어별로 작성합니다.',
     saved: '저장했습니다.',
     saveFailed: '저장할 수 없습니다.',
     loadFailed: '콘텐츠를 불러올 수 없습니다.',

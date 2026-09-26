@@ -35,24 +35,29 @@ const SECTION_ICON: Record<string, ReactNode> = {
   'siteNav.history': <PictureOutlined />,
 }
 
-/** A section owns the current page when one of its entries points at it. */
-const holdsRoute = (group: AdminNavGroup, pathname: string, search: string) =>
-  group.items.some((item) => item.to === `${pathname}${search}` || item.to.split('?')[0] === pathname)
+/**
+ * The section the current URL belongs to. Entries share a screen and differ
+ * by their query, so the full URL decides; the path alone is only a fallback
+ * for the moment before a page normalises its query.
+ */
+const sectionOf = (url: string): AdminNavGroup | undefined =>
+  adminNavigation.find((group) => group.items.some((item) => item.to === url)) ??
+  adminNavigation.find((group) => group.items.some((item) => item.to.split('?')[0] === url.split('?')[0]))
 
 /**
  * Sections open and close; the one holding the current page opens itself.
- * Kept as a set so an admin can keep two sections open at once.
+ * Kept as a list so an admin can keep two sections open at once.
  */
-function useOpenSections(pathname: string, search: string) {
+function useOpenSections(url: string) {
   const [open, setOpen] = useState<string[]>([])
 
   useEffect(() => {
-    const current = adminNavigation.find((group) => holdsRoute(group, pathname, search))
+    const current = sectionOf(url)
 
     if (current) {
       setOpen((sections) => (sections.includes(current.labelKey) ? sections : [...sections, current.labelKey]))
     }
-  }, [pathname, search])
+  }, [url])
 
   const toggle = (labelKey: string) =>
     setOpen((sections) => (sections.includes(labelKey) ? sections.filter((key) => key !== labelKey) : [...sections, labelKey]))
@@ -71,7 +76,9 @@ export function AdminLayout() {
   const navigate = useNavigate()
   const { language, setLanguage, theme, toggleTheme, t } = usePreferences()
   const { pathname, search } = useLocation()
-  const { open, toggle } = useOpenSections(pathname, search)
+  const url = `${pathname}${search}`
+  const { open, toggle } = useOpenSections(url)
+  const currentSection = sectionOf(url)
   const [collapsed, setCollapsed] = useState(false)
 
   // A tab opened from the public site receives the session over the
@@ -124,7 +131,7 @@ export function AdminLayout() {
 
             {adminNavigation.map((group) => {
               const expanded = open.includes(group.labelKey)
-              const current = holdsRoute(group, pathname, search)
+              const current = group === currentSection
 
               return (
                 <div
@@ -152,7 +159,7 @@ export function AdminLayout() {
                           // entries share a page, so the full URL — query
                           // included — decides which one is active. The
                           // callback form also suppresses NavLink's own class.
-                          className={() => (item.to === `${pathname}${search}` ? 'rail-sublink active' : 'rail-sublink')}
+                          className={() => (item.to === url ? 'rail-sublink active' : 'rail-sublink')}
                         >
                           {t(item.labelKey)}
                         </NavLink>

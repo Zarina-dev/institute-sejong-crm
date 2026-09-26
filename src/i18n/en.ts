@@ -438,7 +438,7 @@ export const en = {
   },
   content: {
     adminTitle: 'Site content',
-    adminSubtitle: 'The greeting, FAQ, textbook notes and other fixed text of the public site.',
+    adminSubtitle: 'Write the fixed text of this page, one language at a time.',
     saved: 'Saved.',
     saveFailed: 'Could not save.',
     loadFailed: 'Could not load the content.',

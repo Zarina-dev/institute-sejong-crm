@@ -1,5 +1,5 @@
 import { CheckCircleFilled, SaveOutlined } from '@ant-design/icons'
-import { App, Button, Card, Form, Input, Tabs, Tag, Typography } from 'antd'
+import { App, Button, Card, Form, Input, Tabs, Typography } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -29,9 +29,10 @@ const SLUG_LABEL: Record<ContentSlug, TranslationKey> = {
 }
 
 /**
- * Editor for the fixed text of the public site. Two axes — block and
- * language — so the page is a slug list on the left and a language tab
- * strip on top; each combination is one row in `site_content`.
+ * Editor for one block of fixed text. Which block is decided by the menu
+ * entry that opened the page, so the screen shows that block and nothing
+ * else — one language tab strip, one form; each block/language pair is one
+ * row in `site_content`.
  */
 export function ContentAdminPage() {
   const { t, language } = usePreferences()
@@ -39,12 +40,11 @@ export function ContentAdminPage() {
   const rows = useAllContent()
   const saveContent = useSaveContent()
 
-  // The block lives in the URL: the admin menu lists 인사말, FAQ and 유용한
-  // 링크 as separate entries that all land here.
+  // The block lives in the URL: 인사말, FAQ, 유용한 링크 and 페이지 소개글
+  // are separate menu entries, each opening only its own text here.
   const [params, setParams] = useSearchParams()
   const requested = params.get('block') as ContentSlug | null
   const slug = requested && CONTENT_SLUGS.includes(requested) ? requested : CONTENT_SLUGS[0]
-  const setSlug = (value: ContentSlug) => setParams({ block: value })
 
   const [locale, setLocale] = useState<string>(language)
   const [form] = Form.useForm<ContentFormValues>()
@@ -86,55 +86,38 @@ export function ContentAdminPage() {
 
       <ErrorAlert error={rows.error} fallback={t('content.loadFailed')} />
 
-      <div className="content-admin">
-        <Card className="surface-card content-admin__list">
-          <nav aria-label={t('content.adminTitle')}>
-            {CONTENT_SLUGS.map((value) => {
-              const filledLocales = languages.filter(({ value: code }) => byKey.get(`${value}:${code}`)?.body).length
+      <Card className="surface-card content-admin__editor">
+        {/* One block, one strip of languages — a tick marks a language that
+            has been written. */}
+        <Tabs
+          activeKey={locale}
+          onChange={setLocale}
+          items={languages.map(({ value, title }) => ({
+            key: value,
+            label: (
+              <span>
+                {title} {byKey.get(`${slug}:${value}`)?.body ? <CheckCircleFilled className="content-admin__filled" /> : null}
+              </span>
+            ),
+          }))}
+        />
 
-              return (
-                <button key={value} type="button" className={value === slug ? 'is-active' : undefined} onClick={() => setSlug(value)}>
-                  <span>{t(SLUG_LABEL[value])}</span>
-                  <Tag color={filledLocales > 0 ? 'green' : 'default'}>
-                    {filledLocales}/{languages.length}
-                  </Tag>
-                </button>
-              )
-            })}
-          </nav>
-        </Card>
+        <Form form={form} layout="vertical" disabled={saveContent.isPending}>
+          <Form.Item name="title" label={t('content.titleLabel')}>
+            <Input maxLength={255} />
+          </Form.Item>
+          <Form.Item name="body" label={t('content.bodyLabel')}>
+            <RichTextEditor minHeight={340} />
+          </Form.Item>
+        </Form>
 
-        <Card className="surface-card content-admin__editor">
-          <Tabs
-            activeKey={locale}
-            onChange={setLocale}
-            items={languages.map(({ value, title }) => ({
-              key: value,
-              label: (
-                <span>
-                  {title} {byKey.get(`${slug}:${value}`)?.body ? <CheckCircleFilled className="content-admin__filled" /> : null}
-                </span>
-              ),
-            }))}
-          />
-
-          <Form form={form} layout="vertical" disabled={saveContent.isPending}>
-            <Form.Item name="title" label={t('content.titleLabel')}>
-              <Input maxLength={255} />
-            </Form.Item>
-            <Form.Item name="body" label={t('content.bodyLabel')}>
-              <RichTextEditor minHeight={340} />
-            </Form.Item>
-          </Form>
-
-          <div className="content-admin__actions">
-            <Text type="secondary">{current?.body ? t('content.filled') : t('content.missing')}</Text>
-            <Button type="primary" icon={<SaveOutlined />} loading={saveContent.isPending} onClick={submit}>
-              {t('common.save')}
-            </Button>
-          </div>
-        </Card>
-      </div>
+        <div className="content-admin__actions">
+          <Text type="secondary">{current?.body ? t('content.filled') : t('content.missing')}</Text>
+          <Button type="primary" icon={<SaveOutlined />} loading={saveContent.isPending} onClick={submit}>
+            {t('common.save')}
+          </Button>
+        </div>
+      </Card>
     </div>
   )
 }

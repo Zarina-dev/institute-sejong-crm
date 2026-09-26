@@ -2752,47 +2752,6 @@ a.activity-row:hover b {
 
 /* ---- Site content editor ---- */
 
-.content-admin {
-  display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  gap: var(--space-5);
-  align-items: start;
-}
-
-.content-admin__list .ant-card-body {
-  padding: var(--space-3);
-}
-
-.content-admin__list nav {
-  display: grid;
-  gap: 2px;
-}
-
-.content-admin__list button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--color-text-muted);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.content-admin__list button:hover {
-  background: var(--color-surface-hover);
-}
-
-.content-admin__list button.is-active {
-  background: var(--color-primary-soft);
-  color: var(--color-primary-text);
-  font-weight: var(--weight-semibold);
-}
-
 .content-admin__filled {
   margin-left: var(--space-1);
   color: var(--color-success);
@@ -2811,8 +2770,7 @@ a.activity-row:hover b {
     display: none;
   }
 
-  .location-layout,
-  .content-admin {
+  .location-layout {
     grid-template-columns: 1fr;
   }
 }

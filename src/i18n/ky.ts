@@ -430,7 +430,7 @@ const ky: LocaleDictionary = {
   },
   content: {
     adminTitle: 'Сайттын мазмуну',
-    adminSubtitle: 'Куттуктоо, FAQ, окуу китептери жана башка туруктуу тексттер.',
+    adminSubtitle: 'Бул баракчанын туруктуу текстин ар бир тилде жазыңыз.',
     saved: 'Сакталды.',
     saveFailed: 'Сактоо мүмкүн болбоду.',
     loadFailed: 'Мазмунду жүктөө мүмкүн болбоду.',
