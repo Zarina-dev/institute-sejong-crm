@@ -31,6 +31,7 @@ const NewsAdminPage = lazy(() => import('../pages/admin/NewsAdminPage').then((m)
 const StaffAdminPage = lazy(() => import('../pages/admin/StaffAdminPage').then((m) => ({ default: m.StaffAdminPage })))
 const GalleryAdminPage = lazy(() => import('../pages/admin/GalleryAdminPage').then((m) => ({ default: m.GalleryAdminPage })))
 const ContentAdminPage = lazy(() => import('../pages/admin/ContentAdminPage').then((m) => ({ default: m.ContentAdminPage })))
+const TextbooksAdminPage = lazy(() => import('../pages/admin/TextbooksAdminPage').then((m) => ({ default: m.TextbooksAdminPage })))
 
 function RouteFallback() {
   return (
@@ -93,6 +94,7 @@ export function AppRouter() {
           <Route path="news" element={<NewsAdminPage />} />
           <Route path="gallery" element={<GalleryAdminPage />} />
           <Route path="staff" element={<StaffAdminPage />} />
+          <Route path="textbooks" element={<TextbooksAdminPage />} />
           <Route path="content" element={<ContentAdminPage />} />
         </Route>
       </Routes>

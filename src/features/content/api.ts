@@ -4,7 +4,6 @@ import { apiGet, apiRequest } from '../../api/client'
 export const CONTENT_SLUGS = [
   'about.greeting',
   'notices.faq',
-  'resources.textbooks',
   'resources.links',
   'history.intro',
 ] as const

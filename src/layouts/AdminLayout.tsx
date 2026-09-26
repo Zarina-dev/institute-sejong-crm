@@ -1,5 +1,6 @@
 import {
   AppstoreOutlined,
+  BookOutlined,
   DashboardOutlined,
   FolderOpenOutlined,
   HomeOutlined,
@@ -63,11 +64,13 @@ export function AdminLayout() {
   const navItems: NavItem[] = [
     { to: '/admin', label: t('adminNav.dashboard'), icon: <DashboardOutlined />, end: true },
     { to: '/admin/courses', label: t('adminNav.courses'), icon: <AppstoreOutlined /> },
-    { to: '/admin/materials', label: t('adminNav.materials'), icon: <FolderOpenOutlined /> },
     { to: '/admin/news', label: t('adminNav.news'), icon: <NotificationOutlined /> },
     { to: '/admin/gallery', label: t('adminNav.gallery'), icon: <PictureOutlined /> },
     { to: '/admin/staff', label: t('adminNav.staff'), icon: <IdcardOutlined /> },
+    // Site copy and the two libraries it introduces sit together.
     { to: '/admin/content', label: t('adminNav.content'), icon: <FileTextOutlined /> },
+    { to: '/admin/textbooks', label: t('adminNav.textbooks'), icon: <BookOutlined /> },
+    { to: '/admin/materials', label: t('adminNav.materials'), icon: <FolderOpenOutlined /> },
   ]
 
   return (
