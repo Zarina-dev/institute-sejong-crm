@@ -504,6 +504,7 @@ export const en = {
     },
     chronologyTitle: 'Our chronology',
     chronologyLink: 'See the full chronology',
+    chronologyLess: 'Show less',
   },
   editor: {
     bold: 'Bold',

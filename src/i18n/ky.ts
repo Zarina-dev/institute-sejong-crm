@@ -496,6 +496,7 @@ const ky: LocaleDictionary = {
     },
     chronologyTitle: 'Институттун тарыхы',
     chronologyLink: 'Толук тарыхты көрүү',
+    chronologyLess: 'Жыйнап коюу',
   },
   editor: {
     bold: 'Калың',

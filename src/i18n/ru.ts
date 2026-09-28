@@ -520,6 +520,7 @@ const ru: LocaleDictionary = {
     },
     chronologyTitle: 'Хроника института',
     chronologyLink: 'Вся хроника',
+    chronologyLess: 'Свернуть',
   },
   editor: {
     bold: 'Жирный',

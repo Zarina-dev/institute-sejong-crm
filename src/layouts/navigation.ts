@@ -22,7 +22,6 @@ export const navigation: NavSection[] = [
     children: [
       { to: '/about', labelKey: 'siteNav.aboutGreeting' },
       { to: '/about/staff', labelKey: 'siteNav.aboutStaff' },
-      { to: '/about/chronology', labelKey: 'siteNav.aboutChronology' },
       { to: '/about/location', labelKey: 'siteNav.aboutLocation' },
     ],
   },

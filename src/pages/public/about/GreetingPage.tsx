@@ -1,6 +1,6 @@
-import { ArrowRightOutlined, EnvironmentOutlined, LinkOutlined, PhoneOutlined } from '@ant-design/icons'
+import { ArrowRightOutlined, DownOutlined, EnvironmentOutlined, LinkOutlined, PhoneOutlined, UpOutlined } from '@ant-design/icons'
 import { Button, Card, Skeleton, Typography } from 'antd'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import { contact, phoneHref } from '../../../app/contact'
@@ -55,10 +55,18 @@ function Section({ id, kicker, title, children }: { id: string; kicker: string; 
 export function GreetingPage() {
   const { t } = usePreferences()
   const chronology = useChronology()
+  const [showAll, setShowAll] = useState(false)
 
-  // The About page shows the turning points; the full list has its own page.
-  const milestones = (chronology.data ?? NO_ENTRIES).filter((entry) => entry.isMilestone)
-  const timeline = milestones.length > 0 ? milestones : (chronology.data ?? NO_ENTRIES).slice(0, 6)
+  /**
+   * The turning points first — a glance at the institute's history. Opening
+   * it unrolls the whole thing in place; there is no separate page to lose
+   * the reader on.
+   */
+  const entries = chronology.data ?? NO_ENTRIES
+  const milestones = entries.filter((entry) => entry.isMilestone)
+  const summary = milestones.length > 0 ? milestones : entries.slice(0, 4)
+  const timeline = showAll ? entries : summary
+  const canExpand = entries.length > summary.length
 
   return (
     <div className="page-layout about-page">
@@ -132,12 +140,15 @@ export function GreetingPage() {
             <Skeleton active paragraph={{ rows: 4 }} />
           </Card>
         ) : timeline.length > 0 ? (
-          <Card className="surface-card chronology-card">
-            <ChronologyTimeline entries={timeline} compact />
+          <Card className={`surface-card chronology-card${showAll ? ' is-open' : ''}`}>
+            <ChronologyTimeline key={showAll ? 'full' : 'summary'} entries={timeline} compact={!showAll} />
 
-            <Link className="about-more" to="/about/chronology">
-              {t('about.chronologyLink')} <ArrowRightOutlined />
-            </Link>
+            {canExpand ? (
+              <button type="button" className="chronology-toggle" aria-expanded={showAll} onClick={() => setShowAll((open) => !open)}>
+                {showAll ? t('about.chronologyLess') : t('about.chronologyLink')}
+                {showAll ? <UpOutlined /> : <DownOutlined />}
+              </button>
+            ) : null}
           </Card>
         ) : null}
       </Section>

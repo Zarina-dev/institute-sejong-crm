@@ -7,7 +7,7 @@ const { Title, Text, Paragraph } = Typography
 
 type ChronologyTimelineProps = {
   entries: ChronologyEntry[]
-  /** Drops the descriptions — used where the timeline is a summary. */
+  /** Drops the descriptions and tightens the rail — the summary state. */
   compact?: boolean
 }
 
@@ -16,8 +16,10 @@ const monthLabel = (entry: ChronologyEntry) => (entry.month ? String(entry.month
 
 /**
  * The institute's history as a rail down the page: the year called out once
- * per block, a dot per event, and a heavier dot where the entry is a
- * milestone — so the shape of the story is visible before a word is read.
+ * per block, a dot per event, and a heavier dot and panel where the entry is
+ * a milestone — so the shape of the story is visible before a word is read.
+ * Entries fade in one after another, which is what makes opening the full
+ * history feel like the timeline unrolling rather than a list appearing.
  */
 export function ChronologyTimeline({ entries, compact = false }: ChronologyTimelineProps) {
   // The API sorts; this only cuts the list into blocks so a year is announced once.
@@ -31,6 +33,8 @@ export function ChronologyTimeline({ entries, compact = false }: ChronologyTimel
     return [...byYear.entries()]
   }, [entries])
 
+  let position = 0
+
   return (
     <ol className={compact ? 'chronology chronology--compact' : 'chronology'}>
       {years.map(([year, yearEntries]) => (
@@ -40,20 +44,30 @@ export function ChronologyTimeline({ entries, compact = false }: ChronologyTimel
           </Title>
 
           <ol className="chronology__entries">
-            {yearEntries.map((entry) => (
-              <li className={`chronology__entry${entry.isMilestone ? ' is-milestone' : ''}`} key={entry.id}>
-                <span className="chronology__month">{monthLabel(entry)}</span>
+            {yearEntries.map((entry) => {
+              // Staggered by position in the whole list, not within the year,
+              // so the reveal runs top to bottom across year blocks.
+              const delay = `${Math.min(position++, 14) * 45}ms`
 
-                <div className="chronology__body">
-                  <Text className="chronology__title">{entry.title}</Text>
-                  {entry.description && !compact ? (
-                    <Paragraph type="secondary" className="chronology__description">
-                      {entry.description}
-                    </Paragraph>
-                  ) : null}
-                </div>
-              </li>
-            ))}
+              return (
+                <li
+                  className={`chronology__entry${entry.isMilestone ? ' is-milestone' : ''}`}
+                  key={entry.id}
+                  style={{ animationDelay: delay }}
+                >
+                  <span className="chronology__month">{monthLabel(entry)}</span>
+
+                  <div className="chronology__body">
+                    <Text className="chronology__title">{entry.title}</Text>
+                    {entry.description && !compact ? (
+                      <Paragraph type="secondary" className="chronology__description">
+                        {entry.description}
+                      </Paragraph>
+                    ) : null}
+                  </div>
+                </li>
+              )
+            })}
           </ol>
         </li>
       ))}

@@ -3752,11 +3752,32 @@ a.attachment-chip:hover {
 }
 
 /* ==========================================================================
-   연혁 (chronology) — a timeline: a rail that fades at both ends, the year
-   anchored beside its entries, and the turning points raised out of the list.
+   연혁 (chronology) — the institute's story. A lit card, a rail that fades at
+   both ends, years set in the brand gradient, and turning points raised out
+   of the list. Opening the full history unrolls it, entry by entry.
    ========================================================================== */
 
+.chronology-card.ant-card {
+  position: relative;
+  overflow: hidden;
+}
+
+/* A soft light behind the top of the timeline; it gives the card depth
+   without a single image. */
+.chronology-card.ant-card::before {
+  content: '';
+  position: absolute;
+  top: -140px;
+  right: -80px;
+  width: 420px;
+  height: 320px;
+  background: radial-gradient(circle, var(--color-primary-soft), transparent 68%);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
 .chronology-card .ant-card-body {
+  position: relative;
   padding: var(--space-10) var(--space-8) var(--space-8);
 }
 
@@ -3778,34 +3799,41 @@ a.attachment-chip:hover {
   gap: var(--space-7);
 }
 
-/* The year sits beside its entries and stays there while they scroll past. */
+/* The year is the anchor: set large in the brand gradient and kept beside
+   its entries while they scroll past. */
 .chronology__year-label.ant-typography {
   position: sticky;
   top: calc(var(--layout-header-height) + var(--space-6));
   margin: 0;
   padding-top: 2px;
-  color: var(--color-text);
-  font-size: 42px;
+  background: linear-gradient(135deg, var(--color-primary), var(--brand-800));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-size: 44px;
   font-variant-numeric: tabular-nums;
   font-weight: var(--weight-extrabold);
   letter-spacing: var(--tracking-tight);
   line-height: 1;
 }
 
-/* A hairline under the year, in the brand colour: small, and it ties the
-   year to the rail beside it. */
+[data-theme='dark'] .chronology__year-label.ant-typography {
+  background: linear-gradient(135deg, var(--brand-300), var(--brand-500));
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
 .chronology__year-label.ant-typography::after {
   content: '';
   display: block;
-  width: 34px;
+  width: 36px;
   height: 3px;
   margin-top: var(--space-3);
   border-radius: var(--radius-pill);
-  background: var(--color-primary);
+  background: linear-gradient(90deg, var(--color-primary), transparent);
 }
 
-/* The rail itself. It fades out at top and bottom so the timeline reads as
-   one continuous thread rather than a set of bordered boxes. */
+/* The rail. It fades out at both ends so the timeline reads as one thread. */
 .chronology__entries {
   position: relative;
   display: grid;
@@ -3818,8 +3846,17 @@ a.attachment-chip:hover {
   position: absolute;
   inset: 4px auto 4px 0;
   width: 2px;
-  background: linear-gradient(var(--color-border-strong), var(--color-border));
-  mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent);
+  background: linear-gradient(var(--color-primary), var(--color-border) 65%);
+  mask-image: linear-gradient(transparent, #000 10%, #000 88%, transparent);
+}
+
+/* Each entry arrives a beat after the one above it — which is what makes
+   opening the full history feel like the timeline unrolling. */
+@keyframes chronology-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 }
 
 .chronology__entry {
@@ -3829,9 +3866,9 @@ a.attachment-chip:hover {
   gap: var(--space-4);
   align-items: start;
   padding: var(--space-2) 0;
+  animation: chronology-in var(--duration-base) var(--ease-out) backwards;
 }
 
-/* The dot on the rail. */
 .chronology__entry::before {
   content: '';
   position: absolute;
@@ -3846,7 +3883,7 @@ a.attachment-chip:hover {
 }
 
 .chronology__entry:hover::before {
-  transform: scale(1.25);
+  transform: scale(1.3);
   background: var(--color-primary);
 }
 
@@ -3862,8 +3899,7 @@ a.attachment-chip:hover {
 .chronology__body {
   display: grid;
   gap: var(--space-1);
-  /* A line of history is a line of prose: keep it to a readable measure
-     instead of letting it run the width of the card. */
+  /* A line of history is a line of prose: hold it to a readable measure. */
   max-width: 68ch;
   min-width: 0;
   padding: 2px 0;
@@ -3881,22 +3917,30 @@ a.attachment-chip:hover {
   line-height: var(--leading-relaxed);
 }
 
-/* 개원 · 이전 · 인증 — the turning points are lifted out of the list: a
-   filled dot with a halo, and the text on a tinted panel with a brand edge. */
+/* 개원 · 이전 · 인증 — lifted out of the list: a haloed dot, a tinted panel
+   with a brand edge, and a shadow that deepens under the pointer. */
 .chronology__entry.is-milestone::before {
   top: 13px;
   left: calc(var(--space-7) * -1 - 6px);
   width: 14px;
   height: 14px;
   background: var(--color-primary);
-  box-shadow: 0 0 0 5px var(--color-primary-soft);
+  box-shadow: 0 0 0 5px var(--color-primary-soft), var(--shadow-primary);
 }
 
 .chronology__entry.is-milestone .chronology__body {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-primary-soft-hover);
   border-left: 3px solid var(--color-primary);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  background: linear-gradient(90deg, var(--color-primary-soft), transparent);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  background: linear-gradient(115deg, var(--color-primary-soft), var(--color-surface) 78%);
+  box-shadow: var(--shadow-xs);
+  transition: var(--transition-elevate);
+}
+
+.chronology__entry.is-milestone:hover .chronology__body {
+  transform: translateX(3px);
+  box-shadow: var(--shadow-md);
 }
 
 .chronology__entry.is-milestone .chronology__title.ant-typography {
@@ -3909,7 +3953,7 @@ a.attachment-chip:hover {
   color: var(--color-primary-text);
 }
 
-/* Where the story begins: the rail ends in a solid cap under the oldest year. */
+/* Where the story begins: the rail ends in a cap under the oldest year. */
 .chronology__year:last-child .chronology__entries::after {
   content: '';
   position: absolute;
@@ -3921,13 +3965,14 @@ a.attachment-chip:hover {
   background: var(--color-border-strong);
 }
 
-/* On 학당 소개 the timeline is a summary, so it sits tighter. */
+/* ---- The summary state on 학당 소개 ---- */
+
 .chronology--compact {
   gap: var(--space-6);
 }
 
 .chronology--compact .chronology__year {
-  grid-template-columns: 96px minmax(0, 1fr);
+  grid-template-columns: 104px minmax(0, 1fr);
   gap: var(--space-5);
 }
 
@@ -3940,6 +3985,33 @@ a.attachment-chip:hover {
   width: 24px;
   height: 2px;
   margin-top: var(--space-2);
+}
+
+/* Opens and closes the full history in place. */
+.chronology-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-primary-text);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-colors);
+}
+
+.chronology-toggle:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.chronology-toggle .anticon {
+  font-size: var(--text-xs);
 }
 
 /* Read-only date in the admin table, aligned digit under digit. */

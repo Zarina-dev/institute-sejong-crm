@@ -3,7 +3,6 @@ import { Suspense, lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { PublicLayout } from '../layouts/PublicLayout'
-import { ChronologyPage } from '../pages/public/about/ChronologyPage'
 import { GreetingPage } from '../pages/public/about/GreetingPage'
 import { LocationPage } from '../pages/public/about/LocationPage'
 import { StaffPage } from '../pages/public/about/StaffPage'
@@ -58,7 +57,6 @@ export function AppRouter() {
           {/* 학당 소개 */}
           <Route path="/about" element={<GreetingPage />} />
           <Route path="/about/staff" element={<StaffPage />} />
-          <Route path="/about/chronology" element={<ChronologyPage />} />
           <Route path="/about/location" element={<LocationPage />} />
 
           {/* 교육과정 */}

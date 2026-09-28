@@ -490,7 +490,8 @@ const ko: LocaleDictionary = {
       coursesLink: '개설 강좌 보기',
     },
     chronologyTitle: '학당 연혁',
-    chronologyLink: '전체 연혁 보기',
+    chronologyLink: '전체 연혁 펼쳐 보기',
+    chronologyLess: '간략히 보기',
   },
   editor: {
     bold: '굵게',
