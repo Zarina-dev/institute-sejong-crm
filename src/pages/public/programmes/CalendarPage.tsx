@@ -1,5 +1,5 @@
 import { CalendarOutlined, EnvironmentOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Calendar, Card, Empty, Skeleton, Tag, Typography } from 'antd'
+import { Button, Calendar, Card, Empty, Segmented, Skeleton, Tag, Typography } from 'antd'
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
@@ -7,6 +7,7 @@ import { useMemo, useState } from 'react'
 import { usePreferences } from '../../../app/preferences'
 import { useCourses, useTimetable } from '../../../features/courses/queries'
 import { SemesterTable } from '../../../features/courses/SemesterTable'
+import { courseTerm, currentTerm, listTerms, termLabel } from '../../../features/courses/terms'
 import type { TimetableEntry } from '../../../features/courses/types'
 import { addDays, formatWeekLabel, monthRange, startOfWeek, toIsoDate, weekRange } from '../../../features/courses/week'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
@@ -36,6 +37,38 @@ export function CalendarPage() {
   const [month, setMonth] = useState(() => dayjs())
 
   const courses = useCourses(true)
+
+  /**
+   * The calendar is read one semester at a time. The picker defaults to the
+   * semester we are in (or the most recent one on record) and moves the week
+   * list with it, so choosing a past term does not leave today's week below
+   * an older table.
+   */
+  const terms = useMemo(() => listTerms(courses.data), [courses.data])
+  const [term, setTerm] = useState<string | null>(null)
+  const activeTerm = term ?? currentTerm(courses.data)
+
+  const termCourses = useMemo(
+    () => (activeTerm ? (courses.data ?? []).filter((course) => courseTerm(course) === activeTerm) : courses.data),
+    [activeTerm, courses.data],
+  )
+
+  const selectTerm = (value: string) => {
+    setTerm(value)
+
+    // Jump the week list to the first class of that semester.
+    const starts = (courses.data ?? [])
+      .filter((course) => courseTerm(course) === value)
+      .map((course) => course.startDate)
+      .filter((date): date is string => Boolean(date))
+      .sort()
+
+    if (starts[0]) {
+      const first = new Date(`${starts[0]}T00:00:00`)
+      setMonday(startOfWeek(first))
+      setMonth(dayjs(first))
+    }
+  }
 
   const range = useMemo(() => weekRange(monday), [monday])
   const schedule = useTimetable(range)
@@ -83,8 +116,21 @@ export function CalendarPage() {
 
       <ErrorAlert error={schedule.error ?? monthQuery.error ?? courses.error} fallback={t('schedule.loadFailed')} />
 
+      {terms.length > 1 ? (
+        <Card className="surface-card filter-card">
+          <div className="filter-footer">
+            <Segmented
+              value={activeTerm ?? undefined}
+              onChange={(value) => selectTerm(value as string)}
+              options={terms.map((value) => ({ value, label: termLabel(value, t) }))}
+            />
+            <Text type="secondary">{t('courses.classCount', { count: termCourses?.length ?? 0 })}</Text>
+          </div>
+        </Card>
+      ) : null}
+
       {/* The semester overview the office keeps: one row per class. */}
-      <SemesterTable courses={courses.data} loading={courses.isPending} emptyText={t('courses.empty')} />
+      <SemesterTable courses={termCourses} loading={courses.isPending} emptyText={t('courses.empty')} />
 
       <div className="calendar-layout">
         <div className="calendar-layout__week">

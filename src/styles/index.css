@@ -3281,3 +3281,149 @@ a.activity-row:hover b {
   gap: var(--space-1);
   min-width: min(320px, 60vw);
 }
+
+/* ==========================================================================
+   대회 기록 (말하기 대회 · 백일장) and 회의록
+   ========================================================================== */
+
+/* Three fields that belong on one line (year · date · entrants). */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0 var(--space-4);
+}
+
+.competition-list,
+.meeting-list {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.competition-card .ant-card-body,
+.meeting-card .ant-card-body {
+  display: grid;
+  gap: var(--space-5);
+}
+
+/* The facts of the day sit beside the photo; the results run full width. */
+.competition-card__head {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.competition-card__head:only-child,
+.competition-card__head > div:only-child {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.competition-card__cover {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+
+.competition-card__year.ant-tag {
+  margin-bottom: var(--space-2);
+  border-color: var(--color-primary-soft-hover);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-semibold);
+}
+
+.competition-card h3.ant-typography,
+.meeting-card h3.ant-typography {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text);
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-tight);
+}
+
+.competition-card__facts,
+.meeting-card__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-muted);
+  font-size: var(--text-base);
+}
+
+.competition-card__facts li,
+.meeting-card__facts li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.competition-card__facts .anticon,
+.meeting-card__facts .anticon {
+  color: var(--color-primary-text);
+}
+
+.competition-card__summary {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.competition-card__winners {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.competition-winners .ant-table-tbody > tr > td {
+  vertical-align: middle;
+}
+
+/* One line per winner in the form: 순위 · 이름 · 비고 · remove. */
+.winner-rows {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.winner-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr) 40px;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.meeting-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.meeting-card__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Decisions are what gets acted on, so they are set apart from the notes. */
+.meeting-card__decisions {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+
+@media (max-width: 720px) {
+  .competition-card__head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .winner-row {
+    grid-template-columns: 72px minmax(0, 1fr) 40px;
+  }
+
+  .winner-row .ant-input:last-of-type {
+    grid-column: 1 / -1;
+  }
+}

@@ -8,6 +8,7 @@ import { usePreferences } from '../../app/preferences'
 import type { TranslationKey } from '../../app/preferences'
 import { SessionsEditor } from '../../features/courses/SessionsEditor'
 import { courseTitles, groupCourses } from '../../features/courses/grouping'
+import { listTerms, termLabel } from '../../features/courses/terms'
 import { sessionParts, weeklyHoursFromSessions } from '../../features/courses/sessions'
 import { useCourses, useCreateCourse, useDeleteCourse, useSetCoursePublished, useUpdateCourse } from '../../features/courses/queries'
 import { useAllStaff } from '../../features/staff/queries'
@@ -48,6 +49,7 @@ type CourseFormValues = {
   teacherName?: string
   sessions: CourseSession[]
   classroom?: string
+  term?: string
   startDate?: string
   endDate?: string
   expectedStudents?: number | null
@@ -126,6 +128,7 @@ export function CoursesAdminPage() {
         teacherName: record.teacherName ?? undefined,
         sessions: record.sessions ?? [],
         classroom: record.classroom ?? undefined,
+        term: record.term ?? undefined,
         startDate: record.startDate ?? undefined,
         endDate: record.endDate ?? undefined,
         expectedStudents: record.expectedStudents ?? null,
@@ -200,6 +203,15 @@ export function CoursesAdminPage() {
   const rows = useMemo(() => programmes.flatMap((programme) => programme.courses), [programmes])
 
   const titleOptions = useMemo(() => courseTitles(courses.data).map((value) => ({ value })), [courses.data])
+
+  // Every semester already on record, plus the two around today, so a new
+  // course can be filed without typing the format by hand.
+  const termOptions = useMemo(() => {
+    const year = new Date().getFullYear()
+    const values = new Set([...listTerms(courses.data), `${year}-1`, `${year}-2`])
+
+    return [...values].sort().reverse().map((value) => ({ value, label: termLabel(value, t) }))
+  }, [courses.data, t])
 
   const handleExcel = useCallback(async () => {
     setExporting(true)
@@ -536,6 +548,9 @@ export function CoursesAdminPage() {
               </Form.Item>
             </Col>
           </Row>
+          <Form.Item name="term" label={t('terms.label')} extra={t('terms.hint')}>
+            <Select allowClear placeholder={t('terms.unset')} options={termOptions} />
+          </Form.Item>
           {/* Semester table (학사 일정): 예상수 · 실제수 · 총 시간수 · 주 시간 */}
           <Row gutter={16}>
             <Col xs={12} md={6}>

@@ -6,6 +6,7 @@ import { PublicLayout } from '../layouts/PublicLayout'
 import { GreetingPage } from '../pages/public/about/GreetingPage'
 import { LocationPage } from '../pages/public/about/LocationPage'
 import { StaffPage } from '../pages/public/about/StaffPage'
+import { CompetitionsPage } from '../pages/public/history/CompetitionsPage'
 import { HistoryPage } from '../pages/public/HistoryPage'
 import { HomePage } from '../pages/public/HomePage'
 import { LoginPage } from '../pages/public/LoginPage'
@@ -32,6 +33,8 @@ const StaffAdminPage = lazy(() => import('../pages/admin/StaffAdminPage').then((
 const GalleryAdminPage = lazy(() => import('../pages/admin/GalleryAdminPage').then((m) => ({ default: m.GalleryAdminPage })))
 const ContentAdminPage = lazy(() => import('../pages/admin/ContentAdminPage').then((m) => ({ default: m.ContentAdminPage })))
 const TextbooksAdminPage = lazy(() => import('../pages/admin/TextbooksAdminPage').then((m) => ({ default: m.TextbooksAdminPage })))
+const CompetitionsAdminPage = lazy(() => import('../pages/admin/CompetitionsAdminPage').then((m) => ({ default: m.CompetitionsAdminPage })))
+const MeetingsAdminPage = lazy(() => import('../pages/admin/MeetingsAdminPage').then((m) => ({ default: m.MeetingsAdminPage })))
 
 function RouteFallback() {
   return (
@@ -72,6 +75,8 @@ export function AppRouter() {
 
           {/* 학당 발자취 */}
           <Route path="/history" element={<HistoryPage />} />
+          <Route path="/history/speech" element={<CompetitionsPage kind="speech" />} />
+          <Route path="/history/writing" element={<CompetitionsPage kind="writing" />} />
 
           <Route path="/login" element={<LoginPage />} />
 
@@ -96,6 +101,8 @@ export function AppRouter() {
           <Route path="staff" element={<StaffAdminPage />} />
           <Route path="textbooks" element={<TextbooksAdminPage />} />
           <Route path="content" element={<ContentAdminPage />} />
+          <Route path="competitions" element={<CompetitionsAdminPage />} />
+          <Route path="meetings" element={<MeetingsAdminPage />} />
         </Route>
       </Routes>
     </Suspense>

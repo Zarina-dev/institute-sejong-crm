@@ -24,6 +24,8 @@ export type CourseRecord = {
   sessions: CourseSession[]
   classroom?: string | null
   courseCode?: string | null
+  /** 학기 — 'YYYY-1' or 'YYYY-2'; older rows fall back to the start date. */
+  term?: string | null
   startDate?: string | null
   endDate?: string | null
   capacity: number

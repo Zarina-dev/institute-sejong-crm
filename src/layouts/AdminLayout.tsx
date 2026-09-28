@@ -1,5 +1,6 @@
 import {
   AppstoreOutlined,
+  AuditOutlined,
   BookOutlined,
   DashboardOutlined,
   DownOutlined,
@@ -33,6 +34,7 @@ const SECTION_ICON: Record<string, ReactNode> = {
   'siteNav.notices': <NotificationOutlined />,
   'siteNav.resources': <BookOutlined />,
   'siteNav.history': <PictureOutlined />,
+  'adminNav.meetingsSection': <AuditOutlined />,
 }
 
 /**

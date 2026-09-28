@@ -61,7 +61,14 @@ export const adminNavigation: AdminNavGroup[] = [
     labelKey: 'siteNav.history',
     items: [
       { to: '/admin/gallery', labelKey: 'siteNav.historyAlbums' },
+      { to: '/admin/competitions?kind=speech', labelKey: 'siteNav.historySpeech' },
+      { to: '/admin/competitions?kind=writing', labelKey: 'siteNav.historyWriting' },
       { to: '/admin/content?block=history.intro', labelKey: 'adminNav.historyIntro' },
     ],
+  },
+  /* Internal: nothing under this section appears on the public site. */
+  {
+    labelKey: 'adminNav.meetingsSection',
+    items: [{ to: '/admin/meetings', labelKey: 'adminNav.meetingsItem' }],
   },
 ]

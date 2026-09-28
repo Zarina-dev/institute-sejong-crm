@@ -1,0 +1,42 @@
+/** 말하기 대회 · 백일장 — the two competitions the institute records. */
+export const COMPETITION_KINDS = ['speech', 'writing'] as const
+export type CompetitionKind = (typeof COMPETITION_KINDS)[number]
+
+/** One line of the results table. */
+export type CompetitionWinner = {
+  rank: number
+  name: string
+  note?: string | null
+}
+
+export type Competition = {
+  id: string
+  kind: CompetitionKind
+  title: string
+  year: number
+  heldOn: string | null
+  venue: string
+  participants: number | null
+  /** Sanitized HTML from the rich-text editor. */
+  summary: string
+  winners: CompetitionWinner[]
+  coverImage: string | null
+  albumUrl: string | null
+  isPublished: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type CompetitionInput = {
+  kind: CompetitionKind
+  title: string
+  year: number
+  heldOn?: string | null
+  venue?: string
+  participants?: number | null
+  summary?: string
+  winners?: CompetitionWinner[]
+  coverImage?: string | null
+  albumUrl?: string | null
+  isPublished?: boolean
+}
