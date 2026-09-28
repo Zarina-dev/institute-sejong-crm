@@ -33,9 +33,39 @@
 }
 
 .surface-card.ant-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-md);
   border-color: var(--color-border-strong);
+}
+
+/* Cards in a grid stand as tall as the tallest in their row, so their
+   footers line up instead of stair-stepping. */
+.card-grid.ant-row {
+  align-items: stretch;
+}
+
+.card-grid > .ant-col > * {
+  height: 100%;
+}
+
+/* The card fills its cell and the body takes the rest of the height —
+   without dictating how the body lays itself out, so cards with their own
+   grid (the textbooks, say) keep it. */
+.card-grid > .ant-col > .surface-card.ant-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-grid > .ant-col > .surface-card.ant-card > .ant-card-body {
+  flex: 1;
+}
+
+/* Cards whose last block (chips, an e-mail, a lede) sits on the floor. */
+.programme-card > .ant-card-body,
+.news-card > .ant-card-body,
+.material-card > .ant-card-body {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Small uppercase eyebrow above a heading. */
@@ -54,7 +84,14 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-4);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.section-heading h2.ant-typography {
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-tight);
 }
 
 .section-heading .ant-typography {
@@ -345,11 +382,23 @@
 .hero-panel {
   position: relative;
   overflow: hidden;
-  padding: var(--space-14);
+  padding: clamp(var(--space-8), 4.5vw, var(--space-16));
   border-radius: var(--radius-2xl);
   background: var(--gradient-hero);
   color: var(--neutral-0);
   box-shadow: var(--shadow-lg);
+}
+
+/* Faint grid, drawn in the panel itself — texture without an image request. */
+.hero-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at 20% 30%, #000 0, transparent 72%);
 }
 
 /* Decorative ring, bottom-right. Hidden from assistive tech by nature. */
@@ -514,8 +563,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin: var(--space-4) 0 0;
-  padding: 0;
+  margin: auto 0 0;
+  padding: var(--space-5) 0 0;
   list-style: none;
 }
 
@@ -533,28 +582,70 @@
   color: var(--color-text-subtle);
 }
 
-.news-card .ant-card-cover img {
-  height: 160px;
+.news-card .ant-card-cover img,
+.news-card__placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
+}
+
+/* A post without a photo still gets a media band, so a row of cards keeps
+   one rhythm instead of some starting with an image and some with text. */
+/* Beats AntD's own , which is injected after this
+   sheet and would otherwise force the band back to display:block. */
+.news-card .ant-card-cover > .news-card__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-hero);
+  color: rgb(255 255 255 / 0.85);
+}
+
+.news-card__placeholder .anticon {
+  font-size: 34px;
 }
 
 .news-card__date {
   display: block;
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--space-2);
+  color: var(--color-text-subtle);
   font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
 }
 
 .news-card h4.ant-typography {
+  display: -webkit-box;
+  overflow: hidden;
   margin: 0 0 var(--space-2);
   color: var(--color-text);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.news-card .ant-card-body > .ant-typography-secondary {
+  margin: 0;
+  color: var(--color-text-muted);
 }
 /* ==========================================================================
    Filters (schedule, materials, courses, admin tables)
    ========================================================================== */
 
+.filter-card.ant-card {
+  background: var(--color-surface-sunken);
+  box-shadow: none;
+}
+
+.filter-card.ant-card:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--color-border);
+}
+
 .filter-card .ant-card-body {
-  padding: var(--space-5) var(--space-6);
+  padding: var(--space-4) var(--space-5);
 }
 
 .filter-card .ant-col > .ant-typography {
@@ -949,51 +1040,102 @@
    News / announcements
    ========================================================================== */
 
-.announcement-card .ant-card-body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-height: 230px;
-}
-
-.announcement-card .ant-card-body > div:first-child {
-  display: flex;
-  width: 100%;
-  align-items: center;
+/* A notice board is scanned, not browsed: every post is the same row —
+   media, meta, title, lede, chevron — whatever its length or cover. */
+.notice-list {
+  display: grid;
   gap: var(--space-3);
 }
 
-.announcement-card .ant-card-body > div:first-child .ant-typography {
+.notice-row {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4);
+  color: inherit;
+  text-decoration: none;
+}
+
+.notice-row__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius-md);
+  /* Tinted, not a full gradient: five of these in a column would otherwise
+     shout louder than the titles they belong to. */
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 28px;
+}
+
+.notice-row__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.notice-row__body {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.notice-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
   font-size: var(--text-sm);
 }
 
-.announcement-card h2.ant-typography,
-.announcement-card h3.ant-typography {
-  margin: var(--space-4) 0 var(--space-2);
+.notice-row__meta .ant-typography {
+  color: var(--color-text-subtle);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.notice-row h3.ant-typography {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
   color: var(--color-text);
+  font-size: var(--text-xl);
+  line-height: var(--leading-snug);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
-.announcement-card p {
+.notice-row__excerpt.ant-typography {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
   color: var(--color-text-muted);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
-.announcement-card .ant-btn-link {
-  margin-top: auto;
-  padding-left: 0;
+.notice-row__chevron {
+  color: var(--color-text-faint);
+  font-size: var(--text-md);
+  transition: var(--transition-colors);
 }
 
-.announcement-card.featured.ant-card {
-  background: linear-gradient(110deg, var(--color-primary-soft), var(--color-surface));
-  border-color: var(--color-primary-soft-hover);
+.notice-row:hover .notice-row__chevron {
+  color: var(--color-primary);
 }
 
-.announcement-card.featured .ant-card-body {
-  min-height: 210px;
-}
+@media (max-width: 720px) {
+  .notice-row {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: var(--space-4);
+  }
 
-.announcement-card.featured h2.ant-typography {
-  max-width: 620px;
-  font-size: 30px;
+  .notice-row__chevron {
+    display: none;
+  }
 }
 
 /* ==========================================================================
@@ -1268,53 +1410,81 @@
   margin-bottom: var(--space-2);
 }
 
+/* One person, one shape: portrait and name on a header row, the bio in the
+   middle, contact on the floor of the card — so a row of people scans down
+   the same lines whatever they wrote about themselves. */
 .staff-card {
   height: 100%;
 }
 
 .staff-card .ant-card-body {
   display: flex;
+  flex: 1;
   flex-direction: column;
+  padding: var(--space-6);
+}
+
+.staff-card__head {
+  display: flex;
   align-items: center;
-  padding: var(--space-8) var(--space-6);
-  text-align: center;
+  gap: var(--space-4);
 }
 
 .staff-card .ant-avatar {
-  margin-bottom: var(--space-5);
-  border: 4px solid var(--color-primary-soft);
-  background: var(--color-surface-sunken);
-  color: var(--color-text-faint);
+  flex: none;
+  border: 3px solid var(--color-surface);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+  box-shadow: 0 0 0 1px var(--color-border);
 }
 
 .staff-card .ant-avatar .anticon {
-  font-size: 48px;
+  font-size: 30px;
 }
 
 .staff-card h3.ant-typography {
   margin: 0 0 var(--space-1);
   color: var(--color-text);
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
 }
 
 .staff-card__position {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-xs);
+  background: var(--color-primary-soft);
   color: var(--color-primary-text);
-  font-size: var(--text-base);
+  font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
 }
 
 .staff-card__bio.ant-typography {
+  display: -webkit-box;
+  overflow: hidden;
   margin: var(--space-4) 0 0;
   color: var(--color-text-muted);
-  font-size: var(--text-md);
+  font-size: var(--text-base);
   line-height: var(--leading-relaxed);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
 }
 
 .staff-card__email {
-  margin-top: var(--space-4);
-  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+  color: var(--color-text-subtle);
   font-size: var(--text-sm);
   text-decoration: none;
+  word-break: break-all;
+}
+
+.staff-card__bio.ant-typography + .staff-card__email {
+  margin-top: var(--space-5);
 }
 
 .staff-card__email:hover {
@@ -1638,9 +1808,10 @@
 
 .admin-table .ant-table-thead > tr > th {
   background: var(--color-surface-sunken);
-  color: var(--color-text);
-  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
   font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
   white-space: nowrap;
 }
 
@@ -1650,7 +1821,9 @@
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   white-space: normal;
-  vertical-align: top;
+  vertical-align: middle;
+  /* Figures in a report column have to line up digit under digit. */
+  font-variant-numeric: tabular-nums;
 }
 
 .admin-table .ant-table-tbody > tr:hover > td {
@@ -2266,16 +2439,6 @@ a.activity-row:hover b {
   height: 100%;
 }
 
-.announcement-card .ant-card-cover img {
-  height: 200px;
-  object-fit: cover;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-}
-
-.announcement-card.featured .ant-card-cover img {
-  height: 320px;
-}
-
 .announcement-meta {
   display: flex;
   width: 100%;
@@ -2285,18 +2448,6 @@ a.activity-row:hover b {
 
 .announcement-meta .ant-typography {
   font-size: var(--text-sm);
-}
-
-.announcement-excerpt.ant-typography {
-  color: var(--color-text-muted);
-  font-size: var(--text-md);
-  line-height: var(--leading-relaxed);
-}
-
-.announcement-more {
-  margin-top: auto;
-  color: var(--color-primary-text);
-  font-weight: var(--weight-semibold);
 }
 
 .article-layout {
@@ -2548,8 +2699,8 @@ a.activity-row:hover b {
 
 .site-footer__columns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--space-8);
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: var(--space-10) var(--space-8);
   max-width: var(--layout-container);
   margin-inline: auto;
   text-align: left;
@@ -2557,9 +2708,16 @@ a.activity-row:hover b {
 
 .site-footer__brand {
   display: grid;
-  grid-column: span 2;
   justify-items: start;
-  gap: var(--space-2);
+  gap: var(--space-3);
+}
+
+/* The mark is drawn in the institute's colours for a light ground; on the
+   dark footer it sits on a light tile instead of dissolving into it. */
+.site-footer__brand .brand-mark {
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--neutral-0);
 }
 
 .site-footer__brand strong {
@@ -3020,7 +3178,7 @@ a.activity-row:hover b {
   display: grid;
   grid-template-columns: 132px minmax(0, 1fr);
   gap: var(--space-5);
-  align-items: start;
+  align-items: stretch;
   padding: var(--space-6);
 }
 
@@ -3041,7 +3199,10 @@ a.activity-row:hover b {
 }
 
 .textbook-card__body {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  height: 100%;
 }
 
 .textbook-card h3.ant-typography {
@@ -3060,6 +3221,7 @@ a.activity-row:hover b {
 .textbook-card__purchase {
   display: grid;
   gap: 2px;
+  margin-top: auto;
   padding-top: var(--space-3);
   border-top: 1px solid var(--color-border-subtle);
   font-size: var(--text-base);

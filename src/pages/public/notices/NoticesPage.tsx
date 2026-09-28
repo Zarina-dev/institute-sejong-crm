@@ -1,5 +1,5 @@
-import { CalendarOutlined } from '@ant-design/icons'
-import { Card, Col, Empty, Row, Skeleton, Tag, Typography } from 'antd'
+import { CalendarOutlined, PushpinFilled, ReadOutlined, RightOutlined } from '@ant-design/icons'
+import { Card, Empty, Skeleton, Tag, Typography } from 'antd'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -38,46 +38,52 @@ export function NoticesPage({ variant }: NoticesPageProps) {
 
       <ErrorAlert error={news.error} fallback={t('news.loadFailed')} />
 
+      {/* A notice board is read by scanning dates and titles, so the posts are
+          rows of one shape — thumbnail, meta, title, lede — rather than cards
+          that change size with the length of what was written. */}
       {news.isPending ? (
-        <Row gutter={[18, 18]}>
-          {Array.from({ length: 3 }, (_, index) => (
-            <Col xs={24} md={index === 0 ? 24 : 12} key={index}>
-              <Card className="surface-card announcement-card">
-                <Skeleton active paragraph={{ rows: 3 }} />
-              </Card>
-            </Col>
+        <div className="notice-list">
+          {Array.from({ length: 4 }, (_, index) => (
+            <Card className="surface-card notice-row" key={index}>
+              <Skeleton active paragraph={{ rows: 2 }} />
+            </Card>
           ))}
-        </Row>
+        </div>
       ) : posts.length > 0 ? (
-        <Row gutter={[18, 18]}>
+        <div className="notice-list">
           {posts.map((post) => {
             const thumbnail = newsThumbnail(post)
 
             return (
-              <Col xs={24} md={post.isFeatured ? 24 : 12} key={post.id}>
-                <Link to={`/notices/${post.id}`} className="announcement-link">
-                  <Card
-                    className={`surface-card announcement-card ${post.isFeatured ? 'featured' : ''} ${thumbnail ? 'has-cover' : ''}`}
-                    hoverable
-                    cover={thumbnail ? <img src={thumbnail} alt="" loading="lazy" /> : undefined}
-                  >
-                    <div className="announcement-meta">
-                      <Tag color={post.isFeatured ? 'blue' : 'default'}>{t(`news.category.${post.category}`)}</Tag>
-                      <Text type="secondary">
-                        <CalendarOutlined /> {formatDate(post.publishedAt ?? post.createdAt, language)}
-                      </Text>
-                    </div>
-                    <Title level={post.isFeatured ? 2 : 3}>{post.title}</Title>
-                    <Paragraph type="secondary" className="announcement-excerpt">
-                      {richTextExcerpt(post.body, post.isFeatured ? 320 : 180)}
-                    </Paragraph>
-                    <Text className="announcement-more">{t('common.readMore')} →</Text>
-                  </Card>
-                </Link>
-              </Col>
+              <Link to={`/notices/${post.id}`} className="notice-row surface-card ant-card" key={post.id}>
+                <span className="notice-row__media">
+                  {thumbnail ? <img src={thumbnail} alt="" loading="lazy" /> : <ReadOutlined aria-hidden="true" />}
+                </span>
+
+                <span className="notice-row__body">
+                  <span className="notice-row__meta">
+                    {post.isFeatured ? (
+                      <Tag color="blue" icon={<PushpinFilled />}>
+                        {t('news.featured')}
+                      </Tag>
+                    ) : null}
+                    <Tag>{t(`news.category.${post.category}`)}</Tag>
+                    <Text type="secondary">
+                      <CalendarOutlined /> {formatDate(post.publishedAt ?? post.createdAt, language)}
+                    </Text>
+                  </span>
+
+                  <Title level={3}>{post.title}</Title>
+                  <Paragraph type="secondary" className="notice-row__excerpt">
+                    {richTextExcerpt(post.body, 200)}
+                  </Paragraph>
+                </span>
+
+                <RightOutlined className="notice-row__chevron" aria-hidden="true" />
+              </Link>
             )
           })}
-        </Row>
+        </div>
       ) : (
         <Card className="surface-card empty-card">
           <Empty description={t('news.empty')} />

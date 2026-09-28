@@ -37,26 +37,26 @@ const palette = {
 } as const
 
 const fontFamily =
-  "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif"
+  "Inter, 'Noto Sans KR', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif"
 
 /** Radii, spacing and type scale shared by both modes. */
 const sharedToken = {
   fontFamily,
-  fontSize: 14,
+  fontSize: 15,
   borderRadius: 10,
   borderRadiusSM: 8,
   borderRadiusLG: 14,
   borderRadiusXS: 6,
-  controlHeight: 38,
-  controlHeightLG: 46,
-  lineHeight: 1.5,
+  controlHeight: 40,
+  controlHeightLG: 48,
+  lineHeight: 1.55,
   wireframe: false,
 } as const
 
 const sharedComponents: NonNullable<ThemeConfig['components']> = {
   Button: { fontWeight: 600, primaryShadow: 'none', defaultShadow: 'none' },
-  Card: { paddingLG: 24 },
-  Table: { headerSplitColor: 'transparent', cellPaddingBlock: 12 },
+  Card: { paddingLG: 26 },
+  Table: { headerSplitColor: 'transparent', cellPaddingBlock: 13, headerBorderRadius: 0 },
   Tag: { borderRadiusSM: 6 },
   Layout: { headerHeight: 72 },
 }

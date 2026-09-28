@@ -15,9 +15,13 @@ const NO_STAFF: StaffMember[] = []
 function StaffCard({ member }: { member: StaffMember }) {
   return (
     <Card className="surface-card staff-card">
-      <Avatar size={112} src={member.photoUrl ? assetUrl(member.photoUrl) : undefined} icon={<UserOutlined />} alt="" />
-      <Title level={3}>{member.name}</Title>
-      <Text className="staff-card__position">{member.position}</Text>
+      <div className="staff-card__head">
+        <Avatar size={72} src={member.photoUrl ? assetUrl(member.photoUrl) : undefined} icon={<UserOutlined />} alt="" />
+        <div>
+          <Title level={3}>{member.name}</Title>
+          <Text className="staff-card__position">{member.position}</Text>
+        </div>
+      </div>
       {member.bio ? <Paragraph className="staff-card__bio">{member.bio}</Paragraph> : null}
       {member.email ? (
         <a className="staff-card__email" href={`mailto:${member.email}`}>
@@ -41,17 +45,17 @@ export function StaffPage() {
       <ErrorAlert error={staff.error} fallback={t('staff.loadFailed')} />
 
       {staff.isPending ? (
-        <Row gutter={[18, 18]}>
+        <Row gutter={[18, 18]} className="card-grid">
           {Array.from({ length: 3 }, (_, index) => (
             <Col xs={24} sm={12} lg={8} key={index}>
               <Card className="surface-card staff-card">
-                <Skeleton active avatar={{ size: 112, shape: 'circle' }} paragraph={{ rows: 2 }} />
+                <Skeleton active avatar={{ size: 72, shape: 'circle' }} paragraph={{ rows: 2 }} />
               </Card>
             </Col>
           ))}
         </Row>
       ) : members.length > 0 ? (
-        <Row gutter={[18, 18]}>
+        <Row gutter={[18, 18]} className="card-grid">
           {members.map((member) => (
             <Col xs={24} sm={12} lg={8} key={member.id}>
               <StaffCard member={member} />

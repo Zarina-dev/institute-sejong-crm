@@ -1,4 +1,4 @@
-import { ArrowRightOutlined, CalendarOutlined, ClockCircleOutlined, EnvironmentOutlined, SolutionOutlined } from '@ant-design/icons'
+import { ArrowRightOutlined, CalendarOutlined, ClockCircleOutlined, EnvironmentOutlined, ReadOutlined, SolutionOutlined } from '@ant-design/icons'
 import { Button, Card, Col, Row, Skeleton, Tag, Typography } from 'antd'
 import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
@@ -120,7 +120,7 @@ export function HomePage() {
             </Link>
           }
         />
-        <Row gutter={[16, 16]}>
+        <Row gutter={[16, 16]} className="card-grid">
           {courses.isPending
             ? Array.from({ length: 3 }, (_, index) => (
                 <Col xs={24} md={8} key={index}>
@@ -134,7 +134,7 @@ export function HomePage() {
                 const isCulture = programme.courses.every((course) => course.category === 'culture')
 
                 return (
-                <Col xs={24} md={12} lg={8} key={programme.title}>
+                <Col xs={24} sm={12} lg={8} xl={6} key={programme.title}>
                   <Link to={isCulture ? '/programmes/culture' : '/programmes'} className="programme-link">
                     <Card className="surface-card programme-card" hoverable>
                       <Title level={3}>{programme.title}</Title>
@@ -165,7 +165,7 @@ export function HomePage() {
             </Link>
           }
         />
-        <Row gutter={[16, 16]}>
+        <Row gutter={[16, 16]} className="card-grid">
           {news.isPending
             ? Array.from({ length: 3 }, (_, index) => (
                 <Col xs={24} md={8} key={index}>
@@ -180,7 +180,21 @@ export function HomePage() {
                 return (
                   <Col xs={24} md={8} key={post.id}>
                     <Link to={`/notices/${post.id}`} className="announcement-link">
-                      <Card className="surface-card news-card" hoverable cover={thumbnail ? <img src={thumbnail} alt="" loading="lazy" /> : undefined}>
+                      <Card
+                        className="surface-card news-card"
+                        hoverable
+                        // Every card gets a media band; a post without a photo
+                        // shows the institute mark instead of starting on text.
+                        cover={
+                          thumbnail ? (
+                            <img src={thumbnail} alt="" loading="lazy" />
+                          ) : (
+                            <span className="news-card__placeholder" aria-hidden="true">
+                              <ReadOutlined />
+                            </span>
+                          )
+                        }
+                      >
                         <Text type="secondary" className="news-card__date">
                           {formatDate(post.publishedAt ?? post.createdAt, language)}
                         </Text>

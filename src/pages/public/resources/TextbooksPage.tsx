@@ -60,7 +60,7 @@ export function TextbooksPage() {
       <ErrorAlert error={textbooks.error} fallback={t('textbooks.loadFailed')} />
 
       {textbooks.isPending ? (
-        <Row gutter={[18, 18]}>
+        <Row gutter={[18, 18]} className="card-grid">
           {Array.from({ length: 3 }, (_, index) => (
             <Col xs={24} md={12} key={index}>
               <Card className="surface-card textbook-card">
@@ -70,7 +70,7 @@ export function TextbooksPage() {
           ))}
         </Row>
       ) : list.length > 0 ? (
-        <Row gutter={[18, 18]}>
+        <Row gutter={[18, 18]} className="card-grid">
           {list.map((textbook) => (
             <Col xs={24} md={12} key={textbook.id}>
               <TextbookCard textbook={textbook} />

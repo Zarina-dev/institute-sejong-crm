@@ -26,7 +26,7 @@ export function CourseGroupList({ courses, loading, renderFooter, emptyText }: C
 
   if (loading) {
     return (
-      <Row gutter={[16, 16]}>
+      <Row gutter={[16, 16]} className="card-grid">
         {Array.from({ length: 3 }, (_, index) => (
           <Col xs={24} md={12} lg={8} key={index}>
             <Card className="surface-card">
@@ -56,7 +56,7 @@ export function CourseGroupList({ courses, loading, renderFooter, emptyText }: C
             </Title>
             <Text type="secondary">{t('courses.classCount', { count: group.courses.length })}</Text>
           </div>
-          <Row gutter={[16, 16]}>
+          <Row gutter={[16, 16]} className="card-grid">
             {group.courses.map((course) => (
               <Col xs={24} md={12} lg={8} key={course.id}>
                 <CourseCard course={course} footer={renderFooter?.(course)} />

@@ -77,7 +77,7 @@ export function MaterialsPage() {
       <ErrorAlert error={materials.error} fallback={t('materials.loadFailed')} />
 
       {materials.isPending ? (
-        <Row gutter={[16, 16]}>
+        <Row gutter={[16, 16]} className="card-grid">
           {Array.from({ length: 4 }, (_, index) => (
             <Col xs={24} md={12} xl={6} key={index}>
               <Card className="surface-card material-card">
@@ -88,7 +88,7 @@ export function MaterialsPage() {
         </Row>
       ) : data && data.items.length > 0 ? (
         <>
-          <Row gutter={[16, 16]} className={materials.isFetching ? 'is-refreshing' : undefined}>
+          <Row gutter={[16, 16]} className={['card-grid', materials.isFetching ? 'is-refreshing' : ''].join(' ')}>
             {data.items.map((item) => (
               <Col xs={24} md={12} xl={6} key={item.id}>
                 <MaterialCard item={item} />

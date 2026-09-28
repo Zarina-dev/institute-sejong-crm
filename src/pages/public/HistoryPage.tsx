@@ -91,7 +91,7 @@ export function HistoryPage() {
       <ErrorAlert error={albums.error} fallback={t('gallery.loadFailed')} />
 
       {albums.isPending ? (
-        <Row gutter={[18, 18]}>
+        <Row gutter={[18, 18]} className="card-grid">
           {Array.from({ length: 3 }, (_, index) => (
             <Col xs={24} sm={12} lg={8} key={index}>
               <Card className="surface-card album-card">
@@ -142,7 +142,7 @@ export function HistoryPage() {
                     </Title>
                     <Text type="secondary">{t('gallery.albumCount', { count: items.length })}</Text>
                   </div>
-                  <Row gutter={[18, 18]}>
+                  <Row gutter={[18, 18]} className="card-grid">
                     {items.map((album) => (
                       <Col xs={24} sm={12} lg={8} key={album.id}>
                         <AlbumCard album={album} />
