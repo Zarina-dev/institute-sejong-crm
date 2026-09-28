@@ -32,7 +32,6 @@ const ko: LocaleDictionary = {
   adminNav: {
     meetingsSection: '회의',
     meetingsItem: '회의록',
-    historyIntro: '페이지 소개글',
     textbooks: '교재 안내',
     content: '사이트 콘텐츠',
     gallery: '사진첩',
@@ -451,7 +450,6 @@ const ko: LocaleDictionary = {
       programmesCulture: '교육과정 › 문화 강좌',
       noticesFaq: '알림마당 › FAQ',
       resourcesLinks: '학습자료실 › 유용한 링크',
-      historyIntro: '학당 발자취 › 페이지 소개글',
     },
   },
   about: {

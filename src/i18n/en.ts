@@ -40,7 +40,6 @@ export const en = {
   adminNav: {
     meetingsSection: 'Meetings',
     meetingsItem: 'Minutes',
-    historyIntro: 'Page introduction',
     textbooks: 'Textbooks',
     content: 'Site content',
     gallery: 'Photo albums',
@@ -464,7 +463,6 @@ export const en = {
       programmesCulture: 'Programmes › Culture classes',
       noticesFaq: 'Notices › FAQ',
       resourcesLinks: 'Resources › Useful links',
-      historyIntro: 'Our story › Page introduction',
     },
   },
   about: {

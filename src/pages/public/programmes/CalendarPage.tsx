@@ -13,6 +13,7 @@ import type { AcademicTerm } from '../../../features/terms/types'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { formatDate } from '../../../shared/format'
 import { PageHeader } from '../../../shared/PageHeader'
+import { YearSelect } from '../../../shared/YearSelect'
 
 const { Title, Text } = Typography
 
@@ -110,19 +111,18 @@ export function CalendarPage() {
           <div className="filter-footer">
             <div className="term-picker">
               {years.length > 1 ? (
-                <Segmented
-                  aria-label={t('terms.year')}
-                  value={String(activeTerm?.year ?? years[0])}
+                <YearSelect
+                  years={years}
+                  value={activeTerm?.year ?? years[0]}
                   onChange={(value) => {
                     // Keep the same half of the year where that year has one.
-                    const ofYear = defined.filter((term) => String(term.year) === String(value))
+                    const ofYear = defined.filter((term) => String(term.year) === value)
                     const next = ofYear.find((term) => term.half === activeTerm?.half) ?? ofYear[0]
 
                     if (next) {
                       setSelected(next.code)
                     }
                   }}
-                  options={years.map((value) => ({ value, label: t('terms.yearLabel', { year: value }) }))}
                 />
               ) : null}
 

@@ -3598,3 +3598,12 @@ a.attachment-chip:hover {
     gap: 2px;
   }
 }
+
+/* A year, picked from a list — narrow, because it holds four digits. */
+.year-select.ant-select {
+  min-width: 118px;
+}
+
+.year-select .ant-select-selector {
+  font-variant-numeric: tabular-nums;
+}

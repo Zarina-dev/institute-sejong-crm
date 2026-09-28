@@ -32,7 +32,6 @@ const ky: LocaleDictionary = {
   adminNav: {
     meetingsSection: 'Жыйындар',
     meetingsItem: 'Протоколдор',
-    historyIntro: 'Киришүү тексти',
     textbooks: 'Окуу китептери',
     content: 'Мазмун',
     gallery: 'Альбомдор',
@@ -456,7 +455,6 @@ const ky: LocaleDictionary = {
       programmesCulture: 'Окуу › Маданий сабактар',
       noticesFaq: 'Жарыялар › FAQ',
       resourcesLinks: 'Материалдар › Пайдалуу шилтемелер',
-      historyIntro: 'Тарых › Киришүү тексти',
     },
   },
   about: {

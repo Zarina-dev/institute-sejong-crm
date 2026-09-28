@@ -64,7 +64,6 @@ export const adminNavigation: AdminNavGroup[] = [
       { to: '/admin/gallery', labelKey: 'siteNav.historyAlbums' },
       { to: '/admin/competitions?kind=speech', labelKey: 'siteNav.historySpeech' },
       { to: '/admin/competitions?kind=writing', labelKey: 'siteNav.historyWriting' },
-      { to: '/admin/content?block=history.intro', labelKey: 'adminNav.historyIntro' },
     ],
   },
   /* Internal: nothing under this section appears on the public site. */

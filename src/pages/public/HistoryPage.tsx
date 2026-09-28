@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react'
 
 import { assetUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
-import { ContentSection } from '../../features/content/ContentSection'
 import { usePublishedAlbums } from '../../features/gallery/queries'
 import type { GalleryAlbum } from '../../features/gallery/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
@@ -86,7 +85,6 @@ export function HistoryPage() {
     <div className="page-layout">
       <PageHeader kicker={t('siteNav.history')} title={t('pageCopy.historyTitle')} description={t('pageCopy.historySubtitle')} />
 
-      <ContentSection slug="history.intro" optional />
 
       <ErrorAlert error={albums.error} fallback={t('gallery.loadFailed')} />
 

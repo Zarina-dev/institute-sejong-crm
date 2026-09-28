@@ -32,7 +32,6 @@ const ru: LocaleDictionary = {
   adminNav: {
     meetingsSection: 'Собрания',
     meetingsItem: 'Протоколы',
-    historyIntro: 'Вступительный текст',
     textbooks: 'Учебники',
     content: 'Содержимое',
     gallery: 'Фотоальбомы',
@@ -480,7 +479,6 @@ const ru: LocaleDictionary = {
       programmesCulture: 'Обучение › Культурные занятия',
       noticesFaq: 'Объявления › FAQ',
       resourcesLinks: 'Материалы › Полезные ссылки',
-      historyIntro: 'История › Вступительный текст',
     },
   },
   about: {

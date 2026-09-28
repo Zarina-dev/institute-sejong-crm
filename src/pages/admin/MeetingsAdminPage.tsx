@@ -8,7 +8,7 @@ import {
   PlusOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
-import { Alert, App, Button, Card, Empty, Form, Input, Modal, Segmented, Skeleton, Tag, Typography, Upload } from 'antd'
+import { Alert, App, Button, Card, Empty, Form, Input, Modal, Skeleton, Space, Tag, Typography, Upload } from 'antd'
 import type { UploadProps } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
@@ -24,6 +24,7 @@ import { PageHeader } from '../../shared/PageHeader'
 import { RichContent } from '../../shared/RichContent'
 import { RichTextEditor } from '../../shared/RichTextEditor'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
+import { YearSelect } from '../../shared/YearSelect'
 
 const { Title, Text } = Typography
 
@@ -171,12 +172,10 @@ export function MeetingsAdminPage() {
       <Card className="surface-card filter-card">
         <div className="filter-footer">
           {years.length > 1 ? (
-            <Segmented
-              aria-label={t('terms.year')}
-              value={activeYear ?? undefined}
-              onChange={(value) => setYear(String(value))}
-              options={years.map((value) => ({ value, label: t('terms.yearLabel', { year: value }) }))}
-            />
+            <Space size={12}>
+              <YearSelect years={years} value={activeYear} onChange={setYear} />
+              <Text type="secondary">{t('meetings.count', { count: rows.length })}</Text>
+            </Space>
           ) : (
             <Text>{t('meetings.count', { count: rows.length })}</Text>
           )}

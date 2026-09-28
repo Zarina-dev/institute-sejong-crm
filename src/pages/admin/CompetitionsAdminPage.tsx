@@ -20,6 +20,7 @@ import { PageHeader } from '../../shared/PageHeader'
 import { RichTextEditor } from '../../shared/RichTextEditor'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
+import { ALL_YEARS, YearSelect } from '../../shared/YearSelect'
 
 const { Text } = Typography
 
@@ -248,14 +249,11 @@ export function CompetitionsAdminPage() {
           />
           <Space wrap>
             {years.length > 1 ? (
-              <Segmented
-                aria-label={t('terms.year')}
-                value={activeYear ?? 'all'}
-                onChange={(value) => setYear(value === 'all' ? null : Number(value))}
-                options={[
-                  { value: 'all', label: t('terms.allYears') },
-                  ...years.map((value) => ({ value, label: t('terms.yearLabel', { year: value }) })),
-                ]}
+              <YearSelect
+                years={years}
+                value={activeYear}
+                onChange={(value) => setYear(value === ALL_YEARS ? null : Number(value))}
+                allowAll
               />
             ) : null}
             <Text>{t('competitions.count', { count: rows.length })}</Text>

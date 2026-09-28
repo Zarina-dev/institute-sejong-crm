@@ -1,5 +1,5 @@
 import { CalendarOutlined, EnvironmentOutlined, PictureOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons'
-import { Card, Empty, Segmented, Skeleton, Table, Tag, Typography } from 'antd'
+import { Card, Empty, Skeleton, Table, Tag, Typography } from 'antd'
 import type { TableProps } from 'antd'
 import { useMemo, useState } from 'react'
 
@@ -10,6 +10,7 @@ import type { Competition, CompetitionKind, CompetitionWinner } from '../../../f
 import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { formatDate } from '../../../shared/format'
 import { PageHeader } from '../../../shared/PageHeader'
+import { YearSelect } from '../../../shared/YearSelect'
 import { RichContent } from '../../../shared/RichContent'
 
 const { Title, Text } = Typography
@@ -91,12 +92,7 @@ export function CompetitionsPage({ kind }: { kind: CompetitionKind }) {
       {years.length > 1 ? (
         <Card className="surface-card filter-card">
           <div className="filter-footer">
-            <Segmented
-              aria-label={t('terms.year')}
-              value={activeYear ?? undefined}
-              onChange={(value) => setYear(Number(value))}
-              options={years.map((value) => ({ value, label: t('terms.yearLabel', { year: value }) }))}
-            />
+            <YearSelect years={years} value={activeYear} onChange={(value) => setYear(Number(value))} />
             <Text type="secondary">{t('competitions.count', { count: records.length })}</Text>
           </div>
         </Card>
