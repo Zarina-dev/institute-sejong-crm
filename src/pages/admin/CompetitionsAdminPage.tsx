@@ -70,7 +70,13 @@ export function CompetitionsAdminPage() {
     }
   }, [kind, requested, setParams])
 
-  const rows = useMemo(() => (competitions.data ?? NO_RECORDS).filter((record) => record.kind === kind), [competitions.data, kind])
+  const ofKind = useMemo(() => (competitions.data ?? NO_RECORDS).filter((record) => record.kind === kind), [competitions.data, kind])
+
+  // Same year filter as the public page, so the admin sees what visitors see.
+  const years = useMemo(() => [...new Set(ofKind.map((record) => record.year))].sort((a, b) => b - a), [ofKind])
+  const [year, setYear] = useState<number | null>(null)
+  const activeYear = year != null && years.includes(year) ? year : null
+  const rows = useMemo(() => (activeYear == null ? ofKind : ofKind.filter((record) => record.year === activeYear)), [activeYear, ofKind])
 
   const openCreateModal = useCallback(() => {
     setEditingId(null)
@@ -241,6 +247,17 @@ export function CompetitionsAdminPage() {
             ]}
           />
           <Space wrap>
+            {years.length > 1 ? (
+              <Segmented
+                aria-label={t('terms.year')}
+                value={activeYear ?? 'all'}
+                onChange={(value) => setYear(value === 'all' ? null : Number(value))}
+                options={[
+                  { value: 'all', label: t('terms.allYears') },
+                  ...years.map((value) => ({ value, label: t('terms.yearLabel', { year: value }) })),
+                ]}
+              />
+            ) : null}
             <Text>{t('competitions.count', { count: rows.length })}</Text>
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
               {t('competitions.add')}

@@ -654,6 +654,8 @@ const ko: LocaleDictionary = {
     },
   },
   meetings: {
+    attachments: '첨부 파일',
+    week: '{{week}}주차',
     adminTitle: '회의록',
     adminSubtitle: '학당 내부 회의 기록입니다. 공개 사이트에는 표시되지 않습니다.',
     internalOnly: '관리자 전용 — 이 내용은 사이트 어디에도 공개되지 않습니다.',
@@ -673,6 +675,10 @@ const ko: LocaleDictionary = {
     saveFailed: '회의록 저장에 실패했습니다.',
     deleteFailed: '회의록 삭제에 실패했습니다.',
     form: {
+      addFile: '파일 첨부',
+      filesHint: '.hwp, .pdf, 오피스 문서, 이미지 — 파일당 최대 {{max}}',
+      fileTooLarge: '파일이 {{max}}를 넘습니다.',
+      uploadFailed: '파일 업로드에 실패했습니다.',
       title: '안건',
       titleRequired: '회의 안건을 입력하세요.',
       heldOn: '회의 날짜',
@@ -685,6 +691,11 @@ const ko: LocaleDictionary = {
     },
   },
   terms: {
+    year: '연도',
+    yearLabel: '{{year}}학년도',
+    first: '1학기',
+    second: '2학기',
+    allYears: '전체 연도',
     label: '학기',
     all: '전체 학기',
     spring: '{{year}}학년도 1학기',

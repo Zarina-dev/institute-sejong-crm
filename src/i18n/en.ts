@@ -668,6 +668,8 @@ export const en = {
     },
   },
   meetings: {
+    attachments: 'Attachments',
+    week: 'Week {{week}}',
     adminTitle: 'Meeting minutes',
     adminSubtitle: 'Internal record of staff meetings. Never shown on the public site.',
     internalOnly: 'Staff only — this page is not published anywhere on the site.',
@@ -688,6 +690,10 @@ export const en = {
     saveFailed: 'Could not save the minutes.',
     deleteFailed: 'Could not delete the minutes.',
     form: {
+      addFile: 'Attach a file',
+      filesHint: '.hwp, .pdf, Office files and images — up to {{max}} each.',
+      fileTooLarge: 'The file is larger than {{max}}.',
+      uploadFailed: 'Could not upload the file.',
       title: 'Subject',
       titleRequired: 'Enter the subject of the meeting.',
       heldOn: 'Date',
@@ -700,6 +706,11 @@ export const en = {
     },
   },
   terms: {
+    year: 'Year',
+    yearLabel: '{{year}}',
+    first: 'Spring term',
+    second: 'Autumn term',
+    allYears: 'All years',
     label: 'Semester',
     all: 'All semesters',
     spring: '{{year}} spring',

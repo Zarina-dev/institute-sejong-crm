@@ -1,3 +1,11 @@
+/** A file handed out at the meeting (보통 .hwp). */
+export type MeetingAttachment = {
+  url: string
+  name: string
+  size: number
+  type: string
+}
+
 /** 회의록 — internal minutes; never served to the public site. */
 export type Meeting = {
   id: string
@@ -10,6 +18,7 @@ export type Meeting = {
   body: string
   /** 결정 사항 — sanitized HTML. */
   decisions: string
+  attachments: MeetingAttachment[]
   createdAt: string
   updatedAt: string
 }
@@ -20,4 +29,5 @@ export type MeetingInput = {
   attendees?: string
   body?: string
   decisions?: string
+  attachments?: MeetingAttachment[]
 }

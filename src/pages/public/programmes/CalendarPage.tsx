@@ -7,7 +7,7 @@ import { useMemo, useState } from 'react'
 import { usePreferences } from '../../../app/preferences'
 import { useCourses, useTimetable } from '../../../features/courses/queries'
 import { SemesterTable } from '../../../features/courses/SemesterTable'
-import { courseTerm, currentTerm, listTerms, termLabel } from '../../../features/courses/terms'
+import { courseTerm, currentTerm, listTerms } from '../../../features/courses/terms'
 import type { TimetableEntry } from '../../../features/courses/types'
 import { addDays, formatWeekLabel, monthRange, startOfWeek, toIsoDate, weekRange } from '../../../features/courses/week'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
@@ -39,14 +39,18 @@ export function CalendarPage() {
   const courses = useCourses(true)
 
   /**
-   * The calendar is read one semester at a time. The picker defaults to the
-   * semester we are in (or the most recent one on record) and moves the week
-   * list with it, so choosing a past term does not leave today's week below
-   * an older table.
+   * The calendar is read one semester at a time, picked as a year and then a
+   * semester inside it. Both default to the semester we are in (or the most
+   * recent one on record) and moving them moves the week list too, so
+   * choosing a past semester does not leave today's week under an older table.
    */
   const terms = useMemo(() => listTerms(courses.data), [courses.data])
   const [term, setTerm] = useState<string | null>(null)
   const activeTerm = term ?? currentTerm(courses.data)
+
+  const years = useMemo(() => [...new Set(terms.map((value) => value.split('-')[0]))], [terms])
+  const activeYear = activeTerm?.split('-')[0] ?? years[0]
+  const halvesOfYear = useMemo(() => terms.filter((value) => value.startsWith(`${activeYear}-`)), [activeYear, terms])
 
   const termCourses = useMemo(
     () => (activeTerm ? (courses.data ?? []).filter((course) => courseTerm(course) === activeTerm) : courses.data),
@@ -119,11 +123,32 @@ export function CalendarPage() {
       {terms.length > 1 ? (
         <Card className="surface-card filter-card">
           <div className="filter-footer">
-            <Segmented
-              value={activeTerm ?? undefined}
-              onChange={(value) => selectTerm(value as string)}
-              options={terms.map((value) => ({ value, label: termLabel(value, t) }))}
-            />
+            <div className="term-picker">
+              <Segmented
+                aria-label={t('terms.year')}
+                value={activeYear}
+                onChange={(value) => {
+                  // Keep the same half of the year where that year has one.
+                  const half = activeTerm?.split('-')[1] ?? '1'
+                  const next = terms.find((item) => item === `${value}-${half}`) ?? terms.find((item) => item.startsWith(`${value}-`))
+
+                  if (next) {
+                    selectTerm(next)
+                  }
+                }}
+                options={years.map((value) => ({ value, label: t('terms.yearLabel', { year: value }) }))}
+              />
+
+              {halvesOfYear.length > 1 ? (
+                <Segmented
+                  aria-label={t('terms.label')}
+                  value={activeTerm ?? undefined}
+                  onChange={(value) => selectTerm(value as string)}
+                  options={halvesOfYear.map((value) => ({ value, label: t(value.endsWith('-1') ? 'terms.first' : 'terms.second') }))}
+                />
+              ) : null}
+            </div>
+
             <Text type="secondary">{t('courses.classCount', { count: termCourses?.length ?? 0 })}</Text>
           </div>
         </Card>

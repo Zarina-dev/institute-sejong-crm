@@ -660,6 +660,8 @@ const ky: LocaleDictionary = {
     },
   },
   meetings: {
+    attachments: 'Тиркемелер',
+    week: '{{week}}-жума',
     adminTitle: 'Жыйын протоколдору',
     adminSubtitle: 'Институттун ички жыйындарынын жазуусу. Сайтта жарыяланбайт.',
     internalOnly: 'Кызматкерлер үчүн гана — бул баракча сайтта жарыяланбайт.',
@@ -680,6 +682,10 @@ const ky: LocaleDictionary = {
     saveFailed: 'Протоколду сактоо мүмкүн болбоду.',
     deleteFailed: 'Протоколду өчүрүү мүмкүн болбоду.',
     form: {
+      addFile: 'Файл тиркөө',
+      filesHint: '.hwp, .pdf, Office файлдары жана сүрөттөр — ар бири {{max}} чейин.',
+      fileTooLarge: 'Файл {{max}} ашты.',
+      uploadFailed: 'Файлды жүктөө мүмкүн болбоду.',
       title: 'Темасы',
       titleRequired: 'Жыйындын темасын киргизиңиз.',
       heldOn: 'Күнү',
@@ -692,6 +698,11 @@ const ky: LocaleDictionary = {
     },
   },
   terms: {
+    year: 'Жыл',
+    yearLabel: '{{year}}',
+    first: 'Жазгы семестр',
+    second: 'Күзгү семестр',
+    allYears: 'Бардык жылдар',
     label: 'Семестр',
     all: 'Бардык семестрлер',
     spring: '{{year}} жазгы',

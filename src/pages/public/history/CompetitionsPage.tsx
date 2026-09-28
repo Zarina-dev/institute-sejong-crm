@@ -1,7 +1,7 @@
 import { CalendarOutlined, EnvironmentOutlined, PictureOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons'
-import { Card, Empty, Skeleton, Table, Tag, Typography } from 'antd'
+import { Card, Empty, Segmented, Skeleton, Table, Tag, Typography } from 'antd'
 import type { TableProps } from 'antd'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { assetUrl } from '../../../api/client'
 import { usePreferences } from '../../../app/preferences'
@@ -70,7 +70,13 @@ function Winners({ winners }: { winners: CompetitionWinner[] }) {
 export function CompetitionsPage({ kind }: { kind: CompetitionKind }) {
   const { t, language } = usePreferences()
   const competitions = useCompetitions(kind)
-  const records = competitions.data ?? NO_RECORDS
+  const all = competitions.data ?? NO_RECORDS
+
+  // Editions are read one year at a time, newest first.
+  const years = useMemo(() => [...new Set(all.map((record) => record.year))].sort((a, b) => b - a), [all])
+  const [year, setYear] = useState<number | null>(null)
+  const activeYear = year != null && years.includes(year) ? year : years[0] ?? null
+  const records = useMemo(() => all.filter((record) => record.year === activeYear), [activeYear, all])
 
   return (
     <div className="page-layout">
@@ -81,6 +87,20 @@ export function CompetitionsPage({ kind }: { kind: CompetitionKind }) {
       />
 
       <ErrorAlert error={competitions.error} fallback={t('competitions.loadFailed')} />
+
+      {years.length > 1 ? (
+        <Card className="surface-card filter-card">
+          <div className="filter-footer">
+            <Segmented
+              aria-label={t('terms.year')}
+              value={activeYear ?? undefined}
+              onChange={(value) => setYear(Number(value))}
+              options={years.map((value) => ({ value, label: t('terms.yearLabel', { year: value }) }))}
+            />
+            <Text type="secondary">{t('competitions.count', { count: records.length })}</Text>
+          </div>
+        </Card>
+      ) : null}
 
       {competitions.isPending ? (
         <Card className="surface-card">

@@ -690,6 +690,8 @@ const ru: LocaleDictionary = {
     },
   },
   meetings: {
+    attachments: 'Вложения',
+    week: '{{week}}-я неделя',
     adminTitle: 'Протоколы собраний',
     adminSubtitle: 'Внутренние протоколы. На сайте не публикуются.',
     internalOnly: 'Только для сотрудников — эта страница нигде не публикуется.',
@@ -712,6 +714,10 @@ const ru: LocaleDictionary = {
     saveFailed: 'Не удалось сохранить протокол.',
     deleteFailed: 'Не удалось удалить протокол.',
     form: {
+      addFile: 'Прикрепить файл',
+      filesHint: '.hwp, .pdf, файлы Office и изображения — до {{max}} каждый.',
+      fileTooLarge: 'Файл больше {{max}}.',
+      uploadFailed: 'Не удалось загрузить файл.',
       title: 'Тема',
       titleRequired: 'Введите тему собрания.',
       heldOn: 'Дата',
@@ -724,6 +730,11 @@ const ru: LocaleDictionary = {
     },
   },
   terms: {
+    year: 'Год',
+    yearLabel: '{{year}}',
+    first: 'Весенний семестр',
+    second: 'Осенний семестр',
+    allYears: 'Все годы',
     label: 'Семестр',
     all: 'Все семестры',
     spring: 'Весна {{year}}',
