@@ -3494,3 +3494,107 @@ a.attachment-chip:hover {
 .attachment-row--editable {
   margin-bottom: var(--space-3);
 }
+
+/* ---- 시간표: a day strip instead of a month calendar ---- */
+
+.timetable-section {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.day-picker.ant-card .ant-card-body {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.day-picker__days {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+/* One day. The dot marks a day that has classes. */
+.day-chip {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: var(--space-2) var(--space-1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  cursor: pointer;
+  transition: var(--transition-colors);
+}
+
+.day-chip span {
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.day-chip strong {
+  color: var(--color-text);
+  font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.day-chip i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.day-chip:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border);
+}
+
+.day-chip.is-today strong {
+  color: var(--color-primary-text);
+}
+
+.day-chip.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.day-chip.is-active strong {
+  color: var(--color-on-primary);
+}
+
+.day-chip.is-active i {
+  background: var(--color-on-primary);
+}
+
+.schedule-day-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.schedule-day-head h3.ant-typography {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+@media (max-width: 720px) {
+  .day-picker.ant-card .ant-card-body {
+    gap: var(--space-2);
+    padding: var(--space-2);
+  }
+
+  .day-picker__days {
+    gap: 2px;
+  }
+}

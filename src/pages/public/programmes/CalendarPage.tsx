@@ -1,16 +1,17 @@
 import { CalendarOutlined, EnvironmentOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Calendar, Card, Empty, Segmented, Skeleton, Tag, Typography } from 'antd'
-import type { Dayjs } from 'dayjs'
-import dayjs from 'dayjs'
+import { Button, Card, Empty, Segmented, Skeleton, Tag, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 
 import { usePreferences } from '../../../app/preferences'
 import { useCourses, useTimetable } from '../../../features/courses/queries'
 import { SemesterTable } from '../../../features/courses/SemesterTable'
-import { courseTerm, currentTerm, listTerms } from '../../../features/courses/terms'
+import { courseTerm } from '../../../features/courses/terms'
 import type { TimetableEntry } from '../../../features/courses/types'
-import { addDays, formatWeekLabel, monthRange, startOfWeek, toIsoDate, weekRange } from '../../../features/courses/week'
+import { addDays, startOfWeek, toIsoDate, weekRange } from '../../../features/courses/week'
+import { useTerms } from '../../../features/terms/queries'
+import type { AcademicTerm } from '../../../features/terms/types'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
+import { formatDate } from '../../../shared/format'
 import { PageHeader } from '../../../shared/PageHeader'
 
 const { Title, Text } = Typography
@@ -19,253 +20,219 @@ const TONES = ['blue', 'violet', 'orange'] as const
 
 /** Stable fallback so `useMemo` deps do not see a fresh `[]` every render. */
 const NO_ENTRIES: TimetableEntry[] = []
+const NO_TERMS: AcademicTerm[] = []
 
-/** Stable colour per subject within a week — same subject, same stripe. */
+/** Stable colour per subject within a day — same subject, same stripe. */
 function toneFor(subject: string, subjects: string[]) {
   return TONES[Math.max(0, subjects.indexOf(subject)) % TONES.length]
 }
 
 /**
- * 학사 일정 — the semester note written by the admin, the week's classes on
- * the left and a month calendar on the right. Picking a day in the calendar
- * moves the list to that week; there are no filters, the timetable is small
- * enough to read as it is.
+ * 학사 일정 — the semester sheet for the term the visitor picks, and under it
+ * 시간표 as a section of its own: today's classes by default, with the days
+ * of the week to click through. The semesters on offer are the ones the
+ * institute defined in 학기 관리; nothing here guesses at dates.
  */
 export function CalendarPage() {
   const { t, language } = usePreferences()
-  const [monday, setMonday] = useState(() => startOfWeek(new Date()))
-  const [month, setMonth] = useState(() => dayjs())
 
   const courses = useCourses(true)
+  const terms = useTerms()
+  const defined = terms.data ?? NO_TERMS
 
-  /**
-   * The calendar is read one semester at a time, picked as a year and then a
-   * semester inside it. Both default to the semester we are in (or the most
-   * recent one on record) and moving them moves the week list too, so
-   * choosing a past semester does not leave today's week under an older table.
-   */
-  const terms = useMemo(() => listTerms(courses.data), [courses.data])
-  const [term, setTerm] = useState<string | null>(null)
-  const activeTerm = term ?? currentTerm(courses.data)
+  const today = toIsoDate(new Date())
 
-  const years = useMemo(() => [...new Set(terms.map((value) => value.split('-')[0]))], [terms])
-  const activeYear = activeTerm?.split('-')[0] ?? years[0]
-  const halvesOfYear = useMemo(() => terms.filter((value) => value.startsWith(`${activeYear}-`)), [activeYear, terms])
+  /* ------------------------------- 학기 ------------------------------- */
+
+  const years = useMemo(() => [...new Set(defined.map((term) => String(term.year)))].sort().reverse(), [defined])
+
+  // The term in progress, else the most recent one the institute defined.
+  const fallbackTerm = useMemo(
+    () => defined.find((term) => term.startDate <= today && today <= term.endDate) ?? defined[0] ?? null,
+    [defined, today],
+  )
+
+  const [selected, setSelected] = useState<string | null>(null)
+  const activeTerm = defined.find((term) => term.code === selected) ?? fallbackTerm
+  const halvesOfYear = useMemo(() => defined.filter((term) => String(term.year) === String(activeTerm?.year)), [activeTerm?.year, defined])
 
   const termCourses = useMemo(
-    () => (activeTerm ? (courses.data ?? []).filter((course) => courseTerm(course) === activeTerm) : courses.data),
+    () => (activeTerm ? (courses.data ?? []).filter((course) => courseTerm(course) === activeTerm.code) : courses.data),
     [activeTerm, courses.data],
   )
 
-  const selectTerm = (value: string) => {
-    setTerm(value)
+  /* ------------------------------ 시간표 ------------------------------ */
 
-    // Jump the week list to the first class of that semester.
-    const starts = (courses.data ?? [])
-      .filter((course) => courseTerm(course) === value)
-      .map((course) => course.startDate)
-      .filter((date): date is string => Boolean(date))
-      .sort()
+  // Today by default; the day strip walks a week at a time from there.
+  const [day, setDay] = useState(today)
+  const [monday, setMonday] = useState(() => startOfWeek(new Date()))
 
-    if (starts[0]) {
-      const first = new Date(`${starts[0]}T00:00:00`)
-      setMonday(startOfWeek(first))
-      setMonth(dayjs(first))
-    }
-  }
-
-  const range = useMemo(() => weekRange(monday), [monday])
-  const schedule = useTimetable(range)
+  const week = useMemo(() => weekRange(monday), [monday])
+  const schedule = useTimetable(week)
   const entries = schedule.data ?? NO_ENTRIES
 
-  // The calendar needs the whole visible month, which is a different range
-  // than the week list — one extra query, cached per month.
-  const monthQuery = useTimetable(useMemo(() => monthRange(month.year(), month.month()), [month]))
+  const days = useMemo(() => Array.from({ length: 7 }, (_, index) => toIsoDate(addDays(monday, index))), [monday])
+  const countByDate = useMemo(() => {
+    const counts = new Map<string, number>()
 
-  const countsByDate = useMemo(() => {
-    const map = new Map<string, number>()
-
-    for (const item of monthQuery.data ?? []) {
-      map.set(item.date, (map.get(item.date) ?? 0) + 1)
+    for (const entry of entries) {
+      counts.set(entry.date, (counts.get(entry.date) ?? 0) + 1)
     }
 
-    return map
-  }, [monthQuery.data])
-
-  const subjects = useMemo(() => [...new Set(entries.map((item) => item.subject))].sort(), [entries])
-
-  const byDay = useMemo(() => {
-    const map = new Map<string, TimetableEntry[]>()
-
-    for (const item of entries) {
-      map.set(item.date, [...(map.get(item.date) ?? []), item])
-    }
-
-    return [...map.entries()]
+    return counts
   }, [entries])
 
-  const dayName = useMemo(() => new Intl.DateTimeFormat(language, { weekday: 'short' }), [language])
-  const monthName = useMemo(() => new Intl.DateTimeFormat(language, { month: 'long' }), [language])
-  const isCurrentWeek = range.from === weekRange(startOfWeek(new Date())).from
-  const weekDays = useMemo(() => new Set(Array.from({ length: 7 }, (_, index) => toIsoDate(addDays(monday, index)))), [monday])
+  const dayEntries = useMemo(() => entries.filter((entry) => entry.date === day), [day, entries])
+  const subjects = useMemo(() => [...new Set(dayEntries.map((entry) => entry.subject))].sort(), [dayEntries])
 
-  const selectDate = (value: Dayjs) => {
-    setMonday(startOfWeek(value.toDate()))
-    setMonth(value)
+  const dayName = useMemo(() => new Intl.DateTimeFormat(language, { weekday: 'short' }), [language])
+  const isToday = day === today
+
+  const goToWeek = (offset: number) => {
+    const next = addDays(monday, offset)
+    setMonday(next)
+    setDay(toIsoDate(next))
+  }
+
+  const backToToday = () => {
+    setMonday(startOfWeek(new Date()))
+    setDay(today)
   }
 
   return (
     <div className="page-layout">
       <PageHeader kicker={t('siteNav.programmes')} title={t('pageCopy.calendarTitle')} description={t('pageCopy.calendarSubtitle')} />
 
-      <ErrorAlert error={schedule.error ?? monthQuery.error ?? courses.error} fallback={t('schedule.loadFailed')} />
+      <ErrorAlert error={schedule.error ?? courses.error ?? terms.error} fallback={t('schedule.loadFailed')} />
 
-      {terms.length > 1 ? (
+      {defined.length > 0 ? (
         <Card className="surface-card filter-card">
           <div className="filter-footer">
             <div className="term-picker">
-              <Segmented
-                aria-label={t('terms.year')}
-                value={activeYear}
-                onChange={(value) => {
-                  // Keep the same half of the year where that year has one.
-                  const half = activeTerm?.split('-')[1] ?? '1'
-                  const next = terms.find((item) => item === `${value}-${half}`) ?? terms.find((item) => item.startsWith(`${value}-`))
+              {years.length > 1 ? (
+                <Segmented
+                  aria-label={t('terms.year')}
+                  value={String(activeTerm?.year ?? years[0])}
+                  onChange={(value) => {
+                    // Keep the same half of the year where that year has one.
+                    const ofYear = defined.filter((term) => String(term.year) === String(value))
+                    const next = ofYear.find((term) => term.half === activeTerm?.half) ?? ofYear[0]
 
-                  if (next) {
-                    selectTerm(next)
-                  }
-                }}
-                options={years.map((value) => ({ value, label: t('terms.yearLabel', { year: value }) }))}
-              />
+                    if (next) {
+                      setSelected(next.code)
+                    }
+                  }}
+                  options={years.map((value) => ({ value, label: t('terms.yearLabel', { year: value }) }))}
+                />
+              ) : null}
 
               {halvesOfYear.length > 1 ? (
                 <Segmented
                   aria-label={t('terms.label')}
-                  value={activeTerm ?? undefined}
-                  onChange={(value) => selectTerm(value as string)}
-                  options={halvesOfYear.map((value) => ({ value, label: t(value.endsWith('-1') ? 'terms.first' : 'terms.second') }))}
+                  value={activeTerm?.code}
+                  onChange={(value) => setSelected(String(value))}
+                  options={halvesOfYear.map((term) => ({
+                    value: term.code,
+                    label: term.name || t(term.half === 1 ? 'terms.first' : 'terms.second'),
+                  }))}
                 />
               ) : null}
             </div>
 
-            <Text type="secondary">{t('courses.classCount', { count: termCourses?.length ?? 0 })}</Text>
+            {activeTerm ? (
+              <Text type="secondary">
+                {formatDate(activeTerm.startDate, language)} ~ {formatDate(activeTerm.endDate, language)} ·{' '}
+                {t('courses.classCount', { count: termCourses?.length ?? 0 })}
+              </Text>
+            ) : null}
           </div>
         </Card>
       ) : null}
 
-      {/* The semester overview the office keeps: one row per class. */}
+      {/* The semester sheet the office keeps: one row per class. */}
       <SemesterTable courses={termCourses} loading={courses.isPending} emptyText={t('courses.empty')} />
 
-      <div className="calendar-layout">
-        <div className="calendar-layout__week">
-          <Card className="surface-card week-bar">
-            <div className="week-nav">
-              <Button icon={<LeftOutlined />} aria-label={t('schedule.prevWeek')} onClick={() => setMonday(addDays(monday, -7))} />
-              <Text strong className="week-label">
-                {formatWeekLabel(monday, language)}
-              </Text>
-              <Button icon={<RightOutlined />} aria-label={t('schedule.nextWeek')} onClick={() => setMonday(addDays(monday, 7))} />
-              {!isCurrentWeek ? (
-                <Button
-                  type="link"
-                  onClick={() => {
-                    const today = new Date()
-                    setMonday(startOfWeek(today))
-                    setMonth(dayjs(today))
-                  }}
-                >
-                  {t('schedule.thisWeek')}
-                </Button>
-              ) : null}
-            </div>
-            <Text type="secondary">{t('schedule.classesPlanned', { count: entries.length })}</Text>
-          </Card>
-
-          {schedule.isPending ? (
-            <Card className="surface-card">
-              <Skeleton active paragraph={{ rows: 4 }} />
-            </Card>
-          ) : byDay.length > 0 ? (
-            <div className={schedule.isFetching ? 'is-refreshing' : undefined}>
-              {byDay.map(([date, items]) => {
-                const day = new Date(`${date}T00:00:00`)
-
-                return (
-                  <section className="schedule-list" key={date}>
-                    <div className="schedule-date">
-                      <span>{dayName.format(day)}</span>
-                      <strong>{day.getDate()}</strong>
-                      <div>
-                        <b>{monthName.format(day)}</b>
-                        <Text type="secondary">{t('schedule.classesPlanned', { count: items.length })}</Text>
-                      </div>
-                    </div>
-                    {items.map((item) => (
-                      <Card className={`surface-card lesson-card ${toneFor(item.subject, subjects)}`} key={item.id}>
-                        <div className="lesson-time">
-                          <CalendarOutlined />
-                          {item.startTime} – {item.endTime}
-                        </div>
-                        <div className="lesson-main">
-                          {item.courseGroup ? <Tag>{item.courseGroup}</Tag> : null}
-                          <Title level={4}>{item.subject}</Title>
-                          {item.teacher ? (
-                            <span>
-                              <UserOutlined /> {item.teacher}
-                            </span>
-                          ) : null}
-                        </div>
-                        <div className="lesson-room">
-                          <EnvironmentOutlined />
-                          <span>
-                            <Text type="secondary">{t('schedule.room')}</Text>
-                            <b>{item.classroom ?? '-'}</b>
-                          </span>
-                        </div>
-                      </Card>
-                    ))}
-                  </section>
-                )
-              })}
-            </div>
-          ) : (
-            <Card className="surface-card empty-card">
-              <Empty description={t('schedule.emptyWeek')} />
-            </Card>
-          )}
+      {/* 시간표 — its own section, opening on today. */}
+      <section className="timetable-section" aria-labelledby="timetable-heading">
+        <div className="section-heading">
+          <div>
+            <Text className="section-kicker">{t('siteNav.programmes')}</Text>
+            <Title level={2} id="timetable-heading">
+              {t('schedule.timetable')}
+            </Title>
+          </div>
+          {!isToday ? <Button type="link" onClick={backToToday}>{t('schedule.today')}</Button> : null}
         </div>
 
-        <Card className="surface-card calendar-panel">
-          <Calendar
-            fullscreen={false}
-            value={month}
-            onSelect={selectDate}
-            onPanelChange={(value) => setMonth(value)}
-            className="schedule-calendar"
-            /* Days with classes carry a dot; the week shown on the left is tinted. */
-            fullCellRender={(value, info) => {
-              if (info.type !== 'date') {
-                return info.originNode
-              }
+        <Card className="surface-card day-picker">
+          <Button icon={<LeftOutlined />} aria-label={t('schedule.prevWeek')} onClick={() => goToWeek(-7)} />
 
-              const iso = value.format('YYYY-MM-DD')
-              const count = countsByDate.get(iso) ?? 0
-              const classes = ['calendar-cell', weekDays.has(iso) ? 'in-week' : '', count > 0 ? 'has-classes' : ''].filter(Boolean)
+          <div className="day-picker__days">
+            {days.map((date) => {
+              const value = new Date(`${date}T00:00:00`)
+              const count = countByDate.get(date) ?? 0
 
               return (
-                <div className={classes.join(' ')} title={count > 0 ? t('schedule.classesPlanned', { count }) : undefined}>
-                  <span>{value.date()}</span>
+                <button
+                  type="button"
+                  key={date}
+                  className={`day-chip${date === day ? ' is-active' : ''}${date === today ? ' is-today' : ''}`}
+                  aria-pressed={date === day}
+                  onClick={() => setDay(date)}
+                >
+                  <span>{dayName.format(value)}</span>
+                  <strong>{value.getDate()}</strong>
                   {count > 0 ? <i aria-hidden="true" /> : null}
-                </div>
+                </button>
               )
-            }}
-          />
-          <Text type="secondary" className="calendar-panel__hint">
-            {t('schedule.calendarHint')}
-          </Text>
+            })}
+          </div>
+
+          <Button icon={<RightOutlined />} aria-label={t('schedule.nextWeek')} onClick={() => goToWeek(7)} />
         </Card>
-      </div>
+
+        <div className="schedule-day-head">
+          <Title level={3}>{formatDate(day, language)}</Title>
+          <Text type="secondary">{t('schedule.classesPlanned', { count: dayEntries.length })}</Text>
+        </div>
+
+        {schedule.isPending ? (
+          <Card className="surface-card">
+            <Skeleton active paragraph={{ rows: 3 }} />
+          </Card>
+        ) : dayEntries.length > 0 ? (
+          <div className={schedule.isFetching ? 'is-refreshing' : undefined}>
+            {dayEntries.map((item) => (
+              <Card className={`surface-card lesson-card ${toneFor(item.subject, subjects)}`} key={item.id}>
+                <div className="lesson-time">
+                  <CalendarOutlined />
+                  {item.startTime} – {item.endTime}
+                </div>
+                <div className="lesson-main">
+                  {item.courseGroup ? <Tag>{item.courseGroup}</Tag> : null}
+                  <Title level={4}>{item.subject}</Title>
+                  {item.teacher ? (
+                    <span>
+                      <UserOutlined /> {item.teacher}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="lesson-room">
+                  <EnvironmentOutlined />
+                  <span>
+                    <Text type="secondary">{t('schedule.room')}</Text>
+                    <b>{item.classroom ?? '-'}</b>
+                  </span>
+                </div>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="surface-card empty-card">
+            <Empty description={t('schedule.emptyDay')} />
+          </Card>
+        )}
+      </section>
     </div>
   )
 }

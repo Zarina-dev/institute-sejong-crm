@@ -12,6 +12,7 @@ import { listTerms, termLabel } from '../../features/courses/terms'
 import { sessionParts, weeklyHoursFromSessions } from '../../features/courses/sessions'
 import { useCourses, useCreateCourse, useDeleteCourse, useSetCoursePublished, useUpdateCourse } from '../../features/courses/queries'
 import { useAllStaff } from '../../features/staff/queries'
+import { useTerms } from '../../features/terms/queries'
 import type { CourseRecord, CourseSession } from '../../features/courses/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
@@ -67,6 +68,7 @@ export function CoursesAdminPage() {
 
   const courses = useCourses(false)
   const staff = useAllStaff()
+  const terms = useTerms()
   const createCourse = useCreateCourse()
   const updateCourse = useUpdateCourse()
   const deleteCourse = useDeleteCourse()
@@ -204,14 +206,21 @@ export function CoursesAdminPage() {
 
   const titleOptions = useMemo(() => courseTitles(courses.data).map((value) => ({ value })), [courses.data])
 
-  // Every semester already on record, plus the two around today, so a new
-  // course can be filed without typing the format by hand.
+  /**
+   * The semesters 학기 관리 defines, plus any code older courses still carry,
+   * so nothing is lost while that page is being filled in.
+   */
   const termOptions = useMemo(() => {
-    const year = new Date().getFullYear()
-    const values = new Set([...listTerms(courses.data), `${year}-1`, `${year}-2`])
+    const options = new Map((terms.data ?? []).map((term) => [term.code, term.name || termLabel(term.code, t)]))
 
-    return [...values].sort().reverse().map((value) => ({ value, label: termLabel(value, t) }))
-  }, [courses.data, t])
+    for (const code of listTerms(courses.data)) {
+      if (!options.has(code)) {
+        options.set(code, termLabel(code, t))
+      }
+    }
+
+    return [...options.entries()].sort((a, b) => b[0].localeCompare(a[0])).map(([value, label]) => ({ value, label }))
+  }, [courses.data, t, terms.data])
 
   const handleExcel = useCallback(async () => {
     setExporting(true)

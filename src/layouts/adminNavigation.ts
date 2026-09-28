@@ -39,6 +39,7 @@ export const adminNavigation: AdminNavGroup[] = [
       { to: '/admin/courses?view=language', labelKey: 'siteNav.programmesCourses' },
       { to: '/admin/courses?view=schedule', labelKey: 'siteNav.programmesCalendar' },
       { to: '/admin/courses?view=culture', labelKey: 'siteNav.programmesCulture' },
+      { to: '/admin/terms', labelKey: 'terms.adminTitle' },
     ],
   },
   {
