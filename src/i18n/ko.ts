@@ -93,7 +93,7 @@ const ko: LocaleDictionary = {
   home: {
     programmesTitle: '개설 과정',
     heroTag: '2026 / 2027 학년도',
-    heroTitle: '오시에서 배우는 한국어, 세종학당과 함께.',
+    heroTitle: '꿈의 동산 – 오시 1세종학당',
     heroCopy: '초급부터 TOPIK까지의 과정, 주간 시간표, 학습 자료, 학당 소식을 한곳에서 확인하세요.',
     explore: '과정 둘러보기',
     calendar: '학사 일정',

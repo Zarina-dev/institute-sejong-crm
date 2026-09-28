@@ -101,7 +101,7 @@ export const en = {
   home: {
     programmesTitle: 'What we teach',
     heroTag: '2026 / 2027 academic year',
-    heroTitle: 'Learn Korean in Osh — with King Sejong Institute.',
+    heroTitle: 'Garden of Dreams – King Sejong Institute Osh 1',
     heroCopy: 'Courses from beginner to TOPIK, the weekly timetable, learning materials and institute news — in one place for learners, applicants and staff.',
     explore: 'Explore programmes',
     calendar: 'Academic calendar',
