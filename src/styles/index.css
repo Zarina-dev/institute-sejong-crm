@@ -1302,84 +1302,135 @@
 }
 
 /* Two columns on wide screens: intro on the left, facts on the right. */
+/* One section per subject: the heading on its own line, the content under
+   it — so 세종학당 (a summary) and 오시 1 세종학당 (the real subject) read at
+   their own weight instead of fighting over a two-column grid. */
 .about-section {
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: var(--space-10) var(--space-16);
-  padding: var(--space-10);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-2xl);
-  background: var(--color-surface);
+  gap: var(--space-5);
 }
 
-.about-section--accent {
-  background: linear-gradient(160deg, var(--color-primary-soft), var(--color-surface) 55%);
-}
-
-.about-section__intro h2.ant-typography {
-  margin: 0 0 var(--space-4);
+.about-section__head h2.ant-typography {
+  margin: 0;
   color: var(--color-text);
-  font-size: var(--text-3xl);
+  font-size: var(--text-2xl);
   letter-spacing: var(--tracking-tight);
 }
 
 .about-lead.ant-typography {
-  max-width: 60ch;
-  margin-bottom: var(--space-5);
+  max-width: 68ch;
+  margin: 0;
   color: var(--color-text);
   font-size: var(--text-lg);
   line-height: 1.75;
 }
 
-.about-facts {
-  display: grid;
-  gap: var(--space-6);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.about-facts li {
-  display: grid;
-  grid-template-columns: 52px 1fr;
-  gap: var(--space-5);
-  align-items: start;
-}
-
-.about-facts li + li {
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--color-border-subtle);
-}
-
-.about-fact-icon {
-  display: inline-grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: var(--radius-lg);
-  background: var(--color-primary-soft);
-  color: var(--color-primary-text);
-  font-size: 22px;
-}
-
-.about-facts h3.ant-typography {
-  margin: 0 0 var(--space-2);
-  color: var(--color-text);
-  font-size: var(--text-xl);
-}
-
-.about-facts div.ant-typography {
+.about-body.ant-typography {
+  max-width: 68ch;
   margin: 0;
   color: var(--color-text-muted);
   font-size: var(--text-md);
   line-height: var(--leading-relaxed);
 }
 
+/* ---- 세종학당: a paragraph, three figures, and the way out to the
+   Foundation's own site. The details are theirs to keep, not ours. ---- */
+
+.network-card .ant-card-body {
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-7);
+}
+
+.network-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.network-stats li {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+}
+
+.network-stats strong {
+  color: var(--color-primary-text);
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-tight);
+}
+
+.network-stats .ant-typography {
+  font-size: var(--text-sm);
+}
+
+/* ---- 오시 1 세종학당: what the institute actually offers ---- */
+
+.about-offer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-5);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: offer;
+}
+
+.about-offer li {
+  position: relative;
+  padding: var(--space-5) var(--space-5) var(--space-5) var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+/* A brand edge instead of a number: these are three facets, not three steps. */
+.about-offer li::before {
+  content: '';
+  position: absolute;
+  inset: var(--space-5) auto var(--space-5) 0;
+  width: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+}
+
+.about-offer h3.ant-typography {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text);
+  font-size: var(--text-md);
+}
+
+.about-offer .ant-typography:not(h3) {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+}
+
+/* "See the full chronology" under the summary timeline. */
+.about-more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  color: var(--color-primary-text);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.about-more:hover {
+  text-decoration: underline;
+}
+
 .about-link {
   display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-3);
+  align-items: center;
+  gap: var(--space-4);
   justify-self: start;
   color: var(--color-primary-text);
   font-weight: var(--weight-semibold);
@@ -3701,11 +3752,12 @@ a.attachment-chip:hover {
 }
 
 /* ==========================================================================
-   연혁 (chronology) — a rail down the page, the year announced once per block
+   연혁 (chronology) — a timeline: a rail that fades at both ends, the year
+   anchored beside its entries, and the turning points raised out of the list.
    ========================================================================== */
 
 .chronology-card .ant-card-body {
-  padding: var(--space-8) var(--space-8) var(--space-6);
+  padding: var(--space-10) var(--space-8) var(--space-8);
 }
 
 .chronology,
@@ -3717,67 +3769,89 @@ a.attachment-chip:hover {
 
 .chronology {
   display: grid;
-  gap: var(--space-8);
+  gap: var(--space-10);
 }
 
 .chronology__year {
   display: grid;
-  grid-template-columns: 116px minmax(0, 1fr);
-  gap: var(--space-6);
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: var(--space-7);
 }
 
-/* The year is set once, large and light, and stays beside its entries. */
+/* The year sits beside its entries and stays there while they scroll past. */
 .chronology__year-label.ant-typography {
   position: sticky;
-  top: calc(var(--layout-header-height) + var(--space-4));
+  top: calc(var(--layout-header-height) + var(--space-6));
   margin: 0;
-  color: var(--color-primary-text);
-  font-size: var(--text-3xl);
+  padding-top: 2px;
+  color: var(--color-text);
+  font-size: 42px;
   font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-extrabold);
   letter-spacing: var(--tracking-tight);
   line-height: 1;
 }
 
-/* The rail: one border for the whole year block, dots hung on it. */
+/* A hairline under the year, in the brand colour: small, and it ties the
+   year to the rail beside it. */
+.chronology__year-label.ant-typography::after {
+  content: '';
+  display: block;
+  width: 34px;
+  height: 3px;
+  margin-top: var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+}
+
+/* The rail itself. It fades out at top and bottom so the timeline reads as
+   one continuous thread rather than a set of bordered boxes. */
 .chronology__entries {
+  position: relative;
   display: grid;
-  gap: var(--space-5);
-  padding-left: var(--space-6);
-  border-left: 2px solid var(--color-border);
+  gap: var(--space-4);
+  padding-left: var(--space-7);
+}
+
+.chronology__entries::before {
+  content: '';
+  position: absolute;
+  inset: 4px auto 4px 0;
+  width: 2px;
+  background: linear-gradient(var(--color-border-strong), var(--color-border));
+  mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent);
 }
 
 .chronology__entry {
   position: relative;
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-columns: 52px minmax(0, 1fr);
   gap: var(--space-4);
-  align-items: baseline;
+  align-items: start;
+  padding: var(--space-2) 0;
 }
 
+/* The dot on the rail. */
 .chronology__entry::before {
   content: '';
   position: absolute;
-  top: 7px;
-  left: calc(var(--space-6) * -1 - 6px);
+  top: 15px;
+  left: calc(var(--space-7) * -1 - 4px);
   width: 10px;
   height: 10px;
   border: 2px solid var(--color-surface);
   border-radius: 50%;
   background: var(--color-border-strong);
-  transition: var(--transition-colors);
+  transition: transform var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
 }
 
-/* 개원·인증·이전 — the turning points read before a word of the text does. */
-.chronology__entry.is-milestone::before {
-  top: 5px;
-  left: calc(var(--space-6) * -1 - 8px);
-  width: 14px;
-  height: 14px;
+.chronology__entry:hover::before {
+  transform: scale(1.25);
   background: var(--color-primary);
-  box-shadow: 0 0 0 4px var(--color-primary-soft);
 }
 
 .chronology__month {
+  padding: 3px 0;
   color: var(--color-text-subtle);
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
@@ -3788,7 +3862,11 @@ a.attachment-chip:hover {
 .chronology__body {
   display: grid;
   gap: var(--space-1);
+  /* A line of history is a line of prose: keep it to a readable measure
+     instead of letting it run the width of the card. */
+  max-width: 68ch;
   min-width: 0;
+  padding: 2px 0;
 }
 
 .chronology__title.ant-typography {
@@ -3797,15 +3875,71 @@ a.attachment-chip:hover {
   line-height: var(--leading-snug);
 }
 
-.chronology__entry.is-milestone .chronology__title.ant-typography {
-  font-size: var(--text-lg);
-  font-weight: var(--weight-semibold);
-}
-
 .chronology__description.ant-typography {
   margin: 0;
   font-size: var(--text-base);
   line-height: var(--leading-relaxed);
+}
+
+/* 개원 · 이전 · 인증 — the turning points are lifted out of the list: a
+   filled dot with a halo, and the text on a tinted panel with a brand edge. */
+.chronology__entry.is-milestone::before {
+  top: 13px;
+  left: calc(var(--space-7) * -1 - 6px);
+  width: 14px;
+  height: 14px;
+  background: var(--color-primary);
+  box-shadow: 0 0 0 5px var(--color-primary-soft);
+}
+
+.chronology__entry.is-milestone .chronology__body {
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-primary);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: linear-gradient(90deg, var(--color-primary-soft), transparent);
+}
+
+.chronology__entry.is-milestone .chronology__title.ant-typography {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.chronology__entry.is-milestone .chronology__month {
+  color: var(--color-primary-text);
+}
+
+/* Where the story begins: the rail ends in a solid cap under the oldest year. */
+.chronology__year:last-child .chronology__entries::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border-strong);
+}
+
+/* On 학당 소개 the timeline is a summary, so it sits tighter. */
+.chronology--compact {
+  gap: var(--space-6);
+}
+
+.chronology--compact .chronology__year {
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.chronology--compact .chronology__year-label.ant-typography {
+  position: static;
+  font-size: var(--text-2xl);
+}
+
+.chronology--compact .chronology__year-label.ant-typography::after {
+  width: 24px;
+  height: 2px;
+  margin-top: var(--space-2);
 }
 
 /* Read-only date in the admin table, aligned digit under digit. */
@@ -3815,10 +3949,16 @@ a.attachment-chip:hover {
 
 @media (max-width: 720px) {
   .chronology-card .ant-card-body {
-    padding: var(--space-5) var(--space-5) var(--space-4);
+    padding: var(--space-6) var(--space-5) var(--space-5);
   }
 
-  .chronology__year {
+  .chronology,
+  .chronology--compact {
+    gap: var(--space-6);
+  }
+
+  .chronology__year,
+  .chronology--compact .chronology__year {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-3);
   }
@@ -3828,20 +3968,24 @@ a.attachment-chip:hover {
     font-size: var(--text-2xl);
   }
 
+  .chronology__year-label.ant-typography::after {
+    margin-top: var(--space-2);
+  }
+
   .chronology__entries {
     padding-left: var(--space-5);
   }
 
   .chronology__entry {
-    grid-template-columns: 38px minmax(0, 1fr);
+    grid-template-columns: 40px minmax(0, 1fr);
     gap: var(--space-3);
   }
 
   .chronology__entry::before {
-    left: calc(var(--space-5) * -1 - 6px);
+    left: calc(var(--space-5) * -1 - 4px);
   }
 
   .chronology__entry.is-milestone::before {
-    left: calc(var(--space-5) * -1 - 8px);
+    left: calc(var(--space-5) * -1 - 6px);
   }
 }
