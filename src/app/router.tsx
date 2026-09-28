@@ -3,6 +3,7 @@ import { Suspense, lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { PublicLayout } from '../layouts/PublicLayout'
+import { ChronologyPage } from '../pages/public/about/ChronologyPage'
 import { GreetingPage } from '../pages/public/about/GreetingPage'
 import { LocationPage } from '../pages/public/about/LocationPage'
 import { StaffPage } from '../pages/public/about/StaffPage'
@@ -36,6 +37,7 @@ const TextbooksAdminPage = lazy(() => import('../pages/admin/TextbooksAdminPage'
 const CompetitionsAdminPage = lazy(() => import('../pages/admin/CompetitionsAdminPage').then((m) => ({ default: m.CompetitionsAdminPage })))
 const MeetingsAdminPage = lazy(() => import('../pages/admin/MeetingsAdminPage').then((m) => ({ default: m.MeetingsAdminPage })))
 const TermsAdminPage = lazy(() => import('../pages/admin/TermsAdminPage').then((m) => ({ default: m.TermsAdminPage })))
+const ChronologyAdminPage = lazy(() => import('../pages/admin/ChronologyAdminPage').then((m) => ({ default: m.ChronologyAdminPage })))
 
 function RouteFallback() {
   return (
@@ -56,6 +58,7 @@ export function AppRouter() {
           {/* 학당 소개 */}
           <Route path="/about" element={<GreetingPage />} />
           <Route path="/about/staff" element={<StaffPage />} />
+          <Route path="/about/chronology" element={<ChronologyPage />} />
           <Route path="/about/location" element={<LocationPage />} />
 
           {/* 교육과정 */}
@@ -103,6 +106,7 @@ export function AppRouter() {
           <Route path="textbooks" element={<TextbooksAdminPage />} />
           <Route path="content" element={<ContentAdminPage />} />
           <Route path="terms" element={<TermsAdminPage />} />
+          <Route path="chronology" element={<ChronologyAdminPage />} />
           <Route path="competitions" element={<CompetitionsAdminPage />} />
           <Route path="meetings" element={<MeetingsAdminPage />} />
         </Route>

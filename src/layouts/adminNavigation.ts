@@ -31,6 +31,7 @@ export const adminNavigation: AdminNavGroup[] = [
     items: [
       { to: '/admin/content?block=about.greeting', labelKey: 'siteNav.aboutGreeting' },
       { to: '/admin/staff', labelKey: 'siteNav.aboutStaff' },
+      { to: '/admin/chronology', labelKey: 'siteNav.aboutChronology' },
     ],
   },
   {

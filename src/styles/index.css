@@ -3699,3 +3699,149 @@ a.attachment-chip:hover {
 .year-select .ant-select-selector {
   font-variant-numeric: tabular-nums;
 }
+
+/* ==========================================================================
+   연혁 (chronology) — a rail down the page, the year announced once per block
+   ========================================================================== */
+
+.chronology-card .ant-card-body {
+  padding: var(--space-8) var(--space-8) var(--space-6);
+}
+
+.chronology,
+.chronology__entries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chronology {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.chronology__year {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: var(--space-6);
+}
+
+/* The year is set once, large and light, and stays beside its entries. */
+.chronology__year-label.ant-typography {
+  position: sticky;
+  top: calc(var(--layout-header-height) + var(--space-4));
+  margin: 0;
+  color: var(--color-primary-text);
+  font-size: var(--text-3xl);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-tight);
+  line-height: 1;
+}
+
+/* The rail: one border for the whole year block, dots hung on it. */
+.chronology__entries {
+  display: grid;
+  gap: var(--space-5);
+  padding-left: var(--space-6);
+  border-left: 2px solid var(--color-border);
+}
+
+.chronology__entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: baseline;
+}
+
+.chronology__entry::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: calc(var(--space-6) * -1 - 6px);
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  background: var(--color-border-strong);
+  transition: var(--transition-colors);
+}
+
+/* 개원·인증·이전 — the turning points read before a word of the text does. */
+.chronology__entry.is-milestone::before {
+  top: 5px;
+  left: calc(var(--space-6) * -1 - 8px);
+  width: 14px;
+  height: 14px;
+  background: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--color-primary-soft);
+}
+
+.chronology__month {
+  color: var(--color-text-subtle);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+}
+
+.chronology__body {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.chronology__title.ant-typography {
+  color: var(--color-text);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+}
+
+.chronology__entry.is-milestone .chronology__title.ant-typography {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}
+
+.chronology__description.ant-typography {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+}
+
+/* Read-only date in the admin table, aligned digit under digit. */
+.chronology-date.ant-typography {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 720px) {
+  .chronology-card .ant-card-body {
+    padding: var(--space-5) var(--space-5) var(--space-4);
+  }
+
+  .chronology__year {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .chronology__year-label.ant-typography {
+    position: static;
+    font-size: var(--text-2xl);
+  }
+
+  .chronology__entries {
+    padding-left: var(--space-5);
+  }
+
+  .chronology__entry {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .chronology__entry::before {
+    left: calc(var(--space-5) * -1 - 6px);
+  }
+
+  .chronology__entry.is-milestone::before {
+    left: calc(var(--space-5) * -1 - 8px);
+  }
+}
