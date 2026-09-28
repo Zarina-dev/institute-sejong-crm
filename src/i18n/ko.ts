@@ -692,6 +692,8 @@ const ko: LocaleDictionary = {
     },
   },
   terms: {
+    breakKind: '방학',
+    breakOf: '{{year}}학년도 방학',
     adminTitle: '학기 관리',
     adminSubtitle: '각 학기의 시작일과 종료일을 정합니다. 강좌는 이 날짜를 기준으로 학기가 정해지고, 사이트의 학기 선택도 여기에서 만들어집니다.',
     add: '학기 추가',

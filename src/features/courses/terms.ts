@@ -48,8 +48,13 @@ export function termLabel(term: string | null, t: Translate): string {
     return t('terms.unset')
   }
 
-  const [year, half] = term.split('-')
-  return t(half === '1' ? 'terms.spring' : 'terms.autumn', { year })
+  const [year, suffix] = term.split('-')
+
+  if (suffix?.startsWith('b')) {
+    return t('terms.breakOf', { year })
+  }
+
+  return t(suffix === '1' ? 'terms.spring' : 'terms.autumn', { year })
 }
 
 /** The semester that contains today, or the most recent one on record. */

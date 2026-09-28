@@ -3,13 +3,14 @@ import { Button, Card, Empty, Segmented, Skeleton, Tag, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 
 import { usePreferences } from '../../../app/preferences'
+import type { TranslationKey } from '../../../app/preferences'
 import { useCourses, useTimetable } from '../../../features/courses/queries'
 import { SemesterTable } from '../../../features/courses/SemesterTable'
 import { courseTerm } from '../../../features/courses/terms'
 import type { TimetableEntry } from '../../../features/courses/types'
 import { addDays, startOfWeek, toIsoDate, weekRange } from '../../../features/courses/week'
 import { useTerms } from '../../../features/terms/queries'
-import type { AcademicTerm } from '../../../features/terms/types'
+import type { AcademicTerm, TermKind } from '../../../features/terms/types'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { formatDate } from '../../../shared/format'
 import { PageHeader } from '../../../shared/PageHeader'
@@ -22,6 +23,12 @@ const TONES = ['blue', 'violet', 'orange'] as const
 /** Stable fallback so `useMemo` deps do not see a fresh `[]` every render. */
 const NO_ENTRIES: TimetableEntry[] = []
 const NO_TERMS: AcademicTerm[] = []
+
+const KIND_LABEL: Record<TermKind, TranslationKey> = {
+  first: 'terms.first',
+  second: 'terms.second',
+  break: 'terms.breakKind',
+}
 
 /** Stable colour per subject within a day — same subject, same stripe. */
 function toneFor(subject: string, subjects: string[]) {
@@ -55,7 +62,7 @@ export function CalendarPage() {
 
   const [selected, setSelected] = useState<string | null>(null)
   const activeTerm = defined.find((term) => term.code === selected) ?? fallbackTerm
-  const halvesOfYear = useMemo(() => defined.filter((term) => String(term.year) === String(activeTerm?.year)), [activeTerm?.year, defined])
+  const termsOfYear = useMemo(() => defined.filter((term) => String(term.year) === String(activeTerm?.year)), [activeTerm?.year, defined])
 
   const termCourses = useMemo(
     () => (activeTerm ? (courses.data ?? []).filter((course) => courseTerm(course) === activeTerm.code) : courses.data),
@@ -115,9 +122,9 @@ export function CalendarPage() {
                   years={years}
                   value={activeTerm?.year ?? years[0]}
                   onChange={(value) => {
-                    // Keep the same half of the year where that year has one.
+                    // Keep the same kind of term where that year has one.
                     const ofYear = defined.filter((term) => String(term.year) === value)
-                    const next = ofYear.find((term) => term.half === activeTerm?.half) ?? ofYear[0]
+                    const next = ofYear.find((term) => term.kind === activeTerm?.kind) ?? ofYear[0]
 
                     if (next) {
                       setSelected(next.code)
@@ -126,15 +133,12 @@ export function CalendarPage() {
                 />
               ) : null}
 
-              {halvesOfYear.length > 1 ? (
+              {termsOfYear.length > 1 ? (
                 <Segmented
                   aria-label={t('terms.label')}
                   value={activeTerm?.code}
                   onChange={(value) => setSelected(String(value))}
-                  options={halvesOfYear.map((term) => ({
-                    value: term.code,
-                    label: term.name || t(term.half === 1 ? 'terms.first' : 'terms.second'),
-                  }))}
+                  options={termsOfYear.map((term) => ({ value: term.code, label: term.name || t(KIND_LABEL[term.kind]) }))}
                 />
               ) : null}
             </div>

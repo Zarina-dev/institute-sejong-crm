@@ -8,7 +8,7 @@ import { usePreferences } from '../../app/preferences'
 import type { TranslationKey } from '../../app/preferences'
 import { SessionsEditor } from '../../features/courses/SessionsEditor'
 import { courseTitles, groupCourses } from '../../features/courses/grouping'
-import { listTerms, termLabel } from '../../features/courses/terms'
+import { termLabel } from '../../features/courses/terms'
 import { sessionParts, weeklyHoursFromSessions } from '../../features/courses/sessions'
 import { useCourses, useCreateCourse, useDeleteCourse, useSetCoursePublished, useUpdateCourse } from '../../features/courses/queries'
 import { useAllStaff } from '../../features/staff/queries'
@@ -50,7 +50,6 @@ type CourseFormValues = {
   teacherName?: string
   sessions: CourseSession[]
   classroom?: string
-  term?: string
   startDate?: string
   endDate?: string
   expectedStudents?: number | null
@@ -113,6 +112,7 @@ export function CoursesAdminPage() {
     weeklyHoursEdited.current = false
     form.resetFields()
     // A class added from 문화 강좌 is a culture class.
+    // 구분 is not asked for: the page the admin is on decides it.
     form.setFieldValue('category', view === 'culture' ? 'culture' : 'language')
     setModalOpen(true)
   }, [form, view])
@@ -130,7 +130,6 @@ export function CoursesAdminPage() {
         teacherName: record.teacherName ?? undefined,
         sessions: record.sessions ?? [],
         classroom: record.classroom ?? undefined,
-        term: record.term ?? undefined,
         startDate: record.startDate ?? undefined,
         endDate: record.endDate ?? undefined,
         expectedStudents: record.expectedStudents ?? null,
@@ -207,20 +206,13 @@ export function CoursesAdminPage() {
   const titleOptions = useMemo(() => courseTitles(courses.data).map((value) => ({ value })), [courses.data])
 
   /**
-   * The semesters 학기 관리 defines, plus any code older courses still carry,
-   * so nothing is lost while that page is being filled in.
+   * 학기 is not typed in: the API files a class by matching its dates against
+   * 학기 관리. These labels only show where each one landed.
    */
-  const termOptions = useMemo(() => {
-    const options = new Map((terms.data ?? []).map((term) => [term.code, term.name || termLabel(term.code, t)]))
-
-    for (const code of listTerms(courses.data)) {
-      if (!options.has(code)) {
-        options.set(code, termLabel(code, t))
-      }
-    }
-
-    return [...options.entries()].sort((a, b) => b[0].localeCompare(a[0])).map(([value, label]) => ({ value, label }))
-  }, [courses.data, t, terms.data])
+  const termLabels = useMemo(
+    () => new Map((terms.data ?? []).map((term) => [term.code, term.name || termLabel(term.code, t)])),
+    [t, terms.data],
+  )
 
   const handleExcel = useCallback(async () => {
     setExporting(true)
@@ -269,6 +261,16 @@ export function CoursesAdminPage() {
         key: 'teacherName',
         width: 120,
         render: (value: string | null) => value || dash,
+      },
+      {
+        // Read-only: it follows from the period, and shows the admin where
+        // the class landed.
+        title: t('terms.label'),
+        key: 'term',
+        width: 130,
+        responsive: ['lg'],
+        render: (_, record) =>
+          record.term ? <Tag>{termLabels.get(record.term) ?? termLabel(record.term, t)}</Tag> : <Text type="secondary">{t('terms.unset')}</Text>,
       },
       {
         title: t('courses.table.days'),
@@ -379,7 +381,7 @@ export function CoursesAdminPage() {
         ),
       },
     ],
-    [handleDelete, handleTogglePublished, language, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, t],
+    [handleDelete, handleTogglePublished, language, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, t, termLabels],
   )
 
   /* ------------------------------- render ----------------------------- */
@@ -488,14 +490,6 @@ export function CoursesAdminPage() {
         width={760}
       >
         <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false, sessions: [], category: 'language' }}>
-          <Form.Item name="category" label={t('courses.form.category')}>
-            <Select
-              options={[
-                { value: 'language', label: t('courses.form.categoryLanguage') },
-                { value: 'culture', label: t('courses.form.categoryCulture') },
-              ]}
-            />
-          </Form.Item>
           <Row gutter={16}>
             <Col span={12}>
               {/* Programme: pick an existing one to add a class under it, or type a new one. */}
@@ -557,9 +551,6 @@ export function CoursesAdminPage() {
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item name="term" label={t('terms.label')} extra={t('terms.hint')}>
-            <Select allowClear placeholder={t('terms.unset')} options={termOptions} />
-          </Form.Item>
           {/* Semester table (학사 일정): 예상수 · 실제수 · 총 시간수 · 주 시간 */}
           <Row gutter={16}>
             <Col xs={12} md={6}>

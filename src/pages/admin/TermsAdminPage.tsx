@@ -4,8 +4,9 @@ import { App, Button, Card, Form, Input, InputNumber, Modal, Segmented, Space, T
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
+import type { TranslationKey } from '../../app/preferences'
 import { useCreateTerm, useDeleteTerm, useTerms, useUpdateTerm } from '../../features/terms/queries'
-import type { AcademicTerm } from '../../features/terms/types'
+import { TERM_KINDS, type AcademicTerm, type TermKind } from '../../features/terms/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { formatDate } from '../../shared/format'
@@ -16,7 +17,7 @@ const { Text } = Typography
 
 type TermFormValues = {
   year: number
-  half: number
+  kind: TermKind
   name?: string
   startDate: string
   endDate: string
@@ -24,7 +25,17 @@ type TermFormValues = {
 
 const NO_TERMS: AcademicTerm[] = []
 
+const KIND_LABEL: Record<TermKind, TranslationKey> = {
+  first: 'terms.first',
+  second: 'terms.second',
+  break: 'terms.breakKind',
+}
+
 const today = () => new Date().toISOString().slice(0, 10)
+
+/** What a term is called when the institute did not name it itself. */
+const defaultName = (term: AcademicTerm, t: (key: TranslationKey, params?: Record<string, string | number>) => string) =>
+  term.kind === 'break' ? t('terms.breakOf', { year: term.year }) : t(term.kind === 'first' ? 'terms.spring' : 'terms.autumn', { year: term.year })
 
 /**
  * 학기 관리 — when a semester runs is the institute's decision, so the dates
@@ -52,14 +63,14 @@ export function TermsAdminPage() {
   const openCreateModal = useCallback(() => {
     setEditingId(null)
     form.resetFields()
-    form.setFieldsValue({ year: new Date().getFullYear(), half: 1 })
+    form.setFieldsValue({ year: new Date().getFullYear(), kind: 'first' })
     setModalOpen(true)
   }, [form])
 
   const openEditModal = useCallback(
     (term: AcademicTerm) => {
       setEditingId(term.id)
-      form.setFieldsValue({ year: term.year, half: term.half, name: term.name, startDate: term.startDate, endDate: term.endDate })
+      form.setFieldsValue({ year: term.year, kind: term.kind, name: term.name, startDate: term.startDate, endDate: term.endDate })
       setModalOpen(true)
     },
     [form],
@@ -110,7 +121,8 @@ export function TermsAdminPage() {
         key: 'term',
         render: (_, term) => (
           <Space size={8}>
-            <Text strong>{term.name || t(term.half === 1 ? 'terms.spring' : 'terms.autumn', { year: term.year })}</Text>
+            <Text strong>{term.name || defaultName(term, t)}</Text>
+            <Tag>{t(KIND_LABEL[term.kind])}</Tag>
             {term.id === current?.id ? <Tag color="green">{t('terms.inProgress')}</Tag> : null}
           </Space>
         ),
@@ -196,13 +208,8 @@ export function TermsAdminPage() {
             <Form.Item name="year" label={t('terms.year')} rules={[{ required: true, message: t('terms.yearRequired') }]}>
               <InputNumber min={1990} max={2100} style={{ width: '100%' }} />
             </Form.Item>
-            <Form.Item name="half" label={t('terms.label')} rules={[{ required: true }]}>
-              <Segmented
-                options={[
-                  { value: 1, label: t('terms.first') },
-                  { value: 2, label: t('terms.second') },
-                ]}
-              />
+            <Form.Item name="kind" label={t('terms.label')} rules={[{ required: true }]}>
+              <Segmented options={TERM_KINDS.map((value) => ({ value, label: t(KIND_LABEL[value]) }))} />
             </Form.Item>
           </div>
 
