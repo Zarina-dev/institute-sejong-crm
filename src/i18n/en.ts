@@ -160,6 +160,7 @@ export const en = {
     fileRejectedSize: 'File is too large ({{size}}). Maximum is {{max}}.',
   },
   courses: {
+    searchPlaceholder: 'Search by class, programme or teacher',
     export: {
       allSheet: 'All programmes',
       excel: 'Excel',
@@ -174,8 +175,6 @@ export const en = {
       time: 'Time',
       studentTotals: 'planned {{expected}} · enrolled {{actual}}',
     },
-    allSubjects: 'All classes',
-    allTeachers: 'All teachers',
     emptyFiltered: 'No classes match these filters.',
     columns: { operations: 'Schedule', visibility: 'Visibility' },
     contactCalloutCopy: 'Call or visit the institute to enrol — the office will help you pick the right level.',
@@ -322,7 +321,6 @@ export const en = {
     group: 'Course / group',
     allGroups: 'All groups',
     subject: 'Subject',
-    allSubjects: 'All subjects',
     classesShown_one: '{{count}} class shown',
     classesShown_other: '{{count}} classes shown',
     classesPlanned_one: '{{count}} class planned',

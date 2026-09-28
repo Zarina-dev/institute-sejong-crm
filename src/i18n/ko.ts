@@ -151,6 +151,7 @@ const ko: LocaleDictionary = {
     fileRejectedSize: '파일이 너무 큽니다 ({{size}}). 최대 {{max}}까지 가능합니다.',
   },
   courses: {
+    searchPlaceholder: '반·과정·강사 검색',
     export: {
       allSheet: '전체 과정',
       excel: '엑셀 저장',
@@ -165,8 +166,6 @@ const ko: LocaleDictionary = {
       time: '수업 시간',
       studentTotals: '예상 {{expected}}명 · 실제 {{actual}}명',
     },
-    allSubjects: '전체 세부 과정',
-    allTeachers: '전체 강사',
     emptyFiltered: '조건에 맞는 반이 없습니다.',
     columns: { operations: '운영 정보', visibility: '공개 상태' },
     contactCalloutCopy: '학당으로 전화하거나 방문해 주세요. 행정실에서 수준에 맞는 반을 안내해 드립니다.',
@@ -311,7 +310,6 @@ const ko: LocaleDictionary = {
     group: '과정 / 반',
     allGroups: '전체 반',
     subject: '과목',
-    allSubjects: '전체 과목',
     classesShown_other: '수업 {{count}}개 표시',
     classesPlanned_other: '수업 {{count}}개 예정',
     empty: '조건에 맞는 수업이 없습니다.',

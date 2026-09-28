@@ -152,6 +152,7 @@ const ky: LocaleDictionary = {
     fileRejectedSize: 'Файл өтө чоң ({{size}}). Максимум — {{max}}.',
   },
   courses: {
+    searchPlaceholder: 'Класс, программа же мугалим боюнча издөө',
     export: {
       allSheet: 'Бардык программалар',
       excel: 'Excel',
@@ -166,8 +167,6 @@ const ky: LocaleDictionary = {
       time: 'Убакыт',
       studentTotals: 'план {{expected}} · чыныгы {{actual}}',
     },
-    allSubjects: 'Бардык класстар',
-    allTeachers: 'Бардык мугалимдер',
     emptyFiltered: 'Бул чыпкаларга ылайык класс жок.',
     columns: { operations: 'Расписание', visibility: 'Көрүнүшү' },
     contactCalloutCopy: 'Институтка чалыңыз же келиңиз — администрация деңгээлиңизге ылайык классты сунуштайт.',
@@ -314,7 +313,6 @@ const ky: LocaleDictionary = {
     group: 'Курс / топ',
     allGroups: 'Бардык топтор',
     subject: 'Предмет',
-    allSubjects: 'Бардык предметтер',
     classesShown_one: '{{count}} сабак көрсөтүлдү',
     classesShown_other: '{{count}} сабак көрсөтүлдү',
     classesPlanned_one: '{{count}} сабак пландалган',

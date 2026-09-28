@@ -154,6 +154,7 @@ const ru: LocaleDictionary = {
     fileRejectedSize: 'Файл слишком большой ({{size}}). Максимум — {{max}}.',
   },
   courses: {
+    searchPlaceholder: 'Поиск по классу, программе или преподавателю',
     export: {
       allSheet: 'Все программы',
       excel: 'Excel',
@@ -168,8 +169,6 @@ const ru: LocaleDictionary = {
       time: 'Время',
       studentTotals: 'план {{expected}} · факт {{actual}}',
     },
-    allSubjects: 'Все классы',
-    allTeachers: 'Все преподаватели',
     emptyFiltered: 'Нет классов по этим фильтрам.',
     columns: { operations: 'Расписание', visibility: 'Видимость' },
     contactCalloutCopy: 'Позвоните или приходите в институт — администрация поможет выбрать уровень.',
@@ -332,7 +331,6 @@ const ru: LocaleDictionary = {
     group: 'Курс / группа',
     allGroups: 'Все группы',
     subject: 'Предмет',
-    allSubjects: 'Все предметы',
     classesShown_one: 'Показано {{count}} занятие',
     classesShown_few: 'Показано {{count}} занятия',
     classesShown_many: 'Показано {{count}} занятий',
