@@ -661,6 +661,9 @@ const ky: LocaleDictionary = {
     },
   },
   meetings: {
+    titleOf: 'Протокол · {{date}}',
+    fileCount_one: '{{count}} файл',
+    fileCount_other: '{{count}} файл',
     attachments: 'Тиркемелер',
     week: '{{week}}-жума',
     adminTitle: 'Жыйын протоколдору',

@@ -8,11 +8,9 @@ import { usePreferences } from '../../app/preferences'
 import type { TranslationKey } from '../../app/preferences'
 import { SessionsEditor } from '../../features/courses/SessionsEditor'
 import { courseTitles, groupCourses } from '../../features/courses/grouping'
-import { termLabel } from '../../features/courses/terms'
 import { sessionParts, weeklyHoursFromSessions } from '../../features/courses/sessions'
 import { useCourses, useCreateCourse, useDeleteCourse, useSetCoursePublished, useUpdateCourse } from '../../features/courses/queries'
 import { useAllStaff } from '../../features/staff/queries'
-import { useTerms } from '../../features/terms/queries'
 import type { CourseRecord, CourseSession } from '../../features/courses/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
@@ -67,7 +65,6 @@ export function CoursesAdminPage() {
 
   const courses = useCourses(false)
   const staff = useAllStaff()
-  const terms = useTerms()
   const createCourse = useCreateCourse()
   const updateCourse = useUpdateCourse()
   const deleteCourse = useDeleteCourse()
@@ -205,15 +202,6 @@ export function CoursesAdminPage() {
 
   const titleOptions = useMemo(() => courseTitles(courses.data).map((value) => ({ value })), [courses.data])
 
-  /**
-   * 학기 is not typed in: the API files a class by matching its dates against
-   * 학기 관리. These labels only show where each one landed.
-   */
-  const termLabels = useMemo(
-    () => new Map((terms.data ?? []).map((term) => [term.code, term.name || termLabel(term.code, t)])),
-    [t, terms.data],
-  )
-
   const handleExcel = useCallback(async () => {
     setExporting(true)
 
@@ -248,12 +236,7 @@ export function CoursesAdminPage() {
       {
         title: t('courses.form.subject'),
         key: 'subject',
-        render: (_, record) => (
-          <div className="cell-stack">
-            <Text strong>{record.subject}</Text>
-            {record.category === 'culture' ? <Tag color="purple">{t('courses.form.categoryCulture')}</Tag> : null}
-          </div>
-        ),
+        render: (_, record) => <Text strong>{record.subject}</Text>,
       },
       {
         title: t('courses.form.teacher'),
@@ -261,16 +244,6 @@ export function CoursesAdminPage() {
         key: 'teacherName',
         width: 120,
         render: (value: string | null) => value || dash,
-      },
-      {
-        // Read-only: it follows from the period, and shows the admin where
-        // the class landed.
-        title: t('terms.label'),
-        key: 'term',
-        width: 130,
-        responsive: ['lg'],
-        render: (_, record) =>
-          record.term ? <Tag>{termLabels.get(record.term) ?? termLabel(record.term, t)}</Tag> : <Text type="secondary">{t('terms.unset')}</Text>,
       },
       {
         title: t('courses.table.days'),
@@ -381,7 +354,7 @@ export function CoursesAdminPage() {
         ),
       },
     ],
-    [handleDelete, handleTogglePublished, language, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, t, termLabels],
+    [handleDelete, handleTogglePublished, language, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, t],
   )
 
   /* ------------------------------- render ----------------------------- */

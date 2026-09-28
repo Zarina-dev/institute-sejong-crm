@@ -1,6 +1,7 @@
 import {
   CalendarOutlined,
   DeleteOutlined,
+  DownloadOutlined,
   EditOutlined,
   FileOutlined,
   LockOutlined,
@@ -8,7 +9,7 @@ import {
   PlusOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
-import { Alert, App, Button, Card, Empty, Form, Input, Modal, Skeleton, Space, Tag, Typography, Upload } from 'antd'
+import { Alert, App, Button, Card, Drawer, Empty, Form, Input, Modal, Skeleton, Space, Tag, Typography, Upload } from 'antd'
 import type { UploadProps } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
@@ -26,10 +27,9 @@ import { RichTextEditor } from '../../shared/RichTextEditor'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { YearSelect } from '../../shared/YearSelect'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
 type MeetingFormValues = {
-  title: string
   heldOn: string
   attendees?: string
   body?: string
@@ -39,7 +39,7 @@ type MeetingFormValues = {
 
 const NO_MEETINGS: Meeting[] = []
 
-/** ISO week number — the minutes are written weekly, so each one is labelled with its week. */
+/** ISO week number — the minutes are written weekly, so each carries its week. */
 function weekOfYear(date: string): number {
   const day = new Date(`${date}T00:00:00Z`)
   const thursday = new Date(day)
@@ -51,9 +51,10 @@ function weekOfYear(date: string): number {
 }
 
 /**
- * 회의록 — weekly minutes, read one year at a time. Each entry shows what was
- * discussed, what was decided and the files handed out (usually .hwp).
- * Nothing here is published to the site.
+ * 회의록 — weekly minutes, read one year at a time. The page is a list, not a
+ * stack of documents: one line per meeting with its date, who was there and
+ * its files, and the minutes themselves in a drawer. Every entry is named
+ * after the day it was written, so nobody types a subject.
  */
 export function MeetingsAdminPage() {
   const { t, language } = usePreferences()
@@ -67,16 +68,20 @@ export function MeetingsAdminPage() {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [openId, setOpenId] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [form] = Form.useForm<MeetingFormValues>()
   const saving = createMeeting.isPending || updateMeeting.isPending
 
   const all = meetings.data ?? NO_MEETINGS
+  const titleOf = useCallback((meeting: Meeting) => t('meetings.titleOf', { date: formatDate(meeting.heldOn, language) }), [language, t])
 
   const years = useMemo(() => [...new Set(all.map((meeting) => meeting.heldOn.slice(0, 4)))].sort().reverse(), [all])
   const [year, setYear] = useState<string | null>(null)
   const activeYear = year && years.includes(year) ? year : years[0] ?? null
   const rows = useMemo(() => all.filter((meeting) => meeting.heldOn.startsWith(activeYear ?? '')), [activeYear, all])
+
+  const open = rows.find((meeting) => meeting.id === openId) ?? null
 
   const openCreateModal = useCallback(() => {
     setEditingId(null)
@@ -89,7 +94,6 @@ export function MeetingsAdminPage() {
     (meeting: Meeting) => {
       setEditingId(meeting.id)
       form.setFieldsValue({
-        title: meeting.title,
         heldOn: meeting.heldOn,
         attendees: meeting.attendees,
         body: meeting.body,
@@ -127,21 +131,21 @@ export function MeetingsAdminPage() {
   const handleDelete = useCallback(
     (meeting: Meeting) => {
       confirmDelete({
-        target: meeting.title,
+        target: t('meetings.titleOf', { date: formatDate(meeting.heldOn, language) }),
         onConfirm: () =>
           deleteMeeting.mutateAsync(meeting.id).then(
-            () => message.success(t('meetings.deleted')),
+            () => {
+              setOpenId(null)
+              message.success(t('meetings.deleted'))
+            },
             (err) => message.error(getErrorMessage(err, t('meetings.deleteFailed'))),
           ),
       })
     },
-    [confirmDelete, deleteMeeting, message, t],
+    [confirmDelete, deleteMeeting, language, message, t],
   )
 
-  /**
-   * The file is uploaded as soon as it is picked and only its stored path
-   * travels with the form — the same shape the images use.
-   */
+  /** Uploaded on pick; only the stored path travels with the form. */
   const beforeUpload: UploadProps['beforeUpload'] = async (file) => {
     if (file.size > MAX_DOCUMENT_SIZE) {
       message.error(t('meetings.form.fileTooLarge', { max: formatFileSize(MAX_DOCUMENT_SIZE) }))
@@ -171,14 +175,10 @@ export function MeetingsAdminPage() {
 
       <Card className="surface-card filter-card">
         <div className="filter-footer">
-          {years.length > 1 ? (
-            <Space size={12}>
-              <YearSelect years={years} value={activeYear} onChange={setYear} />
-              <Text type="secondary">{t('meetings.count', { count: rows.length })}</Text>
-            </Space>
-          ) : (
-            <Text>{t('meetings.count', { count: rows.length })}</Text>
-          )}
+          <Space size={12}>
+            {years.length > 1 ? <YearSelect years={years} value={activeYear} onChange={setYear} /> : null}
+            <Text type="secondary">{t('meetings.count', { count: rows.length })}</Text>
+          </Space>
 
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
             {t('meetings.add')}
@@ -195,57 +195,39 @@ export function MeetingsAdminPage() {
       ) : rows.length > 0 ? (
         <div className="meeting-list">
           {rows.map((meeting) => (
-            <Card className="surface-card meeting-card" key={meeting.id}>
-              <div className="meeting-card__head">
-                <div>
-                  <Tag className="meeting-card__week">{t('meetings.week', { week: weekOfYear(meeting.heldOn) })}</Tag>
-                  <Title level={3}>{meeting.title}</Title>
-                  <ul className="meeting-card__facts">
-                    <li>
-                      <CalendarOutlined /> {formatDate(meeting.heldOn, language)}
-                    </li>
-                    {meeting.attendees ? (
-                      <li>
-                        <TeamOutlined /> {meeting.attendees}
-                      </li>
-                    ) : null}
-                  </ul>
-                </div>
+            <Card className="surface-card meeting-row" key={meeting.id} onClick={() => setOpenId(meeting.id)}>
+              <Tag className="meeting-row__week">{t('meetings.week', { week: weekOfYear(meeting.heldOn) })}</Tag>
 
-                <div className="meeting-card__actions">
-                  <Button size="small" icon={<EditOutlined />} onClick={() => openEditModal(meeting)}>
-                    {t('common.edit')}
-                  </Button>
-                  <Button size="small" danger icon={<DeleteOutlined />} aria-label={t('common.delete')} onClick={() => handleDelete(meeting)} />
-                </div>
+              <div className="meeting-row__main">
+                <strong>{titleOf(meeting)}</strong>
+                <span className="meeting-row__facts">
+                  {meeting.attendees ? (
+                    <span>
+                      <TeamOutlined /> {meeting.attendees}
+                    </span>
+                  ) : null}
+                  {meeting.attachments?.length ? (
+                    <span>
+                      <PaperClipOutlined /> {t('meetings.fileCount', { count: meeting.attachments.length })}
+                    </span>
+                  ) : null}
+                </span>
               </div>
 
-              {meeting.body ? (
-                <section>
-                  <Text className="section-kicker">{t('meetings.notes')}</Text>
-                  <RichContent html={meeting.body} />
-                </section>
-              ) : null}
+              {/* Files are one click from the list — no need to open the entry. */}
+              <div className="meeting-row__files" onClick={(event) => event.stopPropagation()} role="presentation">
+                {(meeting.attachments ?? []).map((file) => (
+                  <a className="attachment-chip" key={file.url} href={assetUrl(file.url)} download={file.name} title={file.name}>
+                    <DownloadOutlined />
+                    <span>{file.name}</span>
+                  </a>
+                ))}
+              </div>
 
-              <section className="meeting-card__decisions">
-                <Text className="section-kicker">{t('meetings.decisions')}</Text>
-                {meeting.decisions ? <RichContent html={meeting.decisions} /> : <Text type="secondary">{t('meetings.noDecisions')}</Text>}
-              </section>
-
-              {meeting.attachments?.length ? (
-                <section className="meeting-card__files">
-                  <Text className="section-kicker">{t('meetings.attachments')}</Text>
-                  <div className="attachment-row">
-                    {meeting.attachments.map((file) => (
-                      <a className="attachment-chip" key={file.url} href={assetUrl(file.url)} download={file.name}>
-                        <FileOutlined />
-                        <span>{file.name}</span>
-                        <Text type="secondary">{formatFileSize(file.size)}</Text>
-                      </a>
-                    ))}
-                  </div>
-                </section>
-              ) : null}
+              <div className="meeting-row__actions" onClick={(event) => event.stopPropagation()} role="presentation">
+                <Button size="small" icon={<EditOutlined />} aria-label={t('common.edit')} onClick={() => openEditModal(meeting)} />
+                <Button size="small" danger icon={<DeleteOutlined />} aria-label={t('common.delete')} onClick={() => handleDelete(meeting)} />
+              </div>
             </Card>
           ))}
         </div>
@@ -254,6 +236,64 @@ export function MeetingsAdminPage() {
           <Empty description={t('meetings.empty')} />
         </Card>
       )}
+
+      {/* The minutes themselves open in a drawer, so the list stays a list. */}
+      <Drawer
+        open={Boolean(open)}
+        onClose={() => setOpenId(null)}
+        width={640}
+        title={open ? titleOf(open) : ''}
+        className="meeting-drawer"
+        extra={
+          open ? (
+            <Button icon={<EditOutlined />} onClick={() => openEditModal(open)}>
+              {t('common.edit')}
+            </Button>
+          ) : null
+        }
+      >
+        {open ? (
+          <div className="meeting-detail">
+            <ul className="meeting-detail__facts">
+              <li>
+                <CalendarOutlined /> {formatDate(open.heldOn, language)}
+              </li>
+              {open.attendees ? (
+                <li>
+                  <TeamOutlined /> {open.attendees}
+                </li>
+              ) : null}
+            </ul>
+
+            {open.body ? (
+              <section>
+                <Text className="section-kicker">{t('meetings.notes')}</Text>
+                <RichContent html={open.body} />
+              </section>
+            ) : null}
+
+            <section className="meeting-detail__decisions">
+              <Text className="section-kicker">{t('meetings.decisions')}</Text>
+              {open.decisions ? <RichContent html={open.decisions} /> : <Text type="secondary">{t('meetings.noDecisions')}</Text>}
+            </section>
+
+            {open.attachments?.length ? (
+              <section>
+                <Text className="section-kicker">{t('meetings.attachments')}</Text>
+                <div className="attachment-row">
+                  {open.attachments.map((file) => (
+                    <a className="attachment-chip" key={file.url} href={assetUrl(file.url)} download={file.name}>
+                      <FileOutlined />
+                      <span>{file.name}</span>
+                      <Text type="secondary">{formatFileSize(file.size)}</Text>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+          </div>
+        ) : null}
+      </Drawer>
 
       <Modal
         title={editingId ? t('meetings.editTitle') : t('meetings.addTitle')}
@@ -267,15 +307,8 @@ export function MeetingsAdminPage() {
         width={860}
         className="editor-modal"
       >
+        {/* No subject field: the minutes are named after their date. */}
         <Form form={form} layout="vertical" disabled={saving}>
-          <Form.Item
-            name="title"
-            label={t('meetings.form.title')}
-            rules={[{ required: true, whitespace: true, message: t('meetings.form.titleRequired') }]}
-          >
-            <Input maxLength={255} />
-          </Form.Item>
-
           <div className="form-row">
             <Form.Item name="heldOn" label={t('meetings.form.heldOn')} rules={[{ required: true, message: t('meetings.form.heldOnRequired') }]}>
               <Input type="date" />
@@ -286,14 +319,13 @@ export function MeetingsAdminPage() {
           </div>
 
           <Form.Item name="body" label={t('meetings.form.body')}>
-            <RichTextEditor minHeight={260} />
+            <RichTextEditor minHeight={240} />
           </Form.Item>
 
           <Form.Item name="decisions" label={t('meetings.form.decisions')} extra={t('meetings.form.decisionsHint')}>
-            <RichTextEditor minHeight={180} />
+            <RichTextEditor minHeight={160} />
           </Form.Item>
 
-          {/* Files are uploaded on pick; the form only carries their paths. */}
           <Form.Item label={t('meetings.attachments')} extra={t('meetings.form.filesHint')}>
             <Form.Item name="attachments" noStyle>
               <AttachmentList />
@@ -310,7 +342,7 @@ export function MeetingsAdminPage() {
   )
 }
 
-/** Controlled by `Form.Item`: shows what is attached and lets a file be dropped. */
+/** Controlled by `Form.Item`: what is attached, and a way to drop one. */
 function AttachmentList({ value = [], onChange }: { value?: MeetingAttachment[]; onChange?: (value: MeetingAttachment[]) => void }) {
   const { t } = usePreferences()
 

@@ -669,6 +669,9 @@ export const en = {
     },
   },
   meetings: {
+    titleOf: 'Minutes · {{date}}',
+    fileCount_one: '{{count}} file',
+    fileCount_other: '{{count}} files',
     attachments: 'Attachments',
     week: 'Week {{week}}',
     adminTitle: 'Meeting minutes',

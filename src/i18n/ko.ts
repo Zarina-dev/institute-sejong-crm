@@ -655,6 +655,8 @@ const ko: LocaleDictionary = {
     },
   },
   meetings: {
+    titleOf: '{{date}} 회의록',
+    fileCount_other: '첨부 {{count}}개',
     attachments: '첨부 파일',
     week: '{{week}}주차',
     adminTitle: '회의록',

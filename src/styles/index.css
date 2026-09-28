@@ -3394,24 +3394,116 @@ a.activity-row:hover b {
   align-items: center;
 }
 
-.meeting-card__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
+/* 회의록 is a list: one line per meeting, the minutes themselves in a drawer. */
+.meeting-row.ant-card {
+  cursor: pointer;
 }
 
-.meeting-card__actions {
+.meeting-row .ant-card-body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+}
+
+.meeting-row__week.ant-tag {
+  margin: 0;
+  border-color: var(--color-primary-soft-hover);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-semibold);
+}
+
+.meeting-row__main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.meeting-row__main strong {
+  color: var(--color-text);
+  font-size: var(--text-md);
+}
+
+.meeting-row__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  overflow: hidden;
+  color: var(--color-text-subtle);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.meeting-row__files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  max-width: 320px;
+}
+
+.meeting-row__files .attachment-chip {
+  max-width: 220px;
+  padding: 4px var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.meeting-row__files .attachment-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meeting-row__actions {
   display: flex;
   gap: var(--space-2);
 }
 
+.meeting-detail {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.meeting-detail__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-muted);
+}
+
+.meeting-detail__facts li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.meeting-detail__facts .anticon {
+  color: var(--color-primary-text);
+}
+
 /* Decisions are what gets acted on, so they are set apart from the notes. */
-.meeting-card__decisions {
+.meeting-detail__decisions {
   padding: var(--space-4);
   border-radius: var(--radius-md);
   background: var(--color-surface-sunken);
+}
+
+@media (max-width: 860px) {
+  .meeting-row .ant-card-body {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .meeting-row__files {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    max-width: none;
+  }
 }
 
 @media (max-width: 720px) {

@@ -9,7 +9,7 @@ export type MeetingAttachment = {
 /** 회의록 — internal minutes; never served to the public site. */
 export type Meeting = {
   id: string
-  /** 안건 / 회의명 */
+  /** Legacy subject; the page shows the date instead. */
   title: string
   heldOn: string
   /** 참석자 */
@@ -24,7 +24,8 @@ export type Meeting = {
 }
 
 export type MeetingInput = {
-  title: string
+  /** Written by older entries only — minutes are named after their date. */
+  title?: string
   heldOn: string
   attendees?: string
   body?: string

@@ -691,6 +691,11 @@ const ru: LocaleDictionary = {
     },
   },
   meetings: {
+    titleOf: 'Протокол · {{date}}',
+    fileCount_one: '{{count}} файл',
+    fileCount_few: '{{count}} файла',
+    fileCount_many: '{{count}} файлов',
+    fileCount_other: '{{count}} файла',
     attachments: 'Вложения',
     week: '{{week}}-я неделя',
     adminTitle: 'Протоколы собраний',
