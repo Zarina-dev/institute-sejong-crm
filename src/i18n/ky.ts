@@ -92,6 +92,12 @@ const ky: LocaleDictionary = {
     portalSubtitle: 'Институттун башкаруу панели. Коноктерге аккаунт керек эмес.',
   },
   home: {
+    quickLinks: 'Тез шилтемелер',
+    more: 'Дагы',
+    enquire: 'Чалуу',
+    tuitionTitle: 'Окуу акысы',
+    tuitionText: 'Сабактар акысыз, окуу китеби гана өз эсебиңизден.',
+    enquireTitle: 'Маалымат',
     programmesTitle: 'Биз эмнени окутабыз',
     heroTag: '2026 / 2027 окуу жылы',
     heroTitle: 'Кыялдар багы – Ош 1 Сежоң институту',

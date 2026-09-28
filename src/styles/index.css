@@ -85,8 +85,8 @@
   justify-content: space-between;
   gap: var(--space-4);
   margin-bottom: var(--space-6);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--color-border-subtle);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--color-text);
 }
 
 .section-heading h2.ant-typography {
@@ -413,9 +413,10 @@
   border-radius: 50%;
 }
 
-.hero-panel .ant-row {
+.hero-panel__copy {
   position: relative;
   z-index: 1;
+  max-width: 760px;
 }
 
 .hero-tag.ant-tag {
@@ -4060,4 +4061,364 @@ a.attachment-chip:hover {
   .chronology__entry.is-milestone::before {
     left: calc(var(--space-5) * -1 - 6px);
   }
+}
+
+
+/* ==========================================================================
+   The landing page, in the idiom institute sites are read in here:
+   key visual → 바로가기 → boards (공지사항 · 시간표) → programmes → 이용 안내.
+   ========================================================================== */
+
+/* ---- 바로가기 ---- */
+
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.quick-link {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  text-align: center;
+  text-decoration: none;
+  transition: var(--transition-elevate), var(--transition-colors);
+}
+
+.quick-link:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-link__icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+  font-size: 22px;
+  transition: var(--transition-colors);
+}
+
+.quick-link:hover .quick-link__icon {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+/* ---- Boards: 공지사항 beside this week's classes ---- */
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: var(--space-5);
+}
+
+.board .ant-card-body {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+/* Title left, 더보기 right, a rule under both — the board header pattern. */
+.board-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--color-text);
+}
+
+.board-head h2.ant-typography {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-tight);
+}
+
+.more-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-decoration: none;
+  transition: var(--transition-colors);
+}
+
+.more-link:hover {
+  color: var(--color-primary-text);
+}
+
+.more-link .anticon {
+  font-size: 10px;
+}
+
+/* A notice list: title left, date right, dotted rule between rows. */
+.notice-board,
+.class-board {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notice-board li + li,
+.class-board li + li {
+  border-top: 1px dashed var(--color-border);
+}
+
+.notice-board a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  color: var(--color-text);
+  text-decoration: none;
+  transition: var(--transition-colors);
+}
+
+.notice-board a:hover .notice-board__title {
+  color: var(--color-primary-text);
+  text-decoration: underline;
+}
+
+.notice-board__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow: hidden;
+  font-size: var(--text-base);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notice-board time {
+  flex: none;
+  color: var(--color-text-subtle);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.badge-new {
+  flex: none;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-xs);
+  background: var(--point-50);
+  color: var(--point-500);
+  font-size: var(--text-2xs);
+  font-style: normal;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+}
+
+[data-theme='dark'] .badge-new {
+  background: rgb(214 64 47 / 0.18);
+  color: #ff9a8c;
+}
+
+.board-date.ant-typography {
+  color: var(--color-primary-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+/* One class per row: time, what it is, where. */
+.class-board li {
+  display: grid;
+  grid-template-columns: 124px minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) 0;
+}
+
+.class-board__time {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.class-board__time .anticon {
+  color: var(--color-primary-text);
+}
+
+.class-board__name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.class-board__name strong {
+  overflow: hidden;
+  color: var(--color-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.class-board__name .ant-typography {
+  font-size: var(--text-sm);
+}
+
+.class-board__room {
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Programmes ---- */
+
+.programme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.programme-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.programme-card__head .anticon {
+  color: var(--color-text-faint);
+  font-size: var(--text-sm);
+  transition: var(--transition-colors);
+}
+
+.programme-link:hover .programme-card__head .anticon {
+  color: var(--color-primary);
+}
+
+/* ---- 이용 안내 ---- */
+
+.info-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-7);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+}
+
+.info-strip > div {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.info-strip > div > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.info-strip a {
+  color: var(--color-primary-text);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}
+
+.info-strip__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary-text);
+  font-size: 20px;
+}
+
+@media (max-width: 1080px) {
+  .quick-links {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .quick-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .quick-link {
+    padding: var(--space-4) var(--space-2);
+    font-size: var(--text-sm);
+  }
+
+  .quick-link__icon {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+
+  .board-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .class-board li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .class-board__time {
+    grid-column: 1 / -1;
+  }
+}
+
+
+/* ---- 홈 › 학당 소개 › 인사말 ---- */
+
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  color: var(--color-text-subtle);
+  font-size: var(--text-sm);
+}
+
+.breadcrumbs a {
+  color: var(--color-text-subtle);
+  text-decoration: none;
+  transition: var(--transition-colors);
+}
+
+.breadcrumbs a:hover {
+  color: var(--color-primary-text);
+}
+
+.breadcrumbs span[aria-current] {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+}
+
+.breadcrumbs__sep {
+  font-size: 9px;
+  color: var(--color-text-faint);
 }

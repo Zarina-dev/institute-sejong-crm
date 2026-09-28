@@ -51,6 +51,11 @@
   --rose-500: #e05252;
   --rose-600: #c23c3c;
 
+  /* Point colour: Korean institutional sites carry one, used sparingly for
+     NEW badges and accent rules. */
+  --point-500: #d6402f;
+  --point-50: #fdeeec;
+
   --violet-50: #f1edff;
   --violet-500: #7952e8;
   --violet-600: #6338d4;
@@ -113,12 +118,12 @@
   --gradient-progress: linear-gradient(90deg, var(--brand-500), var(--brand-300));
 
   /* ---------- Radii ---------- */
-  --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
-  --radius-2xl: 24px;
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
   --radius-pill: 999px;
 
   /* ---------- Elevation ---------- */

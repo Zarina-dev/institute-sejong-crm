@@ -1,213 +1,253 @@
-import { ArrowRightOutlined, CalendarOutlined, ClockCircleOutlined, EnvironmentOutlined, ReadOutlined, SolutionOutlined } from '@ant-design/icons'
-import { Button, Card, Col, Row, Skeleton, Tag, Typography } from 'antd'
+import {
+  BookOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  EnvironmentOutlined,
+  FolderOpenOutlined,
+  NotificationOutlined,
+  PictureOutlined,
+  PlusOutlined,
+  ReadOutlined,
+  RightOutlined,
+  SolutionOutlined,
+  TeamOutlined,
+} from '@ant-design/icons'
+import { Button, Card, Empty, Skeleton, Tag, Typography } from 'antd'
 import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
-import { usePreferences } from '../../app/preferences'
+import { contact, phoneHref } from '../../app/contact'
+import { usePreferences, type TranslationKey } from '../../app/preferences'
 import { groupCourses } from '../../features/courses/grouping'
 import { useCourses, useTimetable } from '../../features/courses/queries'
 import { startOfWeek, toIsoDate, weekRange } from '../../features/courses/week'
 import { usePublishedNews } from '../../features/news/queries'
-import { newsThumbnail } from '../../features/news/thumbnail'
 import { formatDate } from '../../shared/format'
-import { richTextExcerpt } from '../../shared/richText'
 
 const { Title, Paragraph, Text } = Typography
 
 const MAX_CLASSES_PER_PROGRAMME = 4
 
-function SectionHeading({ kicker, title, aside }: { kicker: string; title: string; aside?: ReactNode }) {
+/** 바로가기 — the six places visitors actually go, one tap from the top. */
+const QUICK_LINKS: Array<{ to: string; label: TranslationKey; icon: ReactNode }> = [
+  { to: '/programmes', label: 'siteNav.programmesCourses', icon: <SolutionOutlined /> },
+  { to: '/programmes/calendar', label: 'siteNav.programmesCalendar', icon: <CalendarOutlined /> },
+  { to: '/notices', label: 'siteNav.noticesNotice', icon: <NotificationOutlined /> },
+  { to: '/resources', label: 'siteNav.resourcesTextbooks', icon: <BookOutlined /> },
+  { to: '/resources/materials', label: 'siteNav.resourcesMaterials', icon: <FolderOpenOutlined /> },
+  { to: '/history', label: 'siteNav.historyAlbums', icon: <PictureOutlined /> },
+]
+
+/** A Korean-style section head: rule, title on the left, 더보기 on the right. */
+function SectionHead({ title, to, label }: { title: string; to?: string; label?: string }) {
   return (
-    <div className="section-heading">
-      <div>
-        <Text className="section-kicker">{kicker}</Text>
-        <Title level={2}>{title}</Title>
-      </div>
-      {aside}
+    <div className="board-head">
+      <Title level={2}>{title}</Title>
+      {to && label ? (
+        <Link className="more-link" to={to} aria-label={label}>
+          <PlusOutlined />
+          <span>{label}</span>
+        </Link>
+      ) : null}
     </div>
   )
 }
 
 /**
- * Landing page: what the institute teaches (live programmes), the next
- * class from the real timetable, and the latest announcements. Nothing on
- * it is static copy that could go stale.
+ * The landing page, laid out the way institute sites are read here: a key
+ * visual, 바로가기 tiles, then the boards — 공지사항 beside this week's
+ * classes — and the programmes on offer. Everything on it is live data;
+ * nothing is copy that could go stale.
  */
 export function HomePage() {
   const { t, language } = usePreferences()
-  const news = usePublishedNews(3)
+  const news = usePublishedNews(6)
   const courses = useCourses(true)
   const week = useTimetable(useMemo(() => weekRange(startOfWeek(new Date())), []))
 
   const programmes = useMemo(() => groupCourses(courses.data), [courses.data])
+  const notices = (news.data ?? []).filter((post) => post.category !== 'press').slice(0, 5)
 
-  // First class today or later this week — what "next class" means on a landing page.
-  const nextClass = useMemo(() => {
-    const today = toIsoDate(new Date())
-    const now = new Date().toTimeString().slice(0, 5)
-    return (week.data ?? []).find((item) => item.date > today || (item.date === today && item.endTime >= now)) ?? null
-  }, [week.data])
-  const nextDate = nextClass ? new Date(`${nextClass.date}T00:00:00`) : null
-  const dayLong = useMemo(() => new Intl.DateTimeFormat(language, { weekday: 'long', month: 'long', day: 'numeric' }), [language])
+  const today = toIsoDate(new Date())
+  const now = new Date().toTimeString().slice(0, 5)
+
+  /** Today's remaining classes, else the next day that has any. */
+  const upcoming = useMemo(() => {
+    const entries = week.data ?? []
+    const todays = entries.filter((item) => item.date === today && item.endTime >= now)
+
+    if (todays.length > 0) {
+      return { date: today, items: todays }
+    }
+
+    const next = entries.find((item) => item.date > today)
+    return next ? { date: next.date, items: entries.filter((item) => item.date === next.date) } : null
+  }, [now, today, week.data])
+
+  /** Posted within the last week — worth a NEW badge on a notice board. */
+  const isNew = (date: string) => Date.now() - new Date(date).getTime() < 7 * 24 * 60 * 60 * 1000
 
   return (
     <div className="home-page">
+      {/* ---- Key visual ---- */}
       <section className="hero-panel">
-        <Row gutter={[24, 24]} align="middle">
-          <Col xs={24} lg={14}>
-            <Tag className="hero-tag">{t('home.heroTag')}</Tag>
-            <Title level={1} className="hero-title">
-              {t('home.heroTitle')}
-            </Title>
-            <Paragraph className="hero-copy">{t('home.heroCopy')}</Paragraph>
-            <div className="hero-actions">
-              <Link to="/programmes">
-                <Button type="primary" size="large" icon={<SolutionOutlined />}>
-                  {t('home.explore')}
-                </Button>
-              </Link>
-              <Link to="/programmes/calendar">
-                <Button className="hero-secondary" size="large" icon={<CalendarOutlined />}>
-                  {t('home.calendar')}
-                </Button>
-              </Link>
-            </div>
-          </Col>
-
-          <Col xs={24} lg={10}>
-            {/* Live: the next class on the timetable, not a fixed announcement. */}
-            <Card variant="borderless" className="hero-update next-class-card">
-              <Text className="update-label">{t('home.nextClass')}</Text>
-              {week.isPending ? (
-                <Skeleton active paragraph={{ rows: 2 }} />
-              ) : nextClass && nextDate ? (
-                <>
-                  <Title level={3}>{nextClass.courseGroup ? `${nextClass.courseGroup} · ${nextClass.subject}` : nextClass.subject}</Title>
-                  <ul className="next-class-facts">
-                    <li>
-                      <CalendarOutlined /> {dayLong.format(nextDate)}
-                    </li>
-                    <li>
-                      <ClockCircleOutlined /> {nextClass.startTime}–{nextClass.endTime}
-                    </li>
-                    {nextClass.classroom ? (
-                      <li>
-                        <EnvironmentOutlined /> {nextClass.classroom}
-                      </li>
-                    ) : null}
-                  </ul>
-                </>
-              ) : (
-                <Title level={3}>{t('schedule.emptyWeek')}</Title>
-              )}
-              <Link to="/programmes/calendar">
-                {t('home.fullSchedule')} <ArrowRightOutlined />
-              </Link>
-            </Card>
-          </Col>
-        </Row>
-      </section>
-
-      <section className="programmes-section">
-        <SectionHeading
-          kicker={t('nav.courses')}
-          title={t('home.programmesTitle')}
-          aside={
+        <div className="hero-panel__copy">
+          <Tag className="hero-tag">{t('home.heroTag')}</Tag>
+          <Title level={1} className="hero-title">
+            {t('home.heroTitle')}
+          </Title>
+          <Paragraph className="hero-copy">{t('home.heroCopy')}</Paragraph>
+          <div className="hero-actions">
             <Link to="/programmes">
-              <Button type="link" icon={<ArrowRightOutlined />} iconPosition="end">
-                {t('common.viewAll')}
+              <Button type="primary" size="large" icon={<SolutionOutlined />}>
+                {t('home.explore')}
               </Button>
             </Link>
-          }
-        />
-        <Row gutter={[16, 16]} className="card-grid">
-          {courses.isPending
-            ? Array.from({ length: 3 }, (_, index) => (
-                <Col xs={24} md={8} key={index}>
-                  <Card className="surface-card programme-card">
-                    <Skeleton active paragraph={{ rows: 3 }} />
-                  </Card>
-                </Col>
-              ))
-            : programmes.map((programme) => {
-                // Culture programmes live on their own page; send the card where its classes are listed.
-                const isCulture = programme.courses.every((course) => course.category === 'culture')
-
-                return (
-                <Col xs={24} sm={12} lg={8} xl={6} key={programme.title}>
-                  <Link to={isCulture ? '/programmes/culture' : '/programmes'} className="programme-link">
-                    <Card className="surface-card programme-card" hoverable>
-                      <Title level={3}>{programme.title}</Title>
-                      <Text type="secondary">{t('courses.classCount', { count: programme.courses.length })}</Text>
-                      <ul className="programme-classes">
-                        {programme.courses.slice(0, MAX_CLASSES_PER_PROGRAMME).map((course) => (
-                          <li key={course.id}>{course.subject}</li>
-                        ))}
-                        {programme.courses.length > MAX_CLASSES_PER_PROGRAMME ? <li className="programme-more">…</li> : null}
-                      </ul>
-                    </Card>
-                  </Link>
-                </Col>
-                )
-              })}
-        </Row>
+            <a href={phoneHref}>
+              <Button className="hero-secondary" size="large" icon={<TeamOutlined />}>
+                {t('home.enquire')}
+              </Button>
+            </a>
+          </div>
+        </div>
       </section>
 
-      <section className="news-preview">
-        <SectionHeading
-          kicker={t('home.campusNews')}
-          title={t('home.newsTitle')}
-          aside={
-            <Link to="/notices">
-              <Button type="link" icon={<ArrowRightOutlined />} iconPosition="end">
-                {t('common.viewAll')}
-              </Button>
-            </Link>
-          }
-        />
-        <Row gutter={[16, 16]} className="card-grid">
-          {news.isPending
-            ? Array.from({ length: 3 }, (_, index) => (
-                <Col xs={24} md={8} key={index}>
-                  <Card className="surface-card news-card">
-                    <Skeleton active paragraph={{ rows: 2 }} />
-                  </Card>
-                </Col>
-              ))
-            : (news.data ?? []).map((post) => {
-                const thumbnail = newsThumbnail(post)
+      {/* ---- 바로가기 ---- */}
+      <nav className="quick-links" aria-label={t('home.quickLinks')}>
+        {QUICK_LINKS.map((link) => (
+          <Link className="quick-link" to={link.to} key={link.to}>
+            <span className="quick-link__icon" aria-hidden="true">
+              {link.icon}
+            </span>
+            <span>{t(link.label)}</span>
+          </Link>
+        ))}
+      </nav>
 
-                return (
-                  <Col xs={24} md={8} key={post.id}>
-                    <Link to={`/notices/${post.id}`} className="announcement-link">
-                      <Card
-                        className="surface-card news-card"
-                        hoverable
-                        // Every card gets a media band; a post without a photo
-                        // shows the institute mark instead of starting on text.
-                        cover={
-                          thumbnail ? (
-                            <img src={thumbnail} alt="" loading="lazy" />
-                          ) : (
-                            <span className="news-card__placeholder" aria-hidden="true">
-                              <ReadOutlined />
-                            </span>
-                          )
-                        }
-                      >
-                        <Text type="secondary" className="news-card__date">
-                          {formatDate(post.publishedAt ?? post.createdAt, language)}
-                        </Text>
-                        <Title level={4}>{post.title}</Title>
-                        <Paragraph type="secondary" ellipsis={{ rows: 3 }}>
-                          {richTextExcerpt(post.body, 240)}
-                        </Paragraph>
-                      </Card>
-                    </Link>
-                  </Col>
-                )
-              })}
-        </Row>
+      {/* ---- 공지사항 · 이번 주 수업 ---- */}
+      <section className="board-grid">
+        <Card className="surface-card board">
+          <SectionHead title={t('pages.newsTitle')} to="/notices" label={t('home.more')} />
+
+          {news.isPending ? (
+            <Skeleton active paragraph={{ rows: 4 }} />
+          ) : notices.length > 0 ? (
+            <ul className="notice-board">
+              {notices.map((post) => (
+                <li key={post.id}>
+                  <Link to={`/notices/${post.id}`}>
+                    <span className="notice-board__title">
+                      {post.title}
+                      {isNew(post.publishedAt ?? post.createdAt) ? <em className="badge-new">NEW</em> : null}
+                    </span>
+                    <time>{formatDate(post.publishedAt ?? post.createdAt, language)}</time>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Empty description={t('news.empty')} />
+          )}
+        </Card>
+
+        <Card className="surface-card board">
+          <SectionHead title={t('schedule.timetable')} to="/programmes/calendar" label={t('home.more')} />
+
+          {week.isPending ? (
+            <Skeleton active paragraph={{ rows: 4 }} />
+          ) : upcoming ? (
+            <>
+              <Text className="board-date">{formatDate(upcoming.date, language)}</Text>
+              <ul className="class-board">
+                {upcoming.items.slice(0, 4).map((item) => (
+                  <li key={item.id}>
+                    <span className="class-board__time">
+                      <ClockCircleOutlined /> {item.startTime}–{item.endTime}
+                    </span>
+                    <span className="class-board__name">
+                      <strong>{item.subject}</strong>
+                      {item.teacher ? <Text type="secondary">{item.teacher}</Text> : null}
+                    </span>
+                    <span className="class-board__room">{item.classroom ?? '-'}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <Empty description={t('schedule.emptyWeek')} />
+          )}
+        </Card>
+      </section>
+
+      {/* ---- 개설 과정 ---- */}
+      <section className="programmes-section">
+        <SectionHead title={t('home.programmesTitle')} to="/programmes" label={t('home.more')} />
+
+        {courses.isPending ? (
+          <div className="programme-grid">
+            {Array.from({ length: 4 }, (_, index) => (
+              <Card className="surface-card programme-card" key={index}>
+                <Skeleton active paragraph={{ rows: 2 }} />
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="programme-grid">
+            {programmes.map((programme) => {
+              // Culture programmes live on their own page.
+              const isCulture = programme.courses.every((course) => course.category === 'culture')
+
+              return (
+                <Link className="programme-link" to={isCulture ? '/programmes/culture' : '/programmes'} key={programme.title}>
+                  <Card className="surface-card programme-card" hoverable>
+                    <div className="programme-card__head">
+                      <Title level={3}>{programme.title}</Title>
+                      <RightOutlined />
+                    </div>
+                    <Text type="secondary">{t('courses.classCount', { count: programme.courses.length })}</Text>
+                    <ul className="programme-classes">
+                      {programme.courses.slice(0, MAX_CLASSES_PER_PROGRAMME).map((course) => (
+                        <li key={course.id}>{course.subject}</li>
+                      ))}
+                      {programme.courses.length > MAX_CLASSES_PER_PROGRAMME ? <li className="programme-more">…</li> : null}
+                    </ul>
+                  </Card>
+                </Link>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* ---- 이용 안내 ---- */}
+      <section className="info-strip">
+        <div>
+          <span className="info-strip__icon" aria-hidden="true">
+            <EnvironmentOutlined />
+          </span>
+          <div>
+            <Text strong>{t('about.contactKicker')}</Text>
+            <Text type="secondary">{contact.address}</Text>
+          </div>
+        </div>
+        <div>
+          <span className="info-strip__icon" aria-hidden="true">
+            <ReadOutlined />
+          </span>
+          <div>
+            <Text strong>{t('home.tuitionTitle')}</Text>
+            <Text type="secondary">{t('home.tuitionText')}</Text>
+          </div>
+        </div>
+        <div>
+          <span className="info-strip__icon" aria-hidden="true">
+            <TeamOutlined />
+          </span>
+          <div>
+            <Text strong>{t('home.enquireTitle')}</Text>
+            <a href={phoneHref}>{contact.phone}</a>
+          </div>
+        </div>
       </section>
     </div>
   )

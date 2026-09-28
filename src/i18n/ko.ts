@@ -92,6 +92,12 @@ const ko: LocaleDictionary = {
     portalSubtitle: '학당 관리자 페이지입니다. 방문자는 계정이 필요하지 않습니다.',
   },
   home: {
+    quickLinks: '바로가기',
+    more: '더보기',
+    enquire: '전화 문의',
+    tuitionTitle: '수강료',
+    tuitionText: '수업은 무료이며, 교재비만 부담하시면 됩니다.',
+    enquireTitle: '문의 전화',
     programmesTitle: '개설 과정',
     heroTag: '2026 / 2027 학년도',
     heroTitle: '꿈의 동산 – 오시 1세종학당',

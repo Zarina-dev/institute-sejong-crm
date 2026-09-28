@@ -1,6 +1,9 @@
 import { Typography } from 'antd'
 import { memo, type ReactNode } from 'react'
 
+import { Breadcrumbs } from './Breadcrumbs'
+import { useBreadcrumbTrail } from './useBreadcrumbTrail'
+
 const { Title, Text } = Typography
 
 type PageHeaderProps = {
@@ -15,20 +18,20 @@ type PageHeaderProps = {
 }
 
 /**
- * The one page heading. Before this, public/admin pages used
- * `.page-heading` with an h1 and other pages used a bare h2 with a
- * different rhythm — same app, two headers.
+ * The one page heading: the trail, the title, and an optional action.
+ *
+ * Public pages carry 홈 › 학당 소개 › 인사말 above the title, as sites here do;
+ * the kicker then stands down, because the trail already names the section.
+ * Admin routes are not in the public menu, so they get no trail and keep
+ * their kicker.
  */
-export const PageHeader = memo(function PageHeader({
-  kicker,
-  title,
-  description,
-  extra,
-  level = 1,
-}: PageHeaderProps) {
+export const PageHeader = memo(function PageHeader({ kicker, title, description, extra, level = 1 }: PageHeaderProps) {
+  const trail = useBreadcrumbTrail()
+
   return (
     <header className="page-heading">
-      {kicker ? <Text className="section-kicker">{kicker}</Text> : null}
+      <Breadcrumbs trail={trail} />
+      {kicker && trail.length === 0 ? <Text className="section-kicker">{kicker}</Text> : null}
       <div className="page-heading-row">
         <Title level={level}>{title}</Title>
         {extra}

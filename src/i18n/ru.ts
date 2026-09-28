@@ -92,6 +92,12 @@ const ru: LocaleDictionary = {
     portalSubtitle: 'Панель администрирования института. Посетителям аккаунт не нужен.',
   },
   home: {
+    quickLinks: 'Быстрые ссылки',
+    more: 'Все',
+    enquire: 'Позвонить',
+    tuitionTitle: 'Оплата',
+    tuitionText: 'Обучение бесплатное, оплачиваются только учебники.',
+    enquireTitle: 'Справки',
     programmesTitle: 'Чему мы учим',
     heroTag: '2026 / 2027 учебный год',
     heroTitle: 'Сад мечты – Институт короля Седжона Ош 1',

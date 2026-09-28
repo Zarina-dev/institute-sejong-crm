@@ -100,6 +100,12 @@ export const en = {
     portalSubtitle: 'The administration panel for institute staff. Visitors do not need an account.',
   },
   home: {
+    quickLinks: 'Quick links',
+    more: 'More',
+    enquire: 'Call us',
+    tuitionTitle: 'Tuition',
+    tuitionText: 'Classes are free; learners pay only for their textbooks.',
+    enquireTitle: 'Enquiries',
     programmesTitle: 'What we teach',
     heroTag: '2026 / 2027 academic year',
     heroTitle: 'Garden of Dreams – King Sejong Institute Osh 1',
