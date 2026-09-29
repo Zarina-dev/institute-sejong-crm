@@ -8,6 +8,7 @@ import { usePublishedAlbums } from '../../features/gallery/queries'
 import type { GalleryAlbum } from '../../features/gallery/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { PageHeader } from '../../shared/PageHeader'
+import { PhotoCarousel } from '../../shared/PhotoCarousel'
 
 const { Title, Paragraph, Text } = Typography
 
@@ -17,13 +18,24 @@ const ALL = 'all'
 function AlbumCard({ album }: { album: GalleryAlbum }) {
   const { t } = usePreferences()
 
+  // Photos the institute uploaded itself; the cover leads them.
+  const photos = [album.coverImage, ...(album.images ?? [])].filter((image): image is string => Boolean(image))
+
+  /**
+   * With photos of its own the card holds a carousel, so it must not also be
+   * one big external link — the arrows would navigate away instead of paging.
+   */
+  const linked = Boolean(album.albumUrl) && photos.length <= 1
+
   const body = (
     <Card
       className="surface-card album-card"
-      hoverable={Boolean(album.albumUrl)}
+      hoverable={linked}
       cover={
-        album.coverImage ? (
-          <img src={assetUrl(album.coverImage)} alt="" loading="lazy" />
+        photos.length > 1 ? (
+          <PhotoCarousel images={photos} label={album.title} />
+        ) : photos.length === 1 ? (
+          <img src={assetUrl(photos[0])} alt="" loading="lazy" />
         ) : (
           <div className="album-card__placeholder" aria-hidden="true">
             <PictureOutlined />
@@ -43,12 +55,22 @@ function AlbumCard({ album }: { album: GalleryAlbum }) {
           {album.description}
         </Paragraph>
       ) : null}
-      <Text className="album-card__link">{album.albumUrl ? `${t('gallery.openAlbum')} →` : t('gallery.noLink')}</Text>
+      {album.albumUrl ? (
+        linked ? (
+          <Text className="album-card__link">{`${t('gallery.openAlbum')} →`}</Text>
+        ) : (
+          <a className="album-card__link" href={album.albumUrl} target="_blank" rel="noopener noreferrer">
+            {`${t('gallery.openAlbum')} →`}
+          </a>
+        )
+      ) : photos.length === 0 ? (
+        <Text className="album-card__link">{t('gallery.noLink')}</Text>
+      ) : null}
     </Card>
   )
 
-  // Photos live in Google Photos, so the card is an external link when set.
-  return album.albumUrl ? (
+  // Without its own photos the whole card is the way to the external album.
+  return linked && album.albumUrl ? (
     <a href={album.albumUrl} target="_blank" rel="noopener noreferrer" className="album-link">
       {body}
     </a>

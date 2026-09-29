@@ -15,6 +15,7 @@ import type { Competition, CompetitionKind, CompetitionWinner } from '../../feat
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { formatDate } from '../../shared/format'
+import { ImageListField } from '../../shared/ImageListField'
 import { ImageUploadField } from '../../shared/ImageUploadField'
 import { PageHeader } from '../../shared/PageHeader'
 import { RichTextEditor } from '../../shared/RichTextEditor'
@@ -34,6 +35,7 @@ type CompetitionFormValues = {
   summary?: string
   winners?: CompetitionWinner[]
   coverImage: string | null
+  images?: string[]
   albumUrl?: string | null
   isPublished: boolean
 }
@@ -99,6 +101,7 @@ export function CompetitionsAdminPage() {
         summary: record.summary,
         winners: record.winners,
         coverImage: record.coverImage,
+        images: record.images ?? [],
         albumUrl: record.albumUrl ?? '',
         isPublished: record.isPublished,
       })
@@ -291,7 +294,7 @@ export function CompetitionsAdminPage() {
         width={860}
         className="editor-modal"
       >
-        <Form form={form} layout="vertical" disabled={saving} initialValues={{ kind, isPublished: true, coverImage: null, winners: [] }}>
+        <Form form={form} layout="vertical" disabled={saving} initialValues={{ kind, isPublished: true, coverImage: null, images: [], winners: [] }}>
           <Form.Item name="kind" label={t('competitions.form.kind')}>
             <Segmented
               options={[
@@ -327,6 +330,10 @@ export function CompetitionsAdminPage() {
 
           <Form.Item name="coverImage" label={t('competitions.form.cover')}>
             <ImageUploadField shape="wide" />
+          </Form.Item>
+
+          <Form.Item name="images" label={t('competitions.form.photos')} extra={t('upload.listHint')}>
+            <ImageListField disabled={saving} />
           </Form.Item>
 
           <Form.Item name="summary" label={t('competitions.form.summary')} extra={t('competitions.form.summaryHint')}>

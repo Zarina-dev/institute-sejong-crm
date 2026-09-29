@@ -23,6 +23,8 @@ export type GalleryAlbum = {
   /** Google Photos album link (high-resolution photos live there, not on our server). */
   albumUrl: string | null
   coverImage: string | null
+  /** Photos held on our own server, in display order. */
+  images: string[]
   heldOn: string | null
   isPublished: boolean
   createdAt: string
@@ -36,6 +38,7 @@ export type AlbumInput = {
   description?: string
   albumUrl?: string | null
   coverImage?: string | null
+  images?: string[]
   heldOn?: string | null
   isPublished?: boolean
 }

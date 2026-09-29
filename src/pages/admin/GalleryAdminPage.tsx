@@ -9,6 +9,7 @@ import { useAllAlbums, useCreateAlbum, useDeleteAlbum, useUpdateAlbum } from '..
 import { EVENT_TAGS, type EventTag, type GalleryAlbum } from '../../features/gallery/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
+import { ImageListField } from '../../shared/ImageListField'
 import { ImageUploadField } from '../../shared/ImageUploadField'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
@@ -23,6 +24,7 @@ type AlbumFormValues = {
   description?: string
   albumUrl?: string | null
   coverImage: string | null
+  images?: string[]
   heldOn?: string | null
   isPublished: boolean
 }
@@ -66,6 +68,7 @@ export function GalleryAdminPage() {
         description: album.description,
         albumUrl: album.albumUrl ?? '',
         coverImage: album.coverImage,
+        images: album.images ?? [],
         heldOn: album.heldOn ?? '',
         isPublished: album.isPublished,
       })
@@ -253,7 +256,7 @@ export function GalleryAdminPage() {
           form={form}
           layout="vertical"
           disabled={saving}
-          initialValues={{ eventTag: 'other', isPublished: true, coverImage: null, year: new Date().getFullYear() }}
+          initialValues={{ eventTag: 'other', isPublished: true, coverImage: null, images: [], year: new Date().getFullYear() }}
         >
           <Form.Item name="title" label={t('gallery.form.title')} rules={[{ required: true, whitespace: true, message: t('gallery.form.titleRequired') }]}>
             <Input maxLength={255} />
@@ -283,6 +286,9 @@ export function GalleryAdminPage() {
           </Form.Item>
           <Form.Item name="coverImage" label={t('gallery.form.cover')}>
             <ImageUploadField shape="wide" hint={t('gallery.form.coverHint')} />
+          </Form.Item>
+          <Form.Item name="images" label={t('gallery.form.photos')} extra={t('upload.listHint')}>
+            <ImageListField disabled={saving} />
           </Form.Item>
           <Form.Item name="isPublished" label={t('gallery.form.published')} valuePropName="checked">
             <Switch />

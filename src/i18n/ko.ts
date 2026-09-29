@@ -383,6 +383,9 @@ const ko: LocaleDictionary = {
     instagram: '인스타그램',
   },
   gallery: {
+    previousPhoto: '이전 사진',
+    nextPhoto: '다음 사진',
+    photoNumber: '{{number}}번째 사진',
     empty: '등록된 사진첩이 없습니다.',
     openAlbum: '사진 보기',
     albumCount_one: '사진첩 {{count}}개',
@@ -404,6 +407,7 @@ const ko: LocaleDictionary = {
     loadFailed: '사진첩을 불러올 수 없습니다.',
     noLink: '링크 없음',
     form: {
+      photos: '사진',
       year: '연도',
       title: '제목',
       titleRequired: '제목을 입력하세요.',
@@ -615,6 +619,10 @@ const ko: LocaleDictionary = {
     },
   },
   upload: {
+    addPhotos: '사진 추가',
+    moveLeft: '왼쪽으로',
+    moveRight: '오른쪽으로',
+    listHint: '사진을 여러 장 추가할 수 있으며, 여기의 순서대로 넘겨 보입니다.',
     image: '이미지 업로드',
     hint: 'JPG, PNG, WebP, GIF 5 MB 이하.',
     failed: '이미지를 업로드할 수 없습니다.',
@@ -646,6 +654,7 @@ const ko: LocaleDictionary = {
     saveFailed: '기록 저장에 실패했습니다.',
     deleteFailed: '기록 삭제에 실패했습니다.',
     form: {
+      photos: '사진',
       kind: '대회 구분',
       title: '대회명',
       titleRequired: '대회명을 입력하세요.',

@@ -3,13 +3,13 @@ import { Card, Empty, Skeleton, Table, Tag, Typography } from 'antd'
 import type { TableProps } from 'antd'
 import { useMemo, useState } from 'react'
 
-import { assetUrl } from '../../../api/client'
 import { usePreferences } from '../../../app/preferences'
 import { useCompetitions } from '../../../features/competitions/queries'
 import type { Competition, CompetitionKind, CompetitionWinner } from '../../../features/competitions/types'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { formatDate } from '../../../shared/format'
 import { PageHeader } from '../../../shared/PageHeader'
+import { PhotoCarousel } from '../../../shared/PhotoCarousel'
 import { YearSelect } from '../../../shared/YearSelect'
 import { RichContent } from '../../../shared/RichContent'
 
@@ -107,7 +107,8 @@ export function CompetitionsPage({ kind }: { kind: CompetitionKind }) {
           {records.map((record) => (
             <Card className="surface-card competition-card" key={record.id}>
               <div className="competition-card__head">
-                {record.coverImage ? <img className="competition-card__cover" src={assetUrl(record.coverImage)} alt="" loading="lazy" /> : null}
+                {/* One frame whatever the photos are: they slide, the layout does not. */}
+                <PhotoCarousel images={[record.coverImage, ...(record.images ?? [])].filter((image): image is string => Boolean(image))} label={record.title} />
 
                 <div>
                   <Tag className="competition-card__year">{record.year}</Tag>

@@ -410,6 +410,9 @@ const ru: LocaleDictionary = {
     instagram: 'Instagram',
   },
   gallery: {
+    previousPhoto: 'Предыдущее фото',
+    nextPhoto: 'Следующее фото',
+    photoNumber: 'Фото {{number}}',
     empty: 'Альбомов пока нет.',
     openAlbum: 'Смотреть фото',
     albumCount_one: '{{count}} альбом',
@@ -433,6 +436,7 @@ const ru: LocaleDictionary = {
     loadFailed: 'Не удалось загрузить альбомы.',
     noLink: 'Ссылки пока нет',
     form: {
+      photos: 'Фотографии',
       year: 'Год',
       title: 'Название',
       titleRequired: 'Введите название.',
@@ -648,6 +652,10 @@ const ru: LocaleDictionary = {
     },
   },
   upload: {
+    addPhotos: 'Добавить фото',
+    moveLeft: 'Влево',
+    moveRight: 'Вправо',
+    listHint: 'Можно добавить несколько фото; порядок здесь — порядок показа.',
     image: 'Загрузить изображение',
     hint: 'JPG, PNG, WebP или GIF до 5 МБ.',
     failed: 'Не удалось загрузить изображение.',
@@ -682,6 +690,7 @@ const ru: LocaleDictionary = {
     saveFailed: 'Не удалось сохранить запись.',
     deleteFailed: 'Не удалось удалить запись.',
     form: {
+      photos: 'Фотографии',
       kind: 'Конкурс',
       title: 'Название',
       titleRequired: 'Введите название конкурса.',

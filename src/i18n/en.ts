@@ -396,6 +396,9 @@ export const en = {
     instagram: 'Instagram',
   },
   gallery: {
+    previousPhoto: 'Previous photo',
+    nextPhoto: 'Next photo',
+    photoNumber: 'Photo {{number}}',
     empty: 'No albums yet.',
     openAlbum: 'View photos',
     albumCount_one: '{{count}} album',
@@ -417,6 +420,7 @@ export const en = {
     loadFailed: 'Could not load the albums.',
     noLink: 'No link yet',
     form: {
+      photos: 'Photos',
       year: 'Year',
       title: 'Title',
       titleRequired: 'Enter a title.',
@@ -628,6 +632,10 @@ export const en = {
     },
   },
   upload: {
+    addPhotos: 'Add photos',
+    moveLeft: 'Move left',
+    moveRight: 'Move right',
+    listHint: 'Several photos can be added; the order here is the order visitors page through.',
     image: 'Upload image',
     hint: 'JPG, PNG, WebP or GIF up to 5 MB.',
     failed: 'Could not upload the image.',
@@ -660,6 +668,7 @@ export const en = {
     saveFailed: 'Could not save the record.',
     deleteFailed: 'Could not delete the record.',
     form: {
+      photos: 'Photos',
       kind: 'Competition',
       title: 'Name',
       titleRequired: 'Enter the name of the competition.',

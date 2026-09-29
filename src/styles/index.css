@@ -4422,3 +4422,188 @@ a.attachment-chip:hover {
   font-size: 9px;
   color: var(--color-text-faint);
 }
+
+/* ==========================================================================
+   Photo carousel — several photos in one frame that never changes size
+   ========================================================================== */
+
+.photo-carousel {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.photo-carousel:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+  border-radius: var(--radius-md);
+}
+
+/* The frame is fixed: a portrait and a wide group shot leave the page alone. */
+.photo-carousel__frame {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+
+.photo-carousel__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Only the current photo is painted; it slides in from the side it came from. */
+.photo-carousel__photo.is-current {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.photo-carousel__photo.is-current.is-next {
+  animation: photo-in-right var(--duration-base) var(--ease-out);
+}
+
+.photo-carousel__photo.is-current.is-prev {
+  animation: photo-in-left var(--duration-base) var(--ease-out);
+}
+
+@keyframes photo-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(18%);
+  }
+}
+
+@keyframes photo-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-18%);
+  }
+}
+
+.photo-carousel__arrow.ant-btn {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  border: 0;
+  background: rgb(255 255 255 / 0.9);
+  color: var(--neutral-900);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: var(--transition-colors), opacity var(--duration-fast) var(--ease-out);
+}
+
+.photo-carousel__arrow--prev {
+  left: var(--space-3);
+}
+
+.photo-carousel__arrow--next {
+  right: var(--space-3);
+}
+
+/* The arrows stay out of the way until the photo is under the pointer — or
+   the carousel has focus, so they are always reachable from the keyboard. */
+.photo-carousel:hover .photo-carousel__arrow.ant-btn,
+.photo-carousel:focus-within .photo-carousel__arrow.ant-btn {
+  opacity: 1;
+}
+
+.photo-carousel__arrow.ant-btn:hover {
+  background: var(--neutral-0);
+  color: var(--color-primary-text);
+}
+
+.photo-carousel__count {
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: rgb(15 23 42 / 0.62);
+  color: var(--neutral-0);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.photo-carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.photo-carousel__dots button {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-border-strong);
+  cursor: pointer;
+  transition: var(--transition-colors), width var(--duration-fast) var(--ease-out);
+}
+
+.photo-carousel__dots button.is-current {
+  width: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+}
+
+/* ---- The admin side: the photos of one record, in their display order ---- */
+
+.image-list {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}
+
+.image-list__items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-3);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.image-list__items li {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.image-list__items img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.image-list__actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+/* In an album card the carousel is the cover, so it squares off at the top. */
+.album-card .photo-carousel {
+  gap: 0;
+}
+
+.album-card .photo-carousel__frame {
+  aspect-ratio: 16 / 10;
+  border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
+}
+
+.album-card .photo-carousel__dots {
+  padding: var(--space-2) 0;
+}

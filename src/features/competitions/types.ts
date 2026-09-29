@@ -21,6 +21,8 @@ export type Competition = {
   summary: string
   winners: CompetitionWinner[]
   coverImage: string | null
+  /** The rest of the photos from that day, in display order. */
+  images: string[]
   albumUrl: string | null
   isPublished: boolean
   createdAt: string
@@ -37,6 +39,7 @@ export type CompetitionInput = {
   summary?: string
   winners?: CompetitionWinner[]
   coverImage?: string | null
+  images?: string[]
   albumUrl?: string | null
   isPublished?: boolean
 }
