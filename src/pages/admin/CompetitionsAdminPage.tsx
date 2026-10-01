@@ -1,8 +1,7 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, MinusCircleOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
 import { App, Button, Card, Dropdown, Form, Input, InputNumber, Modal, Segmented, Space, Switch, Table, Tag, Typography } from 'antd'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import {
@@ -41,6 +40,7 @@ type CompetitionFormValues = {
 }
 
 const NO_RECORDS: Competition[] = []
+const ALL_KINDS = 'all'
 
 /**
  * 대회 기록 — the admin side of 말하기 대회 and 백일장. The list is filtered
@@ -63,17 +63,13 @@ export function CompetitionsAdminPage() {
   const [form] = Form.useForm<CompetitionFormValues>()
   const saving = createCompetition.isPending || updateCompetition.isPending
 
-  const [params, setParams] = useSearchParams()
-  const requested = params.get('kind') as CompetitionKind | null
-  const kind: CompetitionKind = requested === 'writing' ? 'writing' : 'speech'
-
-  useEffect(() => {
-    if (requested !== kind) {
-      setParams({ kind }, { replace: true })
-    }
-  }, [kind, requested, setParams])
-
-  const ofKind = useMemo(() => (competitions.data ?? NO_RECORDS).filter((record) => record.kind === kind), [competitions.data, kind])
+  // 말하기 대회 and 백일장 are managed together; the filter is a view, not a
+  // separate page, so an edition can be moved between them by editing it.
+  const [kind, setKind] = useState<CompetitionKind | typeof ALL_KINDS>(ALL_KINDS)
+  const ofKind = useMemo(
+    () => (kind === ALL_KINDS ? competitions.data ?? NO_RECORDS : (competitions.data ?? NO_RECORDS).filter((record) => record.kind === kind)),
+    [competitions.data, kind],
+  )
 
   // Same year filter as the public page, so the admin sees what visitors see.
   const years = useMemo(() => [...new Set(ofKind.map((record) => record.year))].sort((a, b) => b - a), [ofKind])
@@ -84,7 +80,7 @@ export function CompetitionsAdminPage() {
   const openCreateModal = useCallback(() => {
     setEditingId(null)
     form.resetFields()
-    form.setFieldsValue({ kind, year: new Date().getFullYear() })
+    form.setFieldsValue({ kind: kind === ALL_KINDS ? 'speech' : kind, year: new Date().getFullYear() })
     setModalOpen(true)
   }, [form, kind])
 
@@ -168,6 +164,17 @@ export function CompetitionsAdminPage() {
     () => [
       { title: t('competitions.form.year'), dataIndex: 'year', key: 'year', width: 90 },
       {
+        title: t('competitions.form.kind'),
+        dataIndex: 'kind',
+        key: 'kind',
+        width: 120,
+        render: (value: CompetitionKind) => (
+          <Tag color={value === 'speech' ? 'blue' : 'purple'}>
+            {t(value === 'speech' ? 'competitions.speechTitle' : 'competitions.writingTitle')}
+          </Tag>
+        ),
+      },
+      {
         title: t('competitions.form.title'),
         dataIndex: 'title',
         key: 'title',
@@ -234,18 +241,15 @@ export function CompetitionsAdminPage() {
 
   return (
     <div className="page-layout">
-      <PageHeader
-        kicker={t('competitions.adminTitle')}
-        title={t(kind === 'speech' ? 'competitions.speechTitle' : 'competitions.writingTitle')}
-        description={t('competitions.adminSubtitle')}
-      />
+      <PageHeader kicker={t('siteNav.history')} title={t('competitions.adminTitle')} description={t('competitions.adminSubtitle')} />
 
       <Card className="surface-card filter-card">
         <div className="filter-footer">
           <Segmented
             value={kind}
-            onChange={(value) => setParams({ kind: value as CompetitionKind })}
+            onChange={(value) => setKind(value as CompetitionKind | typeof ALL_KINDS)}
             options={[
+              { value: ALL_KINDS, label: t('competitions.allKinds') },
               { value: 'speech', label: t('competitions.speechTitle') },
               { value: 'writing', label: t('competitions.writingTitle') },
             ]}

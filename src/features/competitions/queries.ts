@@ -1,16 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { createCompetition, deleteCompetition, getAllCompetitions, getCompetitions, updateCompetition } from './api'
+import { createCompetition, deleteCompetition, getAllCompetitions, getCompetitions, getPublishedCompetitions, updateCompetition } from './api'
 import type { CompetitionInput, CompetitionKind } from './types'
 
 export const competitionKeys = {
   all: ['competitions'] as const,
   kind: (kind: CompetitionKind) => [...competitionKeys.all, kind] as const,
+  published: () => [...competitionKeys.all, 'published'] as const,
   admin: () => [...competitionKeys.all, 'admin'] as const,
 }
 
 export function useCompetitions(kind: CompetitionKind) {
   return useQuery({ queryKey: competitionKeys.kind(kind), queryFn: () => getCompetitions(kind), staleTime: 5 * 60_000 })
+}
+
+/** Both competitions in one list — the public page keeps them together. */
+export function usePublishedCompetitions() {
+  return useQuery({ queryKey: competitionKeys.published(), queryFn: getPublishedCompetitions, staleTime: 5 * 60_000 })
 }
 
 export function useAllCompetitions() {

@@ -4607,3 +4607,93 @@ a.attachment-chip:hover {
 .album-card .photo-carousel__dots {
   padding: var(--space-2) 0;
 }
+
+/* ---- 행사 일정: the institute's printed table, on screen ---- */
+
+.event-table__caption.ant-typography {
+  display: block;
+  margin-bottom: var(--space-4);
+  color: var(--color-primary-text);
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+}
+
+/* Both scripts in one header cell, as the paper table carries them. */
+.event-table__head {
+  display: grid;
+  gap: 1px;
+  line-height: var(--leading-snug);
+}
+
+.event-table__head small,
+.event-table__weekday small {
+  color: var(--color-text-subtle);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-regular);
+}
+
+.event-table__weekday {
+  display: grid;
+  gap: 1px;
+}
+
+.event-table__weekday strong {
+  color: var(--color-text);
+}
+
+.event-table__name {
+  display: grid;
+  gap: 2px;
+}
+
+.event-table .ant-table-tbody > tr > td {
+  vertical-align: middle;
+}
+
+/* The table is read as a grid, so the cells carry rules on both axes. */
+.event-table .ant-table-thead > tr > th,
+.event-table .ant-table-tbody > tr > td {
+  border-inline-end: 1px solid var(--color-border-subtle);
+}
+
+.event-table .ant-table-thead > tr > th:last-child,
+.event-table .ant-table-tbody > tr > td:last-child {
+  border-inline-end: 0;
+}
+
+/* ---- A notice opens beside the board ---- */
+
+.notice-row {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.notice-detail {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.notice-detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.notice-detail__cover {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+/* The competition kind beside its year. */
+.competition-card__tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}

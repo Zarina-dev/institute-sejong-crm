@@ -11,6 +11,7 @@ import { HistoryPage } from '../pages/public/HistoryPage'
 import { HomePage } from '../pages/public/HomePage'
 import { LoginPage } from '../pages/public/LoginPage'
 import { FaqPage } from '../pages/public/notices/FaqPage'
+import { EventsPage } from '../pages/public/notices/EventsPage'
 import { NoticesPage } from '../pages/public/notices/NoticesPage'
 import { NewsDetailPage } from '../pages/public/NewsDetailPage'
 import { CalendarPage } from '../pages/public/programmes/CalendarPage'
@@ -37,6 +38,7 @@ const CompetitionsAdminPage = lazy(() => import('../pages/admin/CompetitionsAdmi
 const MeetingsAdminPage = lazy(() => import('../pages/admin/MeetingsAdminPage').then((m) => ({ default: m.MeetingsAdminPage })))
 const TermsAdminPage = lazy(() => import('../pages/admin/TermsAdminPage').then((m) => ({ default: m.TermsAdminPage })))
 const ChronologyAdminPage = lazy(() => import('../pages/admin/ChronologyAdminPage').then((m) => ({ default: m.ChronologyAdminPage })))
+const EventsAdminPage = lazy(() => import('../pages/admin/EventsAdminPage').then((m) => ({ default: m.EventsAdminPage })))
 
 function RouteFallback() {
   return (
@@ -67,6 +69,7 @@ export function AppRouter() {
           {/* 알림마당 */}
           <Route path="/notices" element={<NoticesPage variant="notice" />} />
           <Route path="/notices/press" element={<NoticesPage variant="press" />} />
+          <Route path="/notices/events" element={<EventsPage />} />
           <Route path="/notices/faq" element={<FaqPage />} />
           <Route path="/notices/:id" element={<NewsDetailPage />} />
 
@@ -77,8 +80,10 @@ export function AppRouter() {
 
           {/* 학당 발자취 */}
           <Route path="/history" element={<HistoryPage />} />
-          <Route path="/history/speech" element={<CompetitionsPage kind="speech" />} />
-          <Route path="/history/writing" element={<CompetitionsPage kind="writing" />} />
+          <Route path="/history/competitions" element={<CompetitionsPage />} />
+          {/* The two competitions used to have a page each. */}
+          <Route path="/history/speech" element={<Navigate to="/history/competitions" replace />} />
+          <Route path="/history/writing" element={<Navigate to="/history/competitions" replace />} />
 
           <Route path="/login" element={<LoginPage />} />
 
@@ -105,6 +110,7 @@ export function AppRouter() {
           <Route path="content" element={<ContentAdminPage />} />
           <Route path="terms" element={<TermsAdminPage />} />
           <Route path="chronology" element={<ChronologyAdminPage />} />
+          <Route path="events" element={<EventsAdminPage />} />
           <Route path="competitions" element={<CompetitionsAdminPage />} />
           <Route path="meetings" element={<MeetingsAdminPage />} />
         </Route>

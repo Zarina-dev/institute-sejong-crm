@@ -40,6 +40,7 @@ export const navigation: NavSection[] = [
     children: [
       { to: '/notices', labelKey: 'siteNav.noticesNotice' },
       { to: '/notices/press', labelKey: 'siteNav.noticesPress' },
+      { to: '/notices/events', labelKey: 'siteNav.noticesEvents' },
       { to: '/notices/faq', labelKey: 'siteNav.noticesFaq' },
     ],
   },
@@ -57,8 +58,7 @@ export const navigation: NavSection[] = [
     labelKey: 'siteNav.history',
     children: [
       { to: '/history', labelKey: 'siteNav.historyAlbums' },
-      { to: '/history/speech', labelKey: 'siteNav.historySpeech' },
-      { to: '/history/writing', labelKey: 'siteNav.historyWriting' },
+      { to: '/history/competitions', labelKey: 'siteNav.historyCompetitions' },
     ],
   },
 ]

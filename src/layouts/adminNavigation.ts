@@ -48,6 +48,7 @@ export const adminNavigation: AdminNavGroup[] = [
     items: [
       { to: '/admin/news?view=notices', labelKey: 'siteNav.noticesNotice' },
       { to: '/admin/news?view=press', labelKey: 'siteNav.noticesPress' },
+      { to: '/admin/events', labelKey: 'siteNav.noticesEvents' },
       { to: '/admin/content?block=notices.faq', labelKey: 'siteNav.noticesFaq' },
     ],
   },
@@ -63,8 +64,7 @@ export const adminNavigation: AdminNavGroup[] = [
     labelKey: 'siteNav.history',
     items: [
       { to: '/admin/gallery', labelKey: 'siteNav.historyAlbums' },
-      { to: '/admin/competitions?kind=speech', labelKey: 'siteNav.historySpeech' },
-      { to: '/admin/competitions?kind=writing', labelKey: 'siteNav.historyWriting' },
+      { to: '/admin/competitions', labelKey: 'siteNav.historyCompetitions' },
     ],
   },
   /* Internal: nothing under this section appears on the public site. */
