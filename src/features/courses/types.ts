@@ -26,6 +26,8 @@ export type CourseRecord = {
   courseCode?: string | null
   /** 학기 — 'YYYY-1' or 'YYYY-2'; older rows fall back to the start date. */
   term?: string | null
+  /** Whether the class runs the whole semester or only part of it. */
+  followsTerm?: boolean
   startDate?: string | null
   endDate?: string | null
   capacity: number

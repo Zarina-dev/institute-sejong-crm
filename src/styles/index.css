@@ -4922,3 +4922,12 @@ a.attachment-chip:hover {
   padding: 0;
   list-style: none;
 }
+
+/* 학기 전체 — the dates on this class are the semester's, not its own. */
+.period-tag.ant-tag {
+  margin: 0;
+  border-color: transparent;
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}

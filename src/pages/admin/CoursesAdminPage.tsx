@@ -19,6 +19,7 @@ import { useAllStaff } from '../../features/staff/queries'
 import type { CourseRecord, CourseSession } from '../../features/courses/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
+import { formatDate } from '../../shared/format'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
@@ -64,6 +65,10 @@ type CourseFormValues = {
   classroom?: string
   /** 학기 code from 학기 관리; the class takes its period from it. */
   term: string
+  /** 학기 전체 (true) or dates of its own inside the semester. */
+  followsTerm: boolean
+  startDate?: string
+  endDate?: string
   expectedStudents?: number | null
   actualStudents?: number | null
   totalHours?: number | null
@@ -120,6 +125,17 @@ export function CoursesAdminPage() {
 
   const saving = createCourse.isPending || updateCourse.isPending
 
+  /* ------------------------------ period ------------------------------ */
+
+  const chosenTerm = Form.useWatch('term', form)
+  const followsTerm = Form.useWatch('followsTerm', form)
+  const selectedTerm = useMemo(() => (terms.data ?? NO_TERMS).find((term) => term.code === chosenTerm), [chosenTerm, terms.data])
+
+  // Whichever way the period is set, the semester's own dates are the frame.
+  const periodHint = selectedTerm
+    ? t('courses.form.periodHint', { from: formatDate(selectedTerm.startDate, language), to: formatDate(selectedTerm.endDate, language) })
+    : undefined
+
   /* ------------------------------- modal ------------------------------ */
 
   const openCreateModal = useCallback(() => {
@@ -152,6 +168,10 @@ export function CoursesAdminPage() {
         // A class saved before the field existed falls back to the semester
         // its start date lands in.
         term: courseTerm(record) ?? undefined,
+        // A class saved before the field existed kept its own dates.
+        followsTerm: record.followsTerm ?? false,
+        startDate: record.startDate ?? undefined,
+        endDate: record.endDate ?? undefined,
         expectedStudents: record.expectedStudents ?? null,
         actualStudents: record.actualStudents ?? null,
         totalHours: record.totalHours ?? null,
@@ -195,12 +215,16 @@ export function CoursesAdminPage() {
       return
     }
 
+    // A class that runs the whole semester has no dates of its own: the
+    // API takes them from the term, and keeps them in step with it.
+    const payload = values.followsTerm ? { ...values, startDate: undefined, endDate: undefined } : values
+
     try {
       if (editingId) {
-        await updateCourse.mutateAsync({ id: editingId, payload: values })
+        await updateCourse.mutateAsync({ id: editingId, payload })
         message.success(t('courses.updated'))
       } else {
-        await createCourse.mutateAsync(values)
+        await createCourse.mutateAsync(payload)
         message.success(t('courses.created'))
       }
 
@@ -317,9 +341,13 @@ export function CoursesAdminPage() {
         width: 170,
         responsive: ['xl'],
         render: (_, record) => (
-          <Text type="secondary">
-            {record.startDate || '-'} ~ {record.endDate || '-'}
-          </Text>
+          <div className="cell-stack">
+            <Text type="secondary">
+              {record.startDate || '-'} ~ {record.endDate || '-'}
+            </Text>
+            {/* Whether those dates are the semester's or the class's own. */}
+            {record.followsTerm ? <Tag className="period-tag">{t('courses.form.wholeTermTag')}</Tag> : null}
+          </div>
         ),
       },
       /* ---- Semester figures (the office's own numbers) ---- */
@@ -515,7 +543,7 @@ export function CoursesAdminPage() {
         forceRender
         width={760}
       >
-        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false, sessions: [], category: 'language' }}>
+        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false, sessions: [], category: 'language', followsTerm: true }}>
           {copiedFrom ? <Alert type="info" showIcon className="form-notice" message={t('courses.duplicateHint', { title: copiedFrom })} /> : null}
 
           <Row gutter={16}>
@@ -565,6 +593,50 @@ export function CoursesAdminPage() {
           >
             <TermSelect terms={terms.data ?? NO_TERMS} disabled={saving} />
           </Form.Item>
+
+          {/* Most classes run the whole semester. A 문화 강좌 is often a
+              short course inside it — four weeks of 부채춤 — so it says so
+              and sets its own dates, which must stay within the semester. */}
+          <Form.Item name="followsTerm" label={t('courses.form.period')} extra={periodHint}>
+            <Segmented
+              options={[
+                { value: true, label: t('courses.form.wholeTerm') },
+                { value: false, label: t('courses.form.ownDates') },
+              ]}
+            />
+          </Form.Item>
+
+          {followsTerm === false ? (
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="startDate"
+                  label={t('courses.form.startDate')}
+                  rules={[{ required: true, message: t('courses.form.startDateRequired') }]}
+                >
+                  <Input type="date" min={selectedTerm?.startDate} max={selectedTerm?.endDate} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="endDate"
+                  label={t('courses.form.endDate')}
+                  dependencies={['startDate']}
+                  rules={[
+                    { required: true, message: t('courses.form.endDateRequired') },
+                    ({ getFieldValue }) => ({
+                      validator: (_, value?: string) =>
+                        !value || !getFieldValue('startDate') || value >= getFieldValue('startDate')
+                          ? Promise.resolve()
+                          : Promise.reject(new Error(t('courses.form.endBeforeStart'))),
+                    }),
+                  ]}
+                >
+                  <Input type="date" min={selectedTerm?.startDate} max={selectedTerm?.endDate} />
+                </Form.Item>
+              </Col>
+            </Row>
+          ) : null}
           {/* Semester table (학사 일정): 예상수 · 실제수 · 총 시간수 · 주 시간 */}
           <Row gutter={16}>
             <Col xs={12} md={6}>
