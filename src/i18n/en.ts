@@ -167,6 +167,10 @@ export const en = {
   },
   courses: {
     duplicate: 'Duplicate',
+    moveToCulture: 'Move to 문화 강좌',
+    moveToLanguage: 'Move to 강좌 안내',
+    movedToCulture: 'Moved to 문화 강좌.',
+    movedToLanguage: 'Moved to 강좌 안내.',
     scheduleManagedElsewhere: 'Managed on 강좌 안내 and 문화 강좌 — the academic calendar is the same table, read differently.',
     duplicateTitle: 'Duplicate the class',
     duplicateHint: 'Everything was copied from {{title}}. Change what differs and save — the original is untouched.',

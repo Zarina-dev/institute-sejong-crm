@@ -161,6 +161,10 @@ const ru: LocaleDictionary = {
   },
   courses: {
     duplicate: 'Дублировать',
+    moveToCulture: 'Перенести в «Культурные курсы»',
+    moveToLanguage: 'Перенести в «Курсы»',
+    movedToCulture: 'Перенесено в «Культурные курсы».',
+    movedToLanguage: 'Перенесено в «Курсы».',
     scheduleManagedElsewhere: 'Ведётся на страницах «Курсы» и «Культурные курсы» — учебный календарь строится из той же таблицы.',
     duplicateTitle: 'Дублировать занятие',
     duplicateHint: 'Все поля скопированы из «{{title}}». Измените то, что отличается, и сохраните — оригинал останется как был.',

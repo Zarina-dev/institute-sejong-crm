@@ -159,6 +159,10 @@ const ky: LocaleDictionary = {
   },
   courses: {
     duplicate: 'Көчүрмөсүн түзүү',
+    moveToCulture: '«Маданий курстарга» которуу',
+    moveToLanguage: '«Курстарга» которуу',
+    movedToCulture: '«Маданий курстарга» которулду.',
+    movedToLanguage: '«Курстарга» которулду.',
     scheduleManagedElsewhere: '«Курстар» жана «Маданий курстар» барактарында башкарылат — окуу календары ошол эле таблицадан түзүлөт.',
     duplicateTitle: 'Сабактын көчүрмөсү',
     duplicateHint: 'Баары «{{title}}» сабагынан көчүрүлдү. Айырмасын оңдоп сактаңыз — түп нускасы өзгөрбөйт.',

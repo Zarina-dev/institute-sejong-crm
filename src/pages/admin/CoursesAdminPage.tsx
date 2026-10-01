@@ -1,4 +1,4 @@
-import { CopyOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FileExcelOutlined, MoreOutlined, PlusOutlined, PrinterOutlined } from '@ant-design/icons'
+import { CopyOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FileExcelOutlined, MoreOutlined, PlusOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
 import { Alert, App, AutoComplete, Button, Card, Col, Dropdown, Empty, Form, Input, InputNumber, Modal, Row, Segmented, Select, Skeleton, Space, Table, Tag, Typography } from 'antd'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -217,7 +217,13 @@ export function CoursesAdminPage() {
 
     // A class that runs the whole semester has no dates of its own: the
     // API takes them from the term, and keeps them in step with it.
-    const payload = values.followsTerm ? { ...values, startDate: undefined, endDate: undefined } : values
+    const payload = {
+      ...values,
+      // Belt and braces: a class added from 문화 강좌 is a culture class,
+      // whatever the form happens to be carrying.
+      category: editingId ? values.category : view === 'culture' ? 'culture' : 'language',
+      ...(values.followsTerm ? { startDate: undefined, endDate: undefined } : {}),
+    }
 
     try {
       if (editingId) {
@@ -236,6 +242,26 @@ export function CoursesAdminPage() {
   }
 
   /* ------------------------------ actions ----------------------------- */
+
+  /**
+   * 강좌 안내 ↔ 문화 강좌. The form does not ask for 구분 — the page an
+   * admin adds from decides it — so a class entered on the wrong page is
+   * moved from the row rather than by retyping it.
+   */
+  const handleMove = useCallback(
+    (record: CourseRecord) => {
+      const category = (record.category ?? 'language') === 'culture' ? 'language' : 'culture'
+
+      updateCourse.mutate(
+        { id: record.id, payload: { category } },
+        {
+          onSuccess: () => message.success(t(category === 'culture' ? 'courses.movedToCulture' : 'courses.movedToLanguage')),
+          onError: (err) => message.error(getErrorMessage(err, t('courses.saveFailed'))),
+        },
+      )
+    },
+    [message, t, updateCourse],
+  )
 
   const handleTogglePublished = useCallback(
     (record: CourseRecord) => {
@@ -411,6 +437,12 @@ export function CoursesAdminPage() {
                 { key: 'edit', icon: <EditOutlined />, label: t('common.edit'), onClick: () => openEditModal(record) },
                 { key: 'duplicate', icon: <CopyOutlined />, label: t('courses.duplicate'), onClick: () => openDuplicateModal(record) },
                 {
+                  key: 'move',
+                  icon: <SwapOutlined />,
+                  label: t((record.category ?? 'language') === 'culture' ? 'courses.moveToLanguage' : 'courses.moveToCulture'),
+                  onClick: () => handleMove(record),
+                },
+                {
                   key: 'publish',
                   icon: record.isPublished ? <EyeInvisibleOutlined /> : <EyeOutlined />,
                   label: record.isPublished ? t('common.unpublish') : t('common.publish'),
@@ -431,7 +463,7 @@ export function CoursesAdminPage() {
         ),
       },
     ],
-    [handleDelete, handleTogglePublished, language, openDuplicateModal, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, t],
+    [handleDelete, handleMove, handleTogglePublished, language, openDuplicateModal, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, t],
   )
 
   /* ------------------------------- render ----------------------------- */
@@ -545,6 +577,14 @@ export function CoursesAdminPage() {
       >
         <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false, sessions: [], category: 'language', followsTerm: true }}>
           {copiedFrom ? <Alert type="info" showIcon className="form-notice" message={t('courses.duplicateHint', { title: copiedFrom })} /> : null}
+
+          {/* 구분 is not asked for — the page the admin is on decides it —
+              but the field still has to be part of the form: an unregistered
+              value is not returned by validateFields, and the class would be
+              saved under the API's default. */}
+          <Form.Item name="category" hidden>
+            <Input />
+          </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
