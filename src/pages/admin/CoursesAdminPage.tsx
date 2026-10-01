@@ -37,6 +37,13 @@ const COURSE_VIEWS: Record<CourseView, TranslationKey> = {
   culture: 'siteNav.programmesCulture',
 }
 
+/**
+ * 학사 일정 reads the same table a third way, so it manages nothing that
+ * 강좌 안내 and 문화 강좌 do not already manage. The name stays on the
+ * switch and in the menu — the view is simply closed.
+ */
+const DISABLED_VIEWS: CourseView[] = ['schedule']
+
 const inView = (record: CourseRecord, view: CourseView) =>
   view === 'schedule' ? true : view === 'culture' ? record.category === 'culture' : record.category !== 'culture'
 
@@ -81,7 +88,8 @@ export function CoursesAdminPage() {
   // menu land on the reading of this table they manage.
   const [params, setParams] = useSearchParams()
   const requested = params.get('view') as CourseView | null
-  const view: CourseView = requested && requested in COURSE_VIEWS ? requested : 'language'
+  const view: CourseView =
+    requested && requested in COURSE_VIEWS && !DISABLED_VIEWS.includes(requested) ? requested : 'language'
 
   useEffect(() => {
     if (requested !== view) {
@@ -408,7 +416,11 @@ export function CoursesAdminPage() {
           <Segmented
             value={view}
             onChange={(value) => setParams({ view: value as CourseView })}
-            options={Object.entries(COURSE_VIEWS).map(([value, labelKey]) => ({ value, label: t(labelKey) }))}
+            options={Object.entries(COURSE_VIEWS).map(([value, labelKey]) => ({
+              value,
+              label: t(labelKey),
+              disabled: DISABLED_VIEWS.includes(value as CourseView),
+            }))}
           />
           <Space wrap>
             <Text>{t('courses.count', { count: rows.length })}</Text>

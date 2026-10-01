@@ -167,6 +167,7 @@ export const en = {
   },
   courses: {
     duplicate: 'Duplicate',
+    scheduleManagedElsewhere: 'Managed on 강좌 안내 and 문화 강좌 — the academic calendar is the same table, read differently.',
     duplicateTitle: 'Duplicate the class',
     duplicateHint: 'Everything was copied from {{title}}. Change what differs and save — the original is untouched.',
     searchPlaceholder: 'Search by class, programme or teacher',

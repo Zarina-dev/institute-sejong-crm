@@ -1755,6 +1755,17 @@
   color: var(--neutral-0);
 }
 
+/* A page kept in the menu for the record, but not managed from here. */
+.rail-nav .rail-sublink.is-disabled {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-rail-text-muted);
+  font-size: var(--text-sm);
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .rail-nav a.active {
   background: var(--color-rail-active);
   color: var(--color-rail-active-text);

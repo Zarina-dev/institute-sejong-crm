@@ -158,6 +158,7 @@ const ko: LocaleDictionary = {
   },
   courses: {
     duplicate: '복제',
+    scheduleManagedElsewhere: '강좌 안내와 문화 강좌에서 관리합니다. 학사 일정은 같은 표를 다르게 보여주는 화면입니다.',
     duplicateTitle: '수업 복제',
     duplicateHint: '‘{{title}}’의 내용을 그대로 가져왔습니다. 달라지는 부분만 고쳐 저장하세요. 원본은 그대로 남습니다.',
     searchPlaceholder: '반·과정·강사 검색',

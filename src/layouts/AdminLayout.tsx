@@ -153,7 +153,16 @@ export function AdminLayout() {
 
                   {expanded ? (
                     <div className="rail-group__items">
-                      {group.items.map((item) => (
+                      {group.items.map((item) =>
+                        item.disabled ? (
+                          // The name stays so the page is accounted for; it
+                          // simply is not managed from here.
+                          <Tooltip title={item.disabledReasonKey ? t(item.disabledReasonKey) : undefined} placement="right" key={item.to}>
+                            <span className="rail-sublink is-disabled" aria-disabled="true">
+                              {t(item.labelKey)}
+                            </span>
+                          </Tooltip>
+                        ) : (
                         <NavLink
                           key={item.to}
                           to={item.to}
@@ -165,7 +174,8 @@ export function AdminLayout() {
                         >
                           {t(item.labelKey)}
                         </NavLink>
-                      ))}
+                        ),
+                      )}
                     </div>
                   ) : null}
                 </div>

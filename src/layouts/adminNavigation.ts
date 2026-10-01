@@ -7,6 +7,13 @@ export type AdminNavItem = {
   labelKey: TranslationKey
   /** Match only this exact path — needed for the index route `/admin`. */
   end?: boolean
+  /**
+   * Shown, but not open to the admin. The name stays in the menu so the
+   * page is still accounted for; `disabledReasonKey` says where its content
+   * is managed instead.
+   */
+  disabled?: boolean
+  disabledReasonKey?: TranslationKey
 }
 
 export type AdminNavGroup = {
@@ -38,7 +45,14 @@ export const adminNavigation: AdminNavGroup[] = [
     labelKey: 'siteNav.programmes',
     items: [
       { to: '/admin/courses?view=language', labelKey: 'siteNav.programmesCourses' },
-      { to: '/admin/courses?view=schedule', labelKey: 'siteNav.programmesCalendar' },
+      // 학사 일정 is the same table read a third way, so there is nothing
+      // to manage here that 강좌 안내 and 문화 강좌 do not already manage.
+      {
+        to: '/admin/courses?view=schedule',
+        labelKey: 'siteNav.programmesCalendar',
+        disabled: true,
+        disabledReasonKey: 'courses.scheduleManagedElsewhere',
+      },
       { to: '/admin/courses?view=culture', labelKey: 'siteNav.programmesCulture' },
       { to: '/admin/terms', labelKey: 'terms.adminTitle' },
     ],
