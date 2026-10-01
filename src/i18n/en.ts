@@ -166,6 +166,9 @@ export const en = {
     fileRejectedSize: 'File is too large ({{size}}). Maximum is {{max}}.',
   },
   courses: {
+    duplicate: 'Duplicate',
+    duplicateTitle: 'Duplicate the class',
+    duplicateHint: 'Everything was copied from {{title}}. Change what differs and save — the original is untouched.',
     searchPlaceholder: 'Search by class, programme or teacher',
     export: {
       allSheet: 'All programmes',
@@ -644,14 +647,14 @@ export const en = {
   },
   competitions: {
     title: 'Competitions',
-    subtitle: 'Every speech and writing contest the institute has held, with its winners.',
+    subtitle: 'Every competition the institute holds, edition by edition, with its winners.',
     allKinds: 'All',
     speechTitle: 'Speech contest',
     writingTitle: 'Writing contest',
     speechSubtitle: 'A record of every Korean speech contest held by the institute, with its winners.',
     writingSubtitle: 'A record of every Korean writing contest (백일장) held by the institute, with its winners.',
     adminTitle: 'Competition records',
-    adminSubtitle: 'Editions of the speech and writing contests, their winners and photos.',
+    adminSubtitle: 'Editions, winners and photos of every competition. A competition that is not on the list yet is added by naming it on the record.',
     empty: 'No record has been published yet.',
     add: 'Add a record',
     addTitle: 'New competition record',
@@ -674,6 +677,10 @@ export const en = {
     form: {
       photos: 'Photos',
       kind: 'Competition',
+      addKindAs: 'Add “{{name}}” as a new competition',
+      kindHint: 'Not on the list? Type its name and add it — the first record files it under that name.',
+      kindRequired: 'Choose a competition.',
+      kindPlaceholder: 'Choose a competition',
       title: 'Name',
       titleRequired: 'Enter the name of the competition.',
       year: 'Year',

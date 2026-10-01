@@ -157,6 +157,9 @@ const ko: LocaleDictionary = {
     fileRejectedSize: '파일이 너무 큽니다 ({{size}}). 최대 {{max}}까지 가능합니다.',
   },
   courses: {
+    duplicate: '복제',
+    duplicateTitle: '수업 복제',
+    duplicateHint: '‘{{title}}’의 내용을 그대로 가져왔습니다. 달라지는 부분만 고쳐 저장하세요. 원본은 그대로 남습니다.',
     searchPlaceholder: '반·과정·강사 검색',
     export: {
       allSheet: '전체 과정',
@@ -631,14 +634,14 @@ const ko: LocaleDictionary = {
   },
   competitions: {
     title: '대회 기록',
-    subtitle: '학당이 개최한 말하기 대회와 백일장 대회의 회차별 기록과 수상자입니다.',
+    subtitle: '학당이 개최한 대회의 회차별 기록과 수상자입니다.',
     allKinds: '전체',
     speechTitle: '말하기 대회',
     writingTitle: '백일장 대회',
     speechSubtitle: '학당이 개최한 한국어 말하기 대회의 회차별 기록과 수상자입니다.',
     writingSubtitle: '학당이 개최한 백일장 대회의 회차별 기록과 수상자입니다.',
     adminTitle: '대회 기록',
-    adminSubtitle: '말하기 대회와 백일장 대회의 회차, 수상자, 사진을 관리합니다.',
+    adminSubtitle: '각종 대회의 회차, 수상자, 사진을 관리합니다. 새로운 대회는 기록을 추가하면서 이름을 입력하면 바로 만들어집니다.',
     empty: '아직 공개된 기록이 없습니다.',
     add: '기록 추가',
     addTitle: '대회 기록 추가',
@@ -660,6 +663,10 @@ const ko: LocaleDictionary = {
     form: {
       photos: '사진',
       kind: '대회 구분',
+      addKindAs: '‘{{name}}’ 대회 새로 추가',
+      kindHint: '목록에 없으면 새 대회 이름을 입력해 추가하세요. 첫 기록이 그 대회를 만듭니다.',
+      kindRequired: '대회를 선택하세요.',
+      kindPlaceholder: '대회를 선택하세요',
       title: '대회명',
       titleRequired: '대회명을 입력하세요.',
       year: '연도',

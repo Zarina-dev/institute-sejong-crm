@@ -1,6 +1,6 @@
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FileExcelOutlined, MoreOutlined, PlusOutlined, PrinterOutlined } from '@ant-design/icons'
+import { CopyOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FileExcelOutlined, MoreOutlined, PlusOutlined, PrinterOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, AutoComplete, Button, Card, Col, Dropdown, Empty, Form, Input, InputNumber, Modal, Row, Segmented, Select, Skeleton, Space, Table, Tag, Typography } from 'antd'
+import { Alert, App, AutoComplete, Button, Card, Col, Dropdown, Empty, Form, Input, InputNumber, Modal, Row, Segmented, Select, Skeleton, Space, Table, Tag, Typography } from 'antd'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -72,6 +72,8 @@ export function CoursesAdminPage() {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  /** The class a duplicate was taken from, so the form can say so. */
+  const [copiedFrom, setCopiedFrom] = useState<string | null>(null)
   const [form] = Form.useForm<CourseFormValues>()
   const [exporting, setExporting] = useState(false)
 
@@ -106,6 +108,7 @@ export function CoursesAdminPage() {
 
   const openCreateModal = useCallback(() => {
     setEditingId(null)
+    setCopiedFrom(null)
     weeklyHoursEdited.current = false
     form.resetFields()
     // A class added from 문화 강좌 is a culture class.
@@ -114,9 +117,9 @@ export function CoursesAdminPage() {
     setModalOpen(true)
   }, [form, view])
 
-  const openEditModal = useCallback(
+  /** Every field of a class, for editing it or for taking a copy of it. */
+  const fillForm = useCallback(
     (record: CourseRecord) => {
-      setEditingId(record.id)
       // An existing figure is the admin's; keep it until they clear the field.
       weeklyHoursEdited.current = record.weeklyHours != null
       form.setFieldsValue({
@@ -138,6 +141,31 @@ export function CoursesAdminPage() {
       setModalOpen(true)
     },
     [form],
+  )
+
+  const openEditModal = useCallback(
+    (record: CourseRecord) => {
+      setEditingId(record.id)
+      setCopiedFrom(null)
+      fillForm(record)
+    },
+    [fillForm],
+  )
+
+  /**
+   * 복제 — a weekly class is rarely one of a kind: the same programme runs
+   * in two rooms, or the next level starts on the same days. Duplicating
+   * opens the form filled from the class, saving as a new one; the original
+   * is never touched.
+   */
+  const openDuplicateModal = useCallback(
+    (record: CourseRecord) => {
+      setEditingId(null)
+      // The 세부 과정 is what names a class in the table.
+      setCopiedFrom(record.subject || record.title)
+      fillForm(record)
+    },
+    [fillForm],
   )
 
   const submitForm = async () => {
@@ -333,6 +361,7 @@ export function CoursesAdminPage() {
             menu={{
               items: [
                 { key: 'edit', icon: <EditOutlined />, label: t('common.edit'), onClick: () => openEditModal(record) },
+                { key: 'duplicate', icon: <CopyOutlined />, label: t('courses.duplicate'), onClick: () => openDuplicateModal(record) },
                 {
                   key: 'publish',
                   icon: record.isPublished ? <EyeInvisibleOutlined /> : <EyeOutlined />,
@@ -354,7 +383,7 @@ export function CoursesAdminPage() {
         ),
       },
     ],
-    [handleDelete, handleTogglePublished, language, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, t],
+    [handleDelete, handleTogglePublished, language, openDuplicateModal, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, t],
   )
 
   /* ------------------------------- render ----------------------------- */
@@ -452,7 +481,7 @@ export function CoursesAdminPage() {
       )}
 
       <Modal
-        title={editingId ? t('courses.editTitle') : t('courses.addTitle')}
+        title={editingId ? t('courses.editTitle') : copiedFrom ? t('courses.duplicateTitle') : t('courses.addTitle')}
         open={modalOpen}
         onOk={submitForm}
         onCancel={() => setModalOpen(false)}
@@ -463,6 +492,8 @@ export function CoursesAdminPage() {
         width={760}
       >
         <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false, sessions: [], category: 'language' }}>
+          {copiedFrom ? <Alert type="info" showIcon className="form-notice" message={t('courses.duplicateHint', { title: copiedFrom })} /> : null}
+
           <Row gutter={16}>
             <Col span={12}>
               {/* Programme: pick an existing one to add a class under it, or type a new one. */}

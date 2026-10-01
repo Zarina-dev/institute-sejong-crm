@@ -3752,6 +3752,24 @@ a.attachment-chip:hover {
   font-variant-numeric: tabular-nums;
 }
 
+/* 대회 구분 — an open list, so a dropdown rather than a row of buttons.
+   It sits in the filter row at its own width, never stretched across it. */
+.kind-select.ant-select {
+  flex: 0 0 auto;
+  min-width: 190px;
+  max-width: 260px;
+}
+
+.ant-modal .kind-select.ant-select {
+  max-width: none;
+  width: 100%;
+}
+
+/* A note at the head of a form: duplicating a class says what was copied. */
+.form-notice.ant-alert {
+  margin-bottom: var(--space-4);
+}
+
 /* ==========================================================================
    연혁 (chronology) — the institute's story. A lit card, a rail that fades at
    both ends, years set in the brand gradient, and turning points raised out

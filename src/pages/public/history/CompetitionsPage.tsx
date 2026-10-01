@@ -1,9 +1,11 @@
 import { CalendarOutlined, EnvironmentOutlined, PictureOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons'
-import { Card, Empty, Segmented, Skeleton, Space, Table, Tag, Typography } from 'antd'
+import { Card, Empty, Skeleton, Space, Table, Tag, Typography } from 'antd'
 import type { TableProps } from 'antd'
 import { useMemo, useState } from 'react'
 
 import { usePreferences } from '../../../app/preferences'
+import { CompetitionKindFilter } from '../../../features/competitions/KindSelect'
+import { ALL_KINDS, competitionKindColour, competitionKindLabel, competitionKindsInUse } from '../../../features/competitions/kinds'
 import { usePublishedCompetitions } from '../../../features/competitions/queries'
 import type { Competition, CompetitionKind, CompetitionWinner } from '../../../features/competitions/types'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
@@ -16,7 +18,6 @@ import { YearSelect } from '../../../shared/YearSelect'
 const { Title, Text } = Typography
 
 const NO_RECORDS: Competition[] = []
-const ALL = 'all'
 
 /** 1·2·3위 get a colour; the rest stay neutral. */
 const RANK_COLOUR = ['gold', 'silver', '#cd7f32'] as const
@@ -75,8 +76,9 @@ export function CompetitionsPage() {
   const competitions = usePublishedCompetitions()
   const all = competitions.data ?? NO_RECORDS
 
-  const [kind, setKind] = useState<CompetitionKind | typeof ALL>(ALL)
-  const ofKind = useMemo(() => (kind === ALL ? all : all.filter((record) => record.kind === kind)), [all, kind])
+  const kindOptions = useMemo(() => competitionKindsInUse(all, t), [all, t])
+  const [kind, setKind] = useState<CompetitionKind>(ALL_KINDS)
+  const ofKind = useMemo(() => (kind === ALL_KINDS ? all : all.filter((record) => record.kind === kind)), [all, kind])
 
   const years = useMemo(() => [...new Set(ofKind.map((record) => record.year))].sort((a, b) => b - a), [ofKind])
   const [year, setYear] = useState<number | null>(null)
@@ -91,15 +93,7 @@ export function CompetitionsPage() {
 
       <Card className="surface-card filter-card">
         <div className="filter-footer">
-          <Segmented
-            value={kind}
-            onChange={(value) => setKind(value as CompetitionKind | typeof ALL)}
-            options={[
-              { value: ALL, label: t('competitions.allKinds') },
-              { value: 'speech', label: t('competitions.speechTitle') },
-              { value: 'writing', label: t('competitions.writingTitle') },
-            ]}
-          />
+          <CompetitionKindFilter value={kind} onChange={setKind} options={kindOptions} />
 
           <Space size={12}>
             {years.length > 1 ? <YearSelect years={years} value={activeYear} onChange={(value) => setYear(Number(value))} /> : null}
@@ -126,9 +120,7 @@ export function CompetitionsPage() {
                   <div>
                     <span className="competition-card__tags">
                       <Tag className="competition-card__year">{record.year}</Tag>
-                      <Tag color={record.kind === 'speech' ? 'blue' : 'purple'}>
-                        {t(record.kind === 'speech' ? 'competitions.speechTitle' : 'competitions.writingTitle')}
-                      </Tag>
+                      <Tag color={competitionKindColour(record.kind)}>{competitionKindLabel(record.kind, t)}</Tag>
                     </span>
                     <Title level={3}>{record.title}</Title>
 

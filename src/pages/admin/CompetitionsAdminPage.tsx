@@ -1,9 +1,11 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, MinusCircleOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, Button, Card, Dropdown, Form, Input, InputNumber, Modal, Segmented, Space, Switch, Table, Tag, Typography } from 'antd'
+import { App, Button, Card, Dropdown, Form, Input, InputNumber, Modal, Space, Switch, Table, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
+import { CompetitionKindFilter, CompetitionKindSelect } from '../../features/competitions/KindSelect'
+import { ALL_KINDS, competitionKindColour, competitionKindLabel, competitionKindOptions } from '../../features/competitions/kinds'
 import {
   useAllCompetitions,
   useCreateCompetition,
@@ -40,12 +42,12 @@ type CompetitionFormValues = {
 }
 
 const NO_RECORDS: Competition[] = []
-const ALL_KINDS = 'all'
 
 /**
- * 대회 기록 — the admin side of 말하기 대회 and 백일장. The list is filtered
- * by competition the same way the menu splits them, so the entry the admin
- * clicked is the one they land on.
+ * 대회 기록 — every competition the institute runs, managed in one place.
+ * 구분 is picked from the competitions already on record and a new one can
+ * be named right in the form, so starting a competition is just entering
+ * its first record.
  */
 export function CompetitionsAdminPage() {
   const { t, language } = usePreferences()
@@ -63,9 +65,10 @@ export function CompetitionsAdminPage() {
   const [form] = Form.useForm<CompetitionFormValues>()
   const saving = createCompetition.isPending || updateCompetition.isPending
 
-  // 말하기 대회 and 백일장 are managed together; the filter is a view, not a
+  // Every competition is managed together; the filter is a view, not a
   // separate page, so an edition can be moved between them by editing it.
-  const [kind, setKind] = useState<CompetitionKind | typeof ALL_KINDS>(ALL_KINDS)
+  const kindOptions = useMemo(() => competitionKindOptions(competitions.data ?? NO_RECORDS, t), [competitions.data, t])
+  const [kind, setKind] = useState<CompetitionKind>(ALL_KINDS)
   const ofKind = useMemo(
     () => (kind === ALL_KINDS ? competitions.data ?? NO_RECORDS : (competitions.data ?? NO_RECORDS).filter((record) => record.kind === kind)),
     [competitions.data, kind],
@@ -168,11 +171,7 @@ export function CompetitionsAdminPage() {
         dataIndex: 'kind',
         key: 'kind',
         width: 120,
-        render: (value: CompetitionKind) => (
-          <Tag color={value === 'speech' ? 'blue' : 'purple'}>
-            {t(value === 'speech' ? 'competitions.speechTitle' : 'competitions.writingTitle')}
-          </Tag>
-        ),
+        render: (value: CompetitionKind) => <Tag color={competitionKindColour(value)}>{competitionKindLabel(value, t)}</Tag>,
       },
       {
         title: t('competitions.form.title'),
@@ -245,15 +244,7 @@ export function CompetitionsAdminPage() {
 
       <Card className="surface-card filter-card">
         <div className="filter-footer">
-          <Segmented
-            value={kind}
-            onChange={(value) => setKind(value as CompetitionKind | typeof ALL_KINDS)}
-            options={[
-              { value: ALL_KINDS, label: t('competitions.allKinds') },
-              { value: 'speech', label: t('competitions.speechTitle') },
-              { value: 'writing', label: t('competitions.writingTitle') },
-            ]}
-          />
+          <CompetitionKindFilter value={kind} onChange={setKind} options={kindOptions} />
           <Space wrap>
             {years.length > 1 ? (
               <YearSelect
@@ -298,14 +289,15 @@ export function CompetitionsAdminPage() {
         width={860}
         className="editor-modal"
       >
-        <Form form={form} layout="vertical" disabled={saving} initialValues={{ kind, isPublished: true, coverImage: null, images: [], winners: [] }}>
-          <Form.Item name="kind" label={t('competitions.form.kind')}>
-            <Segmented
-              options={[
-                { value: 'speech', label: t('competitions.speechTitle') },
-                { value: 'writing', label: t('competitions.writingTitle') },
-              ]}
-            />
+        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: true, coverImage: null, images: [], winners: [] }}>
+          {/* Pick a competition, or name one the institute has just started. */}
+          <Form.Item
+            name="kind"
+            label={t('competitions.form.kind')}
+            extra={t('competitions.form.kindHint')}
+            rules={[{ required: true, message: t('competitions.form.kindRequired') }]}
+          >
+            <CompetitionKindSelect options={kindOptions} disabled={saving} />
           </Form.Item>
 
           <Form.Item
