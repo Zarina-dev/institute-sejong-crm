@@ -10,7 +10,7 @@ import { ErrorAlert } from '../../shared/ErrorAlert'
 import { PageHeader } from '../../shared/PageHeader'
 import { PhotoCarousel } from '../../shared/PhotoCarousel'
 
-const { Title, Paragraph, Text } = Typography
+const { Title, Text } = Typography
 
 const NO_ALBUMS: GalleryAlbum[] = []
 const ALL = 'all'
@@ -50,10 +50,11 @@ function AlbumCard({ album }: { album: GalleryAlbum }) {
         </Text>
       </div>
       <Title level={4}>{album.title}</Title>
+      {/* Clamped in CSS: Paragraph's `ellipsis` forces a layout per card. */}
       {album.description ? (
-        <Paragraph type="secondary" ellipsis={{ rows: 2 }}>
+        <p className="album-card__description" title={album.description}>
           {album.description}
-        </Paragraph>
+        </p>
       ) : null}
       {album.albumUrl ? (
         linked ? (

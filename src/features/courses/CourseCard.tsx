@@ -7,7 +7,7 @@ import { formatDateRange } from '../../shared/format'
 import { formatSessions } from './sessions'
 import type { CourseRecord } from './types'
 
-const { Paragraph, Text } = Typography
+const { Text } = Typography
 
 type CourseCardProps = {
   course: CourseRecord
@@ -31,10 +31,14 @@ export const CourseCard = memo(function CourseCard({ course, footer }: CourseCar
   return (
     <Card className="surface-card course-card">
       <Text className="course-card__name">{course.subject || course.title}</Text>
+      {/* Clamped in CSS, not with Paragraph's `ellipsis`: that measures each
+          card in the DOM (getBoundingClientRect twice per card), a forced
+          layout per card that made a long list O(N²) — 63% of the main
+          thread with a few thousand classes. `title` keeps the full text. */}
       {course.description ? (
-        <Paragraph type="secondary" className="course-card__description" ellipsis={{ rows: 2, tooltip: course.description }}>
+        <p className="course-card__description" title={course.description}>
           {course.description}
-        </Paragraph>
+        </p>
       ) : null}
 
       <ul className="course-meta">

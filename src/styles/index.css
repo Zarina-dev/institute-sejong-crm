@@ -977,9 +977,17 @@
   line-height: var(--leading-snug);
 }
 
-.course-card__description.ant-typography {
+/* Two lines, clamped by the browser — see CourseCard for why not `ellipsis`. */
+.course-card__description {
+  display: -webkit-box;
+  overflow: hidden;
   margin: 0;
+  color: var(--color-text-muted);
   font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 /* Icon + value rows; the time row can hold several lines (one per slot). */
@@ -2955,6 +2963,18 @@ a.activity-row:hover b {
 .album-card__link {
   color: var(--color-primary-text);
   font-weight: var(--weight-semibold);
+}
+
+/* Two lines, clamped by the browser rather than measured per card. */
+.album-card__description {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .album-thumb {
