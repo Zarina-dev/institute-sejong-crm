@@ -44,6 +44,9 @@ export const adminNavigation: AdminNavGroup[] = [
   {
     labelKey: 'siteNav.programmes',
     items: [
+      // 학기 관리 comes first: the semester dates are what a class is filed
+      // under, so they are set before any class is entered.
+      { to: '/admin/terms', labelKey: 'terms.adminTitle' },
       { to: '/admin/courses?view=language', labelKey: 'siteNav.programmesCourses' },
       // 학사 일정 is the same table read a third way, so there is nothing
       // to manage here that 강좌 안내 and 문화 강좌 do not already manage.
@@ -54,7 +57,6 @@ export const adminNavigation: AdminNavGroup[] = [
         disabledReasonKey: 'courses.scheduleManagedElsewhere',
       },
       { to: '/admin/courses?view=culture', labelKey: 'siteNav.programmesCulture' },
-      { to: '/admin/terms', labelKey: 'terms.adminTitle' },
     ],
   },
   {

@@ -9,7 +9,12 @@ import type { TranslationKey } from '../../app/preferences'
 import { SessionsEditor } from '../../features/courses/SessionsEditor'
 import { courseTitles, groupCourses } from '../../features/courses/grouping'
 import { sessionParts, weeklyHoursFromSessions } from '../../features/courses/sessions'
+import { courseTerm } from '../../features/courses/terms'
 import { useCourses, useCreateCourse, useDeleteCourse, useSetCoursePublished, useUpdateCourse } from '../../features/courses/queries'
+import { TermSelect } from '../../features/terms/TermSelect'
+import { termInProgress } from '../../features/terms/current'
+import { useTerms } from '../../features/terms/queries'
+import type { AcademicTerm } from '../../features/terms/types'
 import { useAllStaff } from '../../features/staff/queries'
 import type { CourseRecord, CourseSession } from '../../features/courses/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
@@ -44,6 +49,8 @@ const COURSE_VIEWS: Record<CourseView, TranslationKey> = {
  */
 const DISABLED_VIEWS: CourseView[] = ['schedule']
 
+const NO_TERMS: AcademicTerm[] = []
+
 const inView = (record: CourseRecord, view: CourseView) =>
   view === 'schedule' ? true : view === 'culture' ? record.category === 'culture' : record.category !== 'culture'
 
@@ -55,8 +62,8 @@ type CourseFormValues = {
   teacherName?: string
   sessions: CourseSession[]
   classroom?: string
-  startDate?: string
-  endDate?: string
+  /** 학기 code from 학기 관리; the class takes its period from it. */
+  term: string
   expectedStudents?: number | null
   actualStudents?: number | null
   totalHours?: number | null
@@ -72,6 +79,7 @@ export function CoursesAdminPage() {
 
   const courses = useCourses(false)
   const staff = useAllStaff()
+  const terms = useTerms()
   const createCourse = useCreateCourse()
   const updateCourse = useUpdateCourse()
   const deleteCourse = useDeleteCourse()
@@ -122,8 +130,11 @@ export function CoursesAdminPage() {
     // A class added from 문화 강좌 is a culture class.
     // 구분 is not asked for: the page the admin is on decides it.
     form.setFieldValue('category', view === 'culture' ? 'culture' : 'language')
+    // The semester the institute is in right now — the one being enrolled
+    // for — so the usual case needs no choosing.
+    form.setFieldValue('term', termInProgress(terms.data ?? NO_TERMS)?.code)
     setModalOpen(true)
-  }, [form, view])
+  }, [form, terms.data, view])
 
   /** Every field of a class, for editing it or for taking a copy of it. */
   const fillForm = useCallback(
@@ -138,8 +149,9 @@ export function CoursesAdminPage() {
         teacherName: record.teacherName ?? undefined,
         sessions: record.sessions ?? [],
         classroom: record.classroom ?? undefined,
-        startDate: record.startDate ?? undefined,
-        endDate: record.endDate ?? undefined,
+        // A class saved before the field existed falls back to the semester
+        // its start date lands in.
+        term: courseTerm(record) ?? undefined,
         expectedStudents: record.expectedStudents ?? null,
         actualStudents: record.actualStudents ?? null,
         totalHours: record.totalHours ?? null,
@@ -542,31 +554,17 @@ export function CoursesAdminPage() {
           <Form.Item label={t('courses.sessions.label')} extra={t('courses.sessions.hint')}>
             <SessionsEditor disabled={saving} />
           </Form.Item>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name="startDate" label={t('courses.form.startDate')} rules={[{ required: true, message: t('courses.form.startDateRequired') }]}>
-                <Input type="date" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="endDate"
-                label={t('courses.form.endDate')}
-                dependencies={['startDate']}
-                rules={[
-                  { required: true, message: t('courses.form.endDateRequired') },
-                  ({ getFieldValue }) => ({
-                    validator: (_, value?: string) =>
-                      !value || !getFieldValue('startDate') || value >= getFieldValue('startDate')
-                        ? Promise.resolve()
-                        : Promise.reject(new Error(t('courses.form.endBeforeStart'))),
-                  }),
-                ]}
-              >
-                <Input type="date" />
-              </Form.Item>
-            </Col>
-          </Row>
+          {/* The semester is the period: a class runs for the term it is
+              filed under, so the dates come from 학기 관리 rather than being
+              typed again on every class. */}
+          <Form.Item
+            name="term"
+            label={t('terms.label')}
+            extra={terms.data?.length ? t('courses.form.termHint') : t('courses.form.termEmpty')}
+            rules={[{ required: true, message: t('courses.form.termRequired') }]}
+          >
+            <TermSelect terms={terms.data ?? NO_TERMS} disabled={saving} />
+          </Form.Item>
           {/* Semester table (학사 일정): 예상수 · 실제수 · 총 시간수 · 주 시간 */}
           <Row gutter={16}>
             <Col xs={12} md={6}>

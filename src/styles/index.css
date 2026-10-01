@@ -4853,3 +4853,57 @@ a.attachment-chip:hover {
 .study-card__note {
   font-size: var(--text-sm);
 }
+
+/* ==========================================================================
+   학기 선택 — the semester a class runs in. The one in progress carries a
+   small lit dot, so the admin sees at a glance which semester the institute
+   is in without reading the dates.
+   ========================================================================== */
+
+.term-select.ant-select {
+  width: 100%;
+}
+
+.term-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.term-option__dates {
+  margin-left: auto;
+  padding-left: var(--space-4);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Off by default: a dark, unlit lamp. */
+.term-led {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+
+.term-led.is-live {
+  background: var(--color-success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 22%, transparent);
+  animation: term-led-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes term-led-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 22%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-success) 8%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .term-led.is-live {
+    animation: none;
+  }
+}
