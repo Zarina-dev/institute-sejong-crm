@@ -65,6 +65,7 @@ export const adminNavigation: AdminNavGroup[] = [
     items: [
       { to: '/admin/gallery', labelKey: 'siteNav.historyAlbums' },
       { to: '/admin/competitions', labelKey: 'siteNav.historyCompetitions' },
+      { to: '/admin/studies', labelKey: 'siteNav.historyStudies' },
     ],
   },
   /* Internal: nothing under this section appears on the public site. */

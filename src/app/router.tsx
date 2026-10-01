@@ -7,6 +7,7 @@ import { GreetingPage } from '../pages/public/about/GreetingPage'
 import { LocationPage } from '../pages/public/about/LocationPage'
 import { StaffPage } from '../pages/public/about/StaffPage'
 import { CompetitionsPage } from '../pages/public/history/CompetitionsPage'
+import { StudiesPage } from '../pages/public/history/StudiesPage'
 import { HistoryPage } from '../pages/public/HistoryPage'
 import { HomePage } from '../pages/public/HomePage'
 import { LoginPage } from '../pages/public/LoginPage'
@@ -35,6 +36,7 @@ const GalleryAdminPage = lazy(() => import('../pages/admin/GalleryAdminPage').th
 const ContentAdminPage = lazy(() => import('../pages/admin/ContentAdminPage').then((m) => ({ default: m.ContentAdminPage })))
 const TextbooksAdminPage = lazy(() => import('../pages/admin/TextbooksAdminPage').then((m) => ({ default: m.TextbooksAdminPage })))
 const CompetitionsAdminPage = lazy(() => import('../pages/admin/CompetitionsAdminPage').then((m) => ({ default: m.CompetitionsAdminPage })))
+const StudiesAdminPage = lazy(() => import('../pages/admin/StudiesAdminPage').then((m) => ({ default: m.StudiesAdminPage })))
 const MeetingsAdminPage = lazy(() => import('../pages/admin/MeetingsAdminPage').then((m) => ({ default: m.MeetingsAdminPage })))
 const TermsAdminPage = lazy(() => import('../pages/admin/TermsAdminPage').then((m) => ({ default: m.TermsAdminPage })))
 const ChronologyAdminPage = lazy(() => import('../pages/admin/ChronologyAdminPage').then((m) => ({ default: m.ChronologyAdminPage })))
@@ -81,6 +83,7 @@ export function AppRouter() {
           {/* 학당 발자취 */}
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/history/competitions" element={<CompetitionsPage />} />
+          <Route path="/history/studies" element={<StudiesPage />} />
           {/* The two competitions used to have a page each. */}
           <Route path="/history/speech" element={<Navigate to="/history/competitions" replace />} />
           <Route path="/history/writing" element={<Navigate to="/history/competitions" replace />} />
@@ -112,6 +115,7 @@ export function AppRouter() {
           <Route path="chronology" element={<ChronologyAdminPage />} />
           <Route path="events" element={<EventsAdminPage />} />
           <Route path="competitions" element={<CompetitionsAdminPage />} />
+          <Route path="studies" element={<StudiesAdminPage />} />
           <Route path="meetings" element={<MeetingsAdminPage />} />
         </Route>
       </Routes>

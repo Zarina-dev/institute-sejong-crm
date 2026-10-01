@@ -59,6 +59,7 @@ export const navigation: NavSection[] = [
     children: [
       { to: '/history', labelKey: 'siteNav.historyAlbums' },
       { to: '/history/competitions', labelKey: 'siteNav.historyCompetitions' },
+      { to: '/history/studies', labelKey: 'siteNav.historyStudies' },
     ],
   },
 ]

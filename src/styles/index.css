@@ -4715,3 +4715,130 @@ a.attachment-chip:hover {
   gap: var(--space-2);
   margin-bottom: var(--space-2);
 }
+
+/* ==========================================================================
+   한국 유학 현황 — the institute keeps this as a numbered list on the wall:
+   a portrait, the year, the name, the university, the major. Read from the
+   first student onwards, year by year, so a new one joins the end.
+   ========================================================================== */
+
+.study-years {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.study-year {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* The year sets the section, as the printed list does. */
+.study-year__label {
+  position: relative;
+  margin: 0;
+  padding-left: var(--space-4);
+  color: var(--color-text);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.study-year__label::before {
+  content: '';
+  position: absolute;
+  inset-block: 2px;
+  left: 0;
+  width: 3px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, var(--color-primary), var(--color-primary-text));
+}
+
+.study-year__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: var(--space-4);
+}
+
+.study-card.ant-card .ant-card-body {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-4) var(--space-4);
+  text-align: center;
+}
+
+.study-card {
+  position: relative;
+}
+
+/* The number on the wall: the position in the list, nothing to renumber. */
+.study-card__number {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  min-width: 24px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  line-height: 24px;
+  text-align: center;
+}
+
+/* One frame whatever the photo is, so the row of faces stays a row. */
+.study-card__photo {
+  display: grid;
+  place-items: center;
+  width: 108px;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-subtle);
+  font-size: 32px;
+}
+
+.study-card__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.study-card h3.ant-typography {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-lg);
+}
+
+.study-card__facts {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.study-card__facts li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.study-card__facts .anticon {
+  color: var(--color-primary-text);
+}
+
+.study-card__programme.ant-tag {
+  margin: var(--space-1) 0 0;
+  white-space: normal;
+}
+
+.study-card__note {
+  font-size: var(--text-sm);
+}
