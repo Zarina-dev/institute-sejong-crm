@@ -753,6 +753,7 @@ const ky: LocaleDictionary = {
     inProgress: 'Учурда',
     currentIs: 'Учурдагы семестр: {{term}}',
     noneInProgress: 'Бүгүнкү күн эч бир семестрге кирбейт.',
+    overlapsWith: '{{overlap}} күндөрү «{{term}}» ({{period}}) мезгили менен дал келет. Башка күндөрдү тандаңыз.',
     created: 'Семестр кошулду.',
     updated: 'Семестр жаңыртылды.',
     deleted: 'Өчүрүлдү.',

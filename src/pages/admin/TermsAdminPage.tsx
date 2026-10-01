@@ -1,6 +1,6 @@
 import { CalendarOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, Button, Card, Form, Input, InputNumber, Modal, Segmented, Space, Table, Tag, Typography } from 'antd'
+import { Alert, App, Button, Card, Form, Input, InputNumber, Modal, Segmented, Space, Table, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
@@ -58,6 +58,29 @@ export function TermsAdminPage() {
   const saving = createTerm.isPending || updateTerm.isPending
 
   const rows = terms.data ?? NO_TERMS
+
+  /**
+   * The term the dates being typed run into, with the days the two share —
+   * the admin should not have to press 저장 to find out who holds them.
+   */
+  const startDate = Form.useWatch('startDate', form)
+  const endDate = Form.useWatch('endDate', form)
+
+  const clashes = useMemo(() => {
+    if (!modalOpen || !startDate || !endDate || endDate < startDate) {
+      return []
+    }
+
+    // Every term the range runs into, so a span across two of them does not
+    // have to be corrected twice.
+    return rows
+      .filter((row) => row.id !== editingId && row.startDate <= endDate && startDate <= row.endDate)
+      .map((term) => ({
+        term,
+        from: startDate > term.startDate ? startDate : term.startDate,
+        to: endDate < term.endDate ? endDate : term.endDate,
+      }))
+  }, [editingId, endDate, modalOpen, rows, startDate])
   const current = useMemo(() => rows.find((term) => term.startDate <= today() && today() <= term.endDate), [rows])
 
   const openCreateModal = useCallback(() => {
@@ -204,6 +227,29 @@ export function TermsAdminPage() {
         width={620}
       >
         <Form form={form} layout="vertical" disabled={saving}>
+          {/* Two terms may not cover the same day, so the clash is named
+              while the dates are being typed rather than on saving. */}
+          {clashes.length > 0 ? (
+            <Alert
+              type="warning"
+              showIcon
+              className="form-notice"
+              message={
+                <ul className="clash-list">
+                  {clashes.map((clash) => (
+                    <li key={clash.term.id}>
+                      {t('terms.overlapsWith', {
+                        term: clash.term.name || defaultName(clash.term, t),
+                        period: `${formatDate(clash.term.startDate, language)} ~ ${formatDate(clash.term.endDate, language)}`,
+                        overlap: `${formatDate(clash.from, language)} ~ ${formatDate(clash.to, language)}`,
+                      })}
+                    </li>
+                  ))}
+                </ul>
+              }
+            />
+          ) : null}
+
           <div className="form-row">
             <Form.Item name="year" label={t('terms.year')} rules={[{ required: true, message: t('terms.yearRequired') }]}>
               <InputNumber min={1990} max={2100} style={{ width: '100%' }} />

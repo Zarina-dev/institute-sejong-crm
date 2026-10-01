@@ -745,6 +745,7 @@ const ko: LocaleDictionary = {
     inProgress: '진행 중',
     currentIs: '진행 중인 학기: {{term}}',
     noneInProgress: '오늘이 포함된 학기가 없습니다.',
+    overlapsWith: '{{overlap}} 기간이 이미 등록된 「{{term}}」({{period}}) 학기와 겹칩니다. 겹치지 않는 날짜를 선택하세요.',
     created: '학기가 추가되었습니다.',
     updated: '학기가 수정되었습니다.',
     deleted: '삭제되었습니다.',

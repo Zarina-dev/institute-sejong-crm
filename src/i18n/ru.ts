@@ -787,6 +787,7 @@ const ru: LocaleDictionary = {
     inProgress: 'Идёт сейчас',
     currentIs: 'Сейчас идёт: {{term}}',
     noneInProgress: 'Сегодня не входит ни в один семестр.',
+    overlapsWith: 'Даты {{overlap}} уже занимает период «{{term}}» ({{period}}). Выберите другие.',
     created: 'Семестр добавлен.',
     updated: 'Семестр обновлён.',
     deleted: 'Удалено.',

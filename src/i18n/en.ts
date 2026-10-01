@@ -761,6 +761,7 @@ export const en = {
     inProgress: 'In progress',
     currentIs: 'Now in progress: {{term}}',
     noneInProgress: 'No semester covers today.',
+    overlapsWith: '{{overlap}} is already covered by {{term}} ({{period}}). Choose dates outside it.',
     created: 'The semester was added.',
     updated: 'The semester was updated.',
     deleted: 'Deleted.',

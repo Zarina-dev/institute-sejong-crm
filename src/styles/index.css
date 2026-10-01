@@ -3779,6 +3779,12 @@ a.attachment-chip:hover {
 /* A note at the head of a form: duplicating a class says what was copied. */
 .form-notice.ant-alert {
   margin-bottom: var(--space-4);
+  /* The icon belongs to the first line, not to the middle of the block. */
+  align-items: flex-start;
+}
+
+.form-notice.ant-alert > .anticon {
+  margin-top: 3px;
 }
 
 /* ==========================================================================
@@ -4906,4 +4912,13 @@ a.attachment-chip:hover {
   .term-led.is-live {
     animation: none;
   }
+}
+
+/* Clashing semesters, one per line, inside the warning on 학기 관리. */
+.clash-list {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
