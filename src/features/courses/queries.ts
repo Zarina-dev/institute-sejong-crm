@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { dashboardKeys } from '../dashboard/queries'
 import {
   type CourseListFilters,
   createCourse,
@@ -58,6 +59,8 @@ function useInvalidateCourses() {
   return () => {
     void queryClient.invalidateQueries({ queryKey: courseKeys.all })
     void queryClient.invalidateQueries({ queryKey: timetableKeys.all })
+    // The admin dashboard counts courses on the server.
+    void queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
   }
 }
 

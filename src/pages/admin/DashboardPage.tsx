@@ -4,11 +4,9 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import { usePreferences, type TranslationKey } from '../../app/preferences'
-import { groupCourses } from '../../features/courses/grouping'
-import { useCourses } from '../../features/courses/queries'
+import { useDashboard } from '../../features/dashboard/queries'
 import { useRecentActivity, type ActivityKind } from '../../features/dashboard/useRecentActivity'
 import { useMaterials } from '../../features/materials/queries'
-import { useAllNews } from '../../features/news/queries'
 import { useAllStaff } from '../../features/staff/queries'
 import { formatRelativeTime } from '../../shared/format'
 
@@ -32,27 +30,30 @@ type Stat = {
 }
 
 /**
- * Admin landing: one counter per managed area (the same queries those pages
- * use, so they are already cached once any of them was opened) and a feed
- * that merges the newest rows of every table.
+ * Admin landing: one counter per managed area and a feed that merges the
+ * newest rows of every table. Courses and news are counted by GET /dashboard;
+ * staff and materials are small or paged, so they use their own queries.
  */
 export function DashboardPage() {
   const { t, language } = usePreferences()
   const activity = useRecentActivity()
-  const courses = useCourses(false)
+  // Counted on the server: this page used to download every course and
+  // every post (~24 MB at twelve years of history) to count them here.
+  const summary = useDashboard()
   const materials = useMaterials({ page: 1, limit: 1, published: 'all' })
-  const news = useAllNews()
   const staff = useAllStaff()
 
-  const programmes = groupCourses(courses.data).length
-  const drafts = (courses.data ?? []).filter((course) => !course.isPublished).length
-  const unpublishedNews = (news.data ?? []).filter((post) => !post.isPublished).length
+  const courses = summary.data?.courses
+  const news = summary.data?.news
+  const programmes = courses?.programmes ?? 0
+  const drafts = courses?.drafts ?? 0
+  const unpublishedNews = news?.drafts ?? 0
   const hiddenStaff = (staff.data ?? []).filter((member) => !member.isPublished).length
 
   const stats: Stat[] = [
     {
       title: 'adminNav.courses',
-      value: courses.data?.length ?? '…',
+      value: courses?.total ?? '…',
       hint: t('dashboard.programmeCount', { count: programmes }),
       icon: <AppstoreOutlined />,
       tone: 'violet',
@@ -68,7 +69,7 @@ export function DashboardPage() {
     },
     {
       title: 'adminNav.news',
-      value: news.data?.length ?? '…',
+      value: news?.total ?? '…',
       hint: unpublishedNews > 0 ? t('dashboard.draftCount', { count: unpublishedNews }) : t('common.published'),
       icon: <NotificationOutlined />,
       tone: 'blue',

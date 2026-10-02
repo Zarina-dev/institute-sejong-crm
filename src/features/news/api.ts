@@ -1,11 +1,11 @@
 import { apiDelete, apiGet, apiPatch, apiPost } from '../../api/client'
-import type { NewsInput, NewsPost } from './types'
+import type { NewsInput, NewsPost, NewsSummary } from './types'
 
 /** Published posts only; `limit` for previews (home page). */
 export const getPublishedNews = (limit?: number) => apiGet<NewsPost[]>('/news', { limit })
 
-/** Everything including drafts — admin. */
-export const getAllNews = () => apiGet<NewsPost[]>('/news', { all: true })
+/** Everything including drafts — admin. Without bodies: see `getNewsPost`. */
+export const getAllNews = () => apiGet<NewsSummary[]>('/news', { all: true })
 
 export const getNewsPost = (id: string) => apiGet<NewsPost>(`/news/${id}`)
 

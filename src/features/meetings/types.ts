@@ -23,6 +23,9 @@ export type Meeting = {
   updatedAt: string
 }
 
+/** What the list carries; the notes and decisions come with one meeting. */
+export type MeetingSummary = Omit<Meeting, 'body' | 'decisions'>
+
 export type MeetingInput = {
   /** Written by older entries only — minutes are named after their date. */
   title?: string

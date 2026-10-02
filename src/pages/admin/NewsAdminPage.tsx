@@ -5,8 +5,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { usePreferences } from '../../app/preferences'
-import { useAllNews, useCreateNews, useDeleteNews, useSetNewsPublished, useUpdateNews } from '../../features/news/queries'
-import { NEWS_CATEGORIES, type NewsCategory, type NewsPost } from '../../features/news/types'
+import { useQueryClient } from '@tanstack/react-query'
+
+import { getNewsPost } from '../../features/news/api'
+import { newsKeys, useAllNews, useCreateNews, useDeleteNews, useSetNewsPublished, useUpdateNews } from '../../features/news/queries'
+import { NEWS_CATEGORIES, type NewsCategory, type NewsSummary } from '../../features/news/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { formatDate } from '../../shared/format'
@@ -45,6 +48,8 @@ export function NewsAdminPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form] = Form.useForm<NewsFormValues>()
+  const queryClient = useQueryClient()
+  const [loadingPost, setLoadingPost] = useState(false)
   const saving = createNews.isPending || updateNews.isPending
 
   // 공지사항 and 보도 자료 are one table split by category, exactly as the
@@ -77,20 +82,36 @@ export function NewsAdminPage() {
     setModalOpen(true)
   }, [form, view])
 
+  /**
+   * The list carries no bodies, so the post is fetched when it is opened.
+   * The form opens at once with what the row already has and stays disabled
+   * until the body is in, so nothing can be typed into an editor that is
+   * about to be overwritten.
+   */
   const openEditModal = useCallback(
-    (post: NewsPost) => {
+    (post: NewsSummary) => {
       setEditingId(post.id)
       form.setFieldsValue({
         title: post.title,
-        body: post.body,
+        body: '',
         coverImage: post.coverImage,
         category: post.category,
         isPublished: post.isPublished,
         isFeatured: post.isFeatured,
       })
       setModalOpen(true)
+      setLoadingPost(true)
+
+      queryClient
+        .fetchQuery({ queryKey: newsKeys.detail(post.id), queryFn: () => getNewsPost(post.id) })
+        .then((full) => form.setFieldValue('body', full.body))
+        .catch((err) => {
+          message.error(getErrorMessage(err, t('news.loadFailed')))
+          setModalOpen(false)
+        })
+        .finally(() => setLoadingPost(false))
     },
-    [form],
+    [form, message, queryClient, t],
   )
 
   const submitForm = async () => {
@@ -117,7 +138,7 @@ export function NewsAdminPage() {
   }
 
   const handleTogglePublished = useCallback(
-    (post: NewsPost) => {
+    (post: NewsSummary) => {
       setPublished.mutate(
         { id: post.id, published: !post.isPublished },
         { onError: (err) => message.error(getErrorMessage(err, t('news.publishFailed'))) },
@@ -127,7 +148,7 @@ export function NewsAdminPage() {
   )
 
   const handleDelete = useCallback(
-    (post: NewsPost) => {
+    (post: NewsSummary) => {
       confirmDelete({
         target: post.title,
         onConfirm: () =>
@@ -140,7 +161,7 @@ export function NewsAdminPage() {
     [confirmDelete, deleteNews, message, t],
   )
 
-  const columns = useMemo<NonNullable<TableProps<NewsPost>['columns']>>(
+  const columns = useMemo<NonNullable<TableProps<NewsSummary>['columns']>>(
     () => [
       {
         title: t('news.columns.title'),
@@ -255,11 +276,12 @@ export function NewsAdminPage() {
         okText={editingId ? t('common.save') : t('common.add')}
         cancelText={t('common.cancel')}
         confirmLoading={saving}
+        okButtonProps={{ disabled: loadingPost }}
         forceRender
         width={920}
         className="editor-modal"
       >
-        <Form form={form} layout="vertical" disabled={saving} initialValues={{ category: 'campus', isPublished: false, isFeatured: false, coverImage: null }}>
+        <Form form={form} layout="vertical" disabled={saving || loadingPost} initialValues={{ category: 'campus', isPublished: false, isFeatured: false, coverImage: null }}>
           <Form.Item name="title" label={t('news.form.title')} rules={[{ required: true, message: t('news.form.titleRequired') }]}>
             <Input maxLength={255} />
           </Form.Item>

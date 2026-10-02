@@ -15,8 +15,11 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { assetUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
-import { useCreateMeeting, useDeleteMeeting, useMeetings, useUpdateMeeting } from '../../features/meetings/queries'
-import type { Meeting, MeetingAttachment } from '../../features/meetings/types'
+import { useQueryClient } from '@tanstack/react-query'
+
+import { getMeeting } from '../../features/meetings/api'
+import { meetingKeys, useCreateMeeting, useDeleteMeeting, useMeeting, useMeetings, useUpdateMeeting } from '../../features/meetings/queries'
+import type { MeetingAttachment, MeetingSummary } from '../../features/meetings/types'
 import { DOCUMENT_ACCEPT, MAX_DOCUMENT_SIZE, uploadDocument } from '../../features/uploads/api'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
@@ -37,7 +40,7 @@ type MeetingFormValues = {
   attachments?: MeetingAttachment[]
 }
 
-const NO_MEETINGS: Meeting[] = []
+const NO_MEETINGS: MeetingSummary[] = []
 
 /** ISO week number — the minutes are written weekly, so each carries its week. */
 function weekOfYear(date: string): number {
@@ -71,10 +74,12 @@ export function MeetingsAdminPage() {
   const [openId, setOpenId] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [form] = Form.useForm<MeetingFormValues>()
+  const queryClient = useQueryClient()
+  const [loadingMeeting, setLoadingMeeting] = useState(false)
   const saving = createMeeting.isPending || updateMeeting.isPending
 
   const all = meetings.data ?? NO_MEETINGS
-  const titleOf = useCallback((meeting: Meeting) => t('meetings.titleOf', { date: formatDate(meeting.heldOn, language) }), [language, t])
+  const titleOf = useCallback((meeting: MeetingSummary) => t('meetings.titleOf', { date: formatDate(meeting.heldOn, language) }), [language, t])
 
   const years = useMemo(() => [...new Set(all.map((meeting) => meeting.heldOn.slice(0, 4)))].sort().reverse(), [all])
   const [year, setYear] = useState<string | null>(null)
@@ -82,6 +87,8 @@ export function MeetingsAdminPage() {
   const rows = useMemo(() => all.filter((meeting) => meeting.heldOn.startsWith(activeYear ?? '')), [activeYear, all])
 
   const open = rows.find((meeting) => meeting.id === openId) ?? null
+  // The list has no notes or decisions; the open meeting brings its own.
+  const openDetail = useMeeting(openId)
 
   const openCreateModal = useCallback(() => {
     setEditingId(null)
@@ -90,19 +97,33 @@ export function MeetingsAdminPage() {
     setModalOpen(true)
   }, [form])
 
+  /**
+   * The form opens at once with what the row has, disabled until the notes
+   * and decisions are fetched — nothing typed can be overwritten by them.
+   */
   const openEditModal = useCallback(
-    (meeting: Meeting) => {
+    (meeting: MeetingSummary) => {
       setEditingId(meeting.id)
       form.setFieldsValue({
         heldOn: meeting.heldOn,
         attendees: meeting.attendees,
-        body: meeting.body,
-        decisions: meeting.decisions,
+        body: '',
+        decisions: '',
         attachments: meeting.attachments ?? [],
       })
       setModalOpen(true)
+      setLoadingMeeting(true)
+
+      queryClient
+        .fetchQuery({ queryKey: meetingKeys.detail(meeting.id), queryFn: () => getMeeting(meeting.id) })
+        .then((full) => form.setFieldsValue({ body: full.body, decisions: full.decisions }))
+        .catch((err) => {
+          message.error(getErrorMessage(err, t('meetings.loadFailed')))
+          setModalOpen(false)
+        })
+        .finally(() => setLoadingMeeting(false))
     },
-    [form],
+    [form, message, queryClient, t],
   )
 
   const submitForm = async () => {
@@ -129,7 +150,7 @@ export function MeetingsAdminPage() {
   }
 
   const handleDelete = useCallback(
-    (meeting: Meeting) => {
+    (meeting: MeetingSummary) => {
       confirmDelete({
         target: t('meetings.titleOf', { date: formatDate(meeting.heldOn, language) }),
         onConfirm: () =>
@@ -265,17 +286,28 @@ export function MeetingsAdminPage() {
               ) : null}
             </ul>
 
-            {open.body ? (
-              <section>
-                <Text className="section-kicker">{t('meetings.notes')}</Text>
-                <RichContent html={open.body} />
-              </section>
-            ) : null}
+            {/* The texts arrive with the meeting, a moment after the drawer opens. */}
+            {openDetail.isPending ? (
+              <Skeleton active paragraph={{ rows: 5 }} />
+            ) : (
+              <>
+                {openDetail.data?.body ? (
+                  <section>
+                    <Text className="section-kicker">{t('meetings.notes')}</Text>
+                    <RichContent html={openDetail.data.body} />
+                  </section>
+                ) : null}
 
-            <section className="meeting-detail__decisions">
-              <Text className="section-kicker">{t('meetings.decisions')}</Text>
-              {open.decisions ? <RichContent html={open.decisions} /> : <Text type="secondary">{t('meetings.noDecisions')}</Text>}
-            </section>
+                <section className="meeting-detail__decisions">
+                  <Text className="section-kicker">{t('meetings.decisions')}</Text>
+                  {openDetail.data?.decisions ? (
+                    <RichContent html={openDetail.data.decisions} />
+                  ) : (
+                    <Text type="secondary">{t('meetings.noDecisions')}</Text>
+                  )}
+                </section>
+              </>
+            )}
 
             {open.attachments?.length ? (
               <section>
@@ -303,12 +335,13 @@ export function MeetingsAdminPage() {
         okText={editingId ? t('common.save') : t('common.add')}
         cancelText={t('common.cancel')}
         confirmLoading={saving}
+        okButtonProps={{ disabled: loadingMeeting }}
         forceRender
         width={860}
         className="editor-modal"
       >
         {/* No subject field: the minutes are named after their date. */}
-        <Form form={form} layout="vertical" disabled={saving}>
+        <Form form={form} layout="vertical" disabled={saving || loadingMeeting}>
           <div className="form-row">
             <Form.Item name="heldOn" label={t('meetings.form.heldOn')} rules={[{ required: true, message: t('meetings.form.heldOnRequired') }]}>
               <Input type="date" />

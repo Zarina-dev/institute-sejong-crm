@@ -16,6 +16,12 @@ export type NewsPost = {
   updatedAt: string
 }
 
+/**
+ * What the admin list carries: everything but the body, which only matters
+ * once one post is opened (GET /news/:id).
+ */
+export type NewsSummary = Omit<NewsPost, 'body'>
+
 export type NewsInput = {
   title: string
   body: string

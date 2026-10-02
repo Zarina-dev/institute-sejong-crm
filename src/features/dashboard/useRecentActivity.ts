@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
 
 import type { TranslationKey } from '../../app/preferences'
-import { useCourses } from '../courses/queries'
 import { useMaterials } from '../materials/queries'
-import { useAllNews } from '../news/queries'
 import { useAllStaff } from '../staff/queries'
+import { useDashboard } from './queries'
 
 export type ActivityKind = 'course' | 'material' | 'news' | 'staff'
 
@@ -34,23 +33,23 @@ function isCreation(row: Timestamped) {
 const EMPTY: ActivityEntry[] = []
 
 /**
- * "Recent updates" for the admin dashboard, without an audit log: every
- * admin-managed table is read (the same queries the admin pages use, so they
- * are usually already cached) and the newest `updatedAt` rows across all of
- * them are merged into one feed.
+ * "Recent updates" for the admin dashboard, without an audit log: the newest
+ * `updatedAt` rows of every admin-managed table, merged into one feed.
+ * Courses and news come from the dashboard summary (the newest few, chosen
+ * on the server) rather than from their full lists, which grow with the
+ * institute's whole history; materials are already paged and staff is small.
  */
 export function useRecentActivity(limit = 12) {
-  const courses = useCourses(false)
+  const summary = useDashboard()
   const materials = useMaterials({ page: 1, limit: 20, published: 'all', sortBy: 'updatedAt' })
-  const news = useAllNews()
   const staff = useAllStaff()
 
-  const isPending = courses.isPending || materials.isPending || news.isPending || staff.isPending
+  const isPending = summary.isPending || materials.isPending || staff.isPending
 
   const entries = useMemo(() => {
     const list: ActivityEntry[] = []
 
-    for (const row of courses.data ?? []) {
+    for (const row of summary.data?.recentCourses ?? []) {
       list.push({
         id: `course-${row.id}`,
         kind: 'course',
@@ -74,7 +73,7 @@ export function useRecentActivity(limit = 12) {
       })
     }
 
-    for (const row of news.data ?? []) {
+    for (const row of summary.data?.recentNews ?? []) {
       list.push({
         id: `news-${row.id}`,
         kind: 'news',
@@ -104,7 +103,7 @@ export function useRecentActivity(limit = 12) {
     }
 
     return list.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()).slice(0, limit)
-  }, [courses.data, limit, materials.data?.items, news.data, staff.data])
+  }, [limit, materials.data?.items, staff.data, summary.data])
 
   return { entries, isPending }
 }

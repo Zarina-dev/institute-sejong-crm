@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { dashboardKeys } from '../dashboard/queries'
 import { createNews, deleteNews, getAllNews, getNewsPost, getPublishedNews, setNewsPublished, updateNews } from './api'
 import type { NewsInput } from './types'
 
@@ -24,7 +25,11 @@ export function useAllNews() {
 
 function useInvalidateNews() {
   const queryClient = useQueryClient()
-  return () => queryClient.invalidateQueries({ queryKey: newsKeys.all })
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: newsKeys.all })
+    // The admin dashboard counts posts on the server.
+    void queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
+  }
 }
 
 export function useCreateNews() {
