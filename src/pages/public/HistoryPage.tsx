@@ -1,5 +1,5 @@
 import { CalendarOutlined, PictureOutlined } from '@ant-design/icons'
-import { Card, Col, Empty, Row, Segmented, Select, Skeleton, Tag, Typography } from 'antd'
+import { Card, Col, Empty, Row, Select, Skeleton, Tag, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 
 import { assetUrl } from '../../api/client'
@@ -9,6 +9,7 @@ import type { GalleryAlbum } from '../../features/gallery/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { PageHeader } from '../../shared/PageHeader'
 import { PhotoCarousel } from '../../shared/PhotoCarousel'
+import { ALL_YEARS, YearSelect } from '../../shared/YearSelect'
 
 const { Title, Text } = Typography
 
@@ -84,8 +85,7 @@ function AlbumCard({ album }: { album: GalleryAlbum }) {
 export function HistoryPage() {
   const { t } = usePreferences()
   const albums = usePublishedAlbums()
-  // Segmented works with strings; the year is parsed back when filtering.
-  const [year, setYear] = useState<string>(ALL)
+  const [pickedYear, setPickedYear] = useState<string | null>(null)
   const [tag, setTag] = useState<string>(ALL)
 
   const list = albums.data ?? NO_ALBUMS
@@ -93,12 +93,23 @@ export function HistoryPage() {
   const years = useMemo(() => [...new Set(list.map((album) => album.year))].sort((a, b) => b - a), [list])
   const tags = useMemo(() => [...new Set(list.map((album) => album.eventTag))], [list])
 
+  // Opens on the latest year, as 대회 기록 does: every album of every year at
+  // once is hundreds of photo cards before the visitor has chosen anything.
+  // 전체 is still one choice away.
+  const year = pickedYear ?? (years.length ? String(years[0]) : ALL_YEARS)
+
   const byYear = useMemo(() => {
-    const filtered = list.filter((album) => (year === ALL || album.year === Number(year)) && (tag === ALL || album.eventTag === tag))
+    const filtered = list.filter((album) => (year === ALL_YEARS || album.year === Number(year)) && (tag === ALL || album.eventTag === tag))
     const map = new Map<number, GalleryAlbum[]>()
 
     for (const album of filtered) {
-      map.set(album.year, [...(map.get(album.year) ?? []), album])
+      const bucket = map.get(album.year)
+
+      if (bucket) {
+        bucket.push(album)
+      } else {
+        map.set(album.year, [album])
+      }
     }
 
     return [...map.entries()].sort((a, b) => b[0] - a[0])
@@ -140,11 +151,8 @@ export function HistoryPage() {
               </div>
               <div className="gallery-filters__years">
                 <Text>{t('gallery.year')}</Text>
-                <Segmented
-                  value={year}
-                  onChange={(value) => setYear(String(value))}
-                  options={[{ value: ALL, label: t('gallery.allYears') }, ...years.map((value) => ({ value: String(value), label: String(value) }))]}
-                />
+                {/* A dropdown, like every other year picker on the site: the list grows every year. */}
+                <YearSelect years={years} value={year === ALL_YEARS ? null : year} onChange={setPickedYear} allowAll />
               </div>
             </div>
           </Card>
