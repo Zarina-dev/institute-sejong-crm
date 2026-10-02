@@ -13,6 +13,8 @@ import { courseTerm } from '../../features/courses/terms'
 import { useCourses, useCreateCourse, useDeleteCourse, useSetCoursePublished, useUpdateCourse } from '../../features/courses/queries'
 import { TermSelect } from '../../features/terms/TermSelect'
 import { termInProgress } from '../../features/terms/current'
+import { TermPicker } from '../../features/terms/TermPicker'
+import { useTermChoice } from '../../features/terms/useTermChoice'
 import { useTerms } from '../../features/terms/queries'
 import type { AcademicTerm } from '../../features/terms/types'
 import { useAllStaff } from '../../features/staff/queries'
@@ -82,7 +84,6 @@ export function CoursesAdminPage() {
   const confirmDelete = useConfirmDelete()
   const { pinActions } = useTableLayout()
 
-  const courses = useCourses(false)
   const staff = useAllStaff()
   const terms = useTerms()
   const createCourse = useCreateCourse()
@@ -103,6 +104,18 @@ export function CoursesAdminPage() {
   const requested = params.get('view') as CourseView | null
   const view: CourseView =
     requested && requested in COURSE_VIEWS && !DISABLED_VIEWS.includes(requested) ? requested : 'language'
+
+  /**
+   * One semester of one list, as on the site: the table, its counts and the
+   * Excel export are all per semester, which is how the office reports.
+   * Opens on the semester in progress.
+   */
+  const { active: activeTerm, select: selectTerm } = useTermChoice(terms.data ?? NO_TERMS)
+  const courses = useCourses(
+    false,
+    { term: activeTerm?.code, category: view === 'culture' ? 'culture' : 'language' },
+    !terms.isPending,
+  )
 
   useEffect(() => {
     if (requested !== view) {
@@ -226,12 +239,13 @@ export function CoursesAdminPage() {
     }
 
     try {
-      if (editingId) {
-        await updateCourse.mutateAsync({ id: editingId, payload })
-        message.success(t('courses.updated'))
-      } else {
-        await createCourse.mutateAsync(payload)
-        message.success(t('courses.created'))
+      const saved = editingId ? await updateCourse.mutateAsync({ id: editingId, payload }) : await createCourse.mutateAsync(payload)
+      message.success(t(editingId ? 'courses.updated' : 'courses.created'))
+
+      // The table shows one semester; a class saved into another one would
+      // seem to vanish, so follow it there.
+      if (saved.term && saved.term !== activeTerm?.code) {
+        selectTerm(saved.term)
       }
 
       setModalOpen(false)
@@ -305,13 +319,13 @@ export function CoursesAdminPage() {
 
     try {
       const { exportCoursesToExcel } = await import('../../features/courses/exportCourses')
-      await exportCoursesToExcel(rows, t, language, `${t(COURSE_VIEWS[view])}-${new Date().toISOString().slice(0, 10)}.xlsx`)
+      await exportCoursesToExcel(rows, t, language, `${t(COURSE_VIEWS[view])}-${activeTerm?.code ?? new Date().toISOString().slice(0, 10)}.xlsx`)
     } catch (err) {
       message.error(getErrorMessage(err, t('courses.export.failed')))
     } finally {
       setExporting(false)
     }
-  }, [language, message, rows, t, view])
+  }, [activeTerm?.code, language, message, rows, t, view])
 
   /**
    * Teachers come from 교직원. Names already stored on a course are kept as
@@ -485,15 +499,19 @@ export function CoursesAdminPage() {
 
       <Card className="surface-card filter-card no-print">
         <div className="filter-footer">
-          <Segmented
-            value={view}
-            onChange={(value) => setParams({ view: value as CourseView })}
-            options={Object.entries(COURSE_VIEWS).map(([value, labelKey]) => ({
-              value,
-              label: t(labelKey),
-              disabled: DISABLED_VIEWS.includes(value as CourseView),
-            }))}
-          />
+          <Space wrap>
+            <Segmented
+              value={view}
+              onChange={(value) => setParams({ view: value as CourseView })}
+              options={Object.entries(COURSE_VIEWS).map(([value, labelKey]) => ({
+                value,
+                label: t(labelKey),
+                disabled: DISABLED_VIEWS.includes(value as CourseView),
+              }))}
+            />
+            {/* The semester being looked at; it opens on the one in progress. */}
+            <TermPicker terms={terms.data ?? NO_TERMS} active={activeTerm} onSelect={selectTerm} />
+          </Space>
           <Space wrap>
             <Text>{t('courses.count', { count: rows.length })}</Text>
             {/* The table doubles as the office's semester report. */}
@@ -512,7 +530,7 @@ export function CoursesAdminPage() {
 
       <ErrorAlert error={courses.error} fallback={t('courses.loadFailed')} />
 
-      {courses.isPending ? (
+      {courses.isPending || terms.isPending ? (
         <Card className="surface-card">
           <Skeleton active paragraph={{ rows: 6 }} />
         </Card>

@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
+  type CourseListFilters,
   createCourse,
   deleteCourse,
   getCourses,
@@ -13,7 +14,7 @@ import type { TimetableFilters } from './types'
 
 export const courseKeys = {
   all: ['courses'] as const,
-  list: (publishedOnly: boolean) => [...courseKeys.all, 'list', { publishedOnly }] as const,
+  list: (publishedOnly: boolean, filters: CourseListFilters = {}) => [...courseKeys.all, 'list', { publishedOnly, ...filters }] as const,
 }
 
 export const timetableKeys = {
@@ -23,10 +24,18 @@ export const timetableKeys = {
 
 /* ---------------------------------- queries --------------------------------- */
 
-export function useCourses(publishedOnly: boolean) {
+/**
+ * Pass a `term` wherever a page shows one semester — without it the whole
+ * history comes down. `enabled: false` while the page is still deciding which
+ * semester it is on, so it does not fetch everything first.
+ */
+export function useCourses(publishedOnly: boolean, filters: CourseListFilters = {}, enabled = true) {
   return useQuery({
-    queryKey: courseKeys.list(publishedOnly),
-    queryFn: () => getCourses(publishedOnly),
+    queryKey: courseKeys.list(publishedOnly, filters),
+    queryFn: () => getCourses(publishedOnly, filters),
+    enabled,
+    // Switching semesters keeps the last list on screen instead of a skeleton.
+    placeholderData: keepPreviousData,
   })
 }
 

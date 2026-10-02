@@ -1,9 +1,17 @@
 import { apiDelete, apiGet, apiPatch, apiPost } from '../../api/client'
 import type { CourseRecord, TimetableEntry, TimetableFilters } from './types'
 
-export async function getCourses(publishedOnly = false) {
+/** One semester and one list, when given; the whole history otherwise. */
+export type CourseListFilters = {
+  term?: string
+  category?: 'language' | 'culture'
+}
+
+export async function getCourses(publishedOnly = false, filters: CourseListFilters = {}) {
   return apiGet<CourseRecord[]>(`/courses`, {
     publishedOnly,
+    term: filters.term,
+    category: filters.category,
   })
 }
 

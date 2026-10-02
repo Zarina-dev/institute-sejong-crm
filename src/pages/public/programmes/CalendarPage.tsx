@@ -1,20 +1,19 @@
 import { CalendarOutlined, EnvironmentOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Card, Empty, Segmented, Skeleton, Tag, Typography } from 'antd'
+import { Button, Card, Empty, Skeleton, Tag, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 
 import { usePreferences } from '../../../app/preferences'
-import type { TranslationKey } from '../../../app/preferences'
 import { useCourses, useTimetable } from '../../../features/courses/queries'
 import { SemesterTable } from '../../../features/courses/SemesterTable'
-import { courseTerm } from '../../../features/courses/terms'
 import type { TimetableEntry } from '../../../features/courses/types'
 import { addDays, startOfWeek, toIsoDate, weekRange } from '../../../features/courses/week'
 import { useTerms } from '../../../features/terms/queries'
-import type { AcademicTerm, TermKind } from '../../../features/terms/types'
+import { TermPicker } from '../../../features/terms/TermPicker'
+import type { AcademicTerm } from '../../../features/terms/types'
+import { useTermChoice } from '../../../features/terms/useTermChoice'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { formatDate } from '../../../shared/format'
 import { PageHeader } from '../../../shared/PageHeader'
-import { YearSelect } from '../../../shared/YearSelect'
 
 const { Title, Text } = Typography
 
@@ -23,12 +22,6 @@ const TONES = ['blue', 'violet', 'orange'] as const
 /** Stable fallback so `useMemo` deps do not see a fresh `[]` every render. */
 const NO_ENTRIES: TimetableEntry[] = []
 const NO_TERMS: AcademicTerm[] = []
-
-const KIND_LABEL: Record<TermKind, TranslationKey> = {
-  first: 'terms.first',
-  second: 'terms.second',
-  break: 'terms.breakKind',
-}
 
 /** Stable colour per subject within a day — same subject, same stripe. */
 function toneFor(subject: string, subjects: string[]) {
@@ -44,7 +37,6 @@ function toneFor(subject: string, subjects: string[]) {
 export function CalendarPage() {
   const { t, language } = usePreferences()
 
-  const courses = useCourses(true)
   const terms = useTerms()
   const defined = terms.data ?? NO_TERMS
 
@@ -52,22 +44,13 @@ export function CalendarPage() {
 
   /* ------------------------------- 학기 ------------------------------- */
 
-  const years = useMemo(() => [...new Set(defined.map((term) => String(term.year)))].sort().reverse(), [defined])
-
   // The term in progress, else the most recent one the institute defined.
-  const fallbackTerm = useMemo(
-    () => defined.find((term) => term.startDate <= today && today <= term.endDate) ?? defined[0] ?? null,
-    [defined, today],
-  )
+  const { active: activeTerm, select: setSelected } = useTermChoice(defined)
 
-  const [selected, setSelected] = useState<string | null>(null)
-  const activeTerm = defined.find((term) => term.code === selected) ?? fallbackTerm
-  const termsOfYear = useMemo(() => defined.filter((term) => String(term.year) === String(activeTerm?.year)), [activeTerm?.year, defined])
-
-  const termCourses = useMemo(
-    () => (activeTerm ? (courses.data ?? []).filter((course) => courseTerm(course) === activeTerm.code) : courses.data),
-    [activeTerm, courses.data],
-  )
+  // Only that semester comes down. Waits for the terms, so it never fetches
+  // the whole history first; with no terms defined at all it lists everything.
+  const courses = useCourses(true, { term: activeTerm?.code }, !terms.isPending)
+  const termCourses = courses.data
 
   /* ------------------------------ 시간표 ------------------------------ */
 
@@ -116,32 +99,7 @@ export function CalendarPage() {
       {defined.length > 0 ? (
         <Card className="surface-card filter-card">
           <div className="filter-footer">
-            <div className="term-picker">
-              {years.length > 1 ? (
-                <YearSelect
-                  years={years}
-                  value={activeTerm?.year ?? years[0]}
-                  onChange={(value) => {
-                    // Keep the same kind of term where that year has one.
-                    const ofYear = defined.filter((term) => String(term.year) === value)
-                    const next = ofYear.find((term) => term.kind === activeTerm?.kind) ?? ofYear[0]
-
-                    if (next) {
-                      setSelected(next.code)
-                    }
-                  }}
-                />
-              ) : null}
-
-              {termsOfYear.length > 1 ? (
-                <Segmented
-                  aria-label={t('terms.label')}
-                  value={activeTerm?.code}
-                  onChange={(value) => setSelected(String(value))}
-                  options={termsOfYear.map((term) => ({ value: term.code, label: term.name || t(KIND_LABEL[term.kind]) }))}
-                />
-              ) : null}
-            </div>
+            <TermPicker terms={defined} active={activeTerm} onSelect={setSelected} />
 
             {activeTerm ? (
               <Text type="secondary">
@@ -154,7 +112,7 @@ export function CalendarPage() {
       ) : null}
 
       {/* The semester sheet the office keeps: one row per class. */}
-      <SemesterTable courses={termCourses} loading={courses.isPending} emptyText={t('courses.empty')} />
+      <SemesterTable courses={termCourses} loading={courses.isPending || terms.isPending} emptyText={t('courses.empty')} />
 
       {/* 시간표 — its own section, opening on today. */}
       <section className="timetable-section" aria-labelledby="timetable-heading">

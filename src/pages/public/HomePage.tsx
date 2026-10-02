@@ -22,11 +22,15 @@ import { groupCourses } from '../../features/courses/grouping'
 import { useCourses, useTimetable } from '../../features/courses/queries'
 import { startOfWeek, toIsoDate, weekRange } from '../../features/courses/week'
 import { usePublishedNews } from '../../features/news/queries'
+import { useTerms } from '../../features/terms/queries'
+import type { AcademicTerm } from '../../features/terms/types'
+import { useTermChoice } from '../../features/terms/useTermChoice'
 import { formatDate } from '../../shared/format'
 
 const { Title, Paragraph, Text } = Typography
 
 const MAX_CLASSES_PER_PROGRAMME = 4
+const NO_TERMS: AcademicTerm[] = []
 
 /** 바로가기 — the six places visitors actually go, one tap from the top. */
 const QUICK_LINKS: Array<{ to: string; label: TranslationKey; icon: ReactNode }> = [
@@ -62,7 +66,10 @@ function SectionHead({ title, to, label }: { title: string; to?: string; label?:
 export function HomePage() {
   const { t, language } = usePreferences()
   const news = usePublishedNews(6)
-  const courses = useCourses(true)
+  // "On offer" means this semester — the same one 강좌 안내 opens on.
+  const terms = useTerms()
+  const { active: currentTerm } = useTermChoice(terms.data ?? NO_TERMS)
+  const courses = useCourses(true, { term: currentTerm?.code }, !terms.isPending)
   const week = useTimetable(useMemo(() => weekRange(startOfWeek(new Date())), []))
 
   const programmes = useMemo(() => groupCourses(courses.data), [courses.data])
