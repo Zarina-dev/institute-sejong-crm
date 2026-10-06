@@ -5381,3 +5381,15 @@ button.attachment-chip:hover {
   overflow: hidden;
   border-radius: var(--radius-md);
 }
+
+/* 행사 일정: rows from before every event had to sit in a semester. */
+.unfiled-events {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+.unfiled-events > .ant-typography {
+  flex-basis: 100%;
+}

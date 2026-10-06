@@ -911,6 +911,9 @@ export const en = {
     },
   },
   events: {
+    unfiled: '{{count}} event(s) are not in any semester',
+    unfiledHint: 'They do not appear on the site. Open each one and give it a semester and dates inside it.',
+    noTerms: 'Add a semester in 학기 관리 first: every event belongs to one.',
     allTerms: 'All',
     title: 'Events',
     subtitle: 'The semester\'s events, as the institute publishes them.',
@@ -941,8 +944,11 @@ export const en = {
       titleRu: 'Name (Russian)',
       titleEn: 'Name (English)',
       note: 'Note',
-      termHint: 'Left empty, it is filed by its date against 학기 관리.',
-      termAuto: 'From the date',
+      termHint: 'Dates must fall within this semester ({{period}}).',
+      termRequired: 'Choose the semester.',
+      inOtherTerm: 'This date is not in {{term}}; it falls in {{actual}}. Change the semester or the date.',
+      inNoTerm: 'This date is not in {{term}}, nor in any other semester.',
+      pastTerm: '{{term}} ends on {{end}}. An event that runs into the next semester is entered once in each.',
     },
   },
   studies: {

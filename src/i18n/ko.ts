@@ -894,6 +894,9 @@ const ko: LocaleDictionary = {
     },
   },
   events: {
+    unfiled: '학기가 지정되지 않은 행사 {{count}}건',
+    unfiledHint: '사이트에 표시되지 않습니다. 눌러서 학기와 그 학기 안의 날짜를 지정하세요.',
+    noTerms: '학기 관리에서 학기를 먼저 등록하세요. 모든 행사는 하나의 학기에 속합니다.',
     allTerms: '전체',
     title: '행사 일정',
     subtitle: '학기별 행사 일정입니다.',
@@ -923,8 +926,11 @@ const ko: LocaleDictionary = {
       titleRu: '행사명 (러시아어)',
       titleEn: '행사명 (영어)',
       note: '비고',
-      termHint: '비워 두면 날짜를 학기 관리와 대조해 자동으로 분류합니다.',
-      termAuto: '날짜로 자동 분류',
+      termHint: '이 학기 기간({{period}}) 안의 날짜만 입력할 수 있습니다.',
+      termRequired: '학기를 선택하세요.',
+      inOtherTerm: '「{{term}}」 기간이 아닙니다. 이 날짜는 「{{actual}}」 기간입니다. 학기나 날짜를 바꿔 주세요.',
+      inNoTerm: '「{{term}}」 기간이 아니며, 등록된 어느 학기에도 속하지 않는 날짜입니다.',
+      pastTerm: '「{{term}}」은(는) {{end}}에 끝납니다. 다음 학기로 이어지는 행사는 학기별로 나누어 등록하세요.',
     },
   },
   studies: {
