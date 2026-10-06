@@ -43,6 +43,7 @@ const ko: LocaleDictionary = {
     news: '뉴스·공지',
   },
   common: {
+    noMatches: '「{{query}}」에 맞는 결과가 없습니다.',
     save: '저장',
     add: '추가',
     edit: '수정',
@@ -643,6 +644,7 @@ const ko: LocaleDictionary = {
     },
   },
   staff: {
+    searchPlaceholder: '이름·직위로 검색',
     upcoming: '입사 예정',
     toPresent: '현재',
     joinsOn: '{{date}} 입사 예정',
@@ -965,6 +967,8 @@ const ko: LocaleDictionary = {
     },
   },
   studies: {
+    searchPlaceholder: '이름·대학·전공으로 검색',
+    found: '전체 {{total}}명 중 {{count}}명',
     title: '한국 유학 현황',
     subtitle: '학당이 한국으로 보낸 유학생들의 기록입니다. 첫 유학생부터 차례로 보실 수 있습니다.',
     adminTitle: '한국 유학 현황 관리',

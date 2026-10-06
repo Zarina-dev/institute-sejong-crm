@@ -43,6 +43,7 @@ const ky: LocaleDictionary = {
     news: 'Жаңылыктар',
   },
   common: {
+    noMatches: '«{{query}}» боюнча эч нерсе табылган жок.',
     save: 'Сактоо',
     add: 'Кошуу',
     edit: 'Өзгөртүү',
@@ -648,6 +649,7 @@ const ky: LocaleDictionary = {
     },
   },
   staff: {
+    searchPlaceholder: 'Аты же кызматы боюнча издөө',
     upcoming: 'Жакында иштей баштайт',
     toPresent: 'азыркы учурга чейин',
     joinsOn: '{{date}} иштей баштайт',
@@ -975,6 +977,8 @@ const ky: LocaleDictionary = {
     },
   },
   studies: {
+    searchPlaceholder: 'Аты, университети же адистиги боюнча издөө',
+    found: '{{total}} студенттин {{count}}',
     title: 'Кореяда окугандар',
     subtitle: 'Институт Кореяга окууга жөнөткөн студенттердин баары, биринчисинен тартып.',
     adminTitle: 'Кореяда окугандар',

@@ -62,7 +62,7 @@ export function NoticesPage({ variant }: NoticesPageProps) {
             return (
               <button
                 type="button"
-                className="notice-row surface-card ant-card"
+                className={`notice-row surface-card ant-card${thumbnail ? '' : ' notice-row--bare'}`}
                 key={post.id}
                 aria-haspopup="dialog"
                 onClick={() => setOpenId(post.id)}

@@ -43,6 +43,7 @@ const ru: LocaleDictionary = {
     news: 'Новости',
   },
   common: {
+    noMatches: 'По запросу «{{query}}» ничего не найдено.',
     save: 'Сохранить',
     add: 'Добавить',
     edit: 'Изменить',
@@ -674,6 +675,7 @@ const ru: LocaleDictionary = {
     },
   },
   staff: {
+    searchPlaceholder: 'Поиск по имени или должности',
     upcoming: 'Скоро начнёт работу',
     toPresent: 'по настоящее время',
     joinsOn: 'Начнёт работу {{date}}',
@@ -1013,6 +1015,8 @@ const ru: LocaleDictionary = {
     },
   },
   studies: {
+    searchPlaceholder: 'Поиск по имени, университету или специальности',
+    found: '{{count}} из {{total}}',
     title: 'Учёба в Корее',
     subtitle: 'Все студенты, которых институт отправил на учёбу в Корею, начиная с первого.',
     adminTitle: 'Учёба в Корее',

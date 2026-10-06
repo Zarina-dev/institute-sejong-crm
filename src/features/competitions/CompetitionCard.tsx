@@ -1,5 +1,5 @@
 import { CalendarOutlined, EnvironmentOutlined, PictureOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons'
-import { Card, Table, Tag, Typography } from 'antd'
+import { Card, Grid, Table, Tag, Typography } from 'antd'
 import type { TableProps } from 'antd'
 import { useMemo } from 'react'
 
@@ -17,6 +17,9 @@ const RANK_COLOUR = ['gold', 'silver', '#cd7f32'] as const
 
 function Winners({ winners }: { winners: CompetitionWinner[] }) {
   const { t } = usePreferences()
+  // On a phone three columns do not fit: 소속·상품 goes under the name
+  // instead of being dropped — it is half of what the table says.
+  const wide = Grid.useBreakpoint().sm ?? true
 
   // Only rendered when there are winners (see CompetitionCard).
   const columns = useMemo<NonNullable<TableProps<CompetitionWinner>['columns']>>(
@@ -32,16 +35,32 @@ function Winners({ winners }: { winners: CompetitionWinner[] }) {
           </Tag>
         ),
       },
-      { title: t('competitions.form.winnerName'), dataIndex: 'name', key: 'name', render: (name: string) => <strong>{name}</strong> },
       {
-        title: t('competitions.form.winnerNote'),
-        dataIndex: 'note',
-        key: 'note',
-        responsive: ['sm'],
-        render: (note: string | null) => note || <Text type="secondary">—</Text>,
+        title: wide ? t('competitions.form.winnerName') : `${t('competitions.form.winnerName')} · ${t('competitions.form.winnerNote')}`,
+        dataIndex: 'name',
+        key: 'name',
+        render: (name: string, winner) =>
+          wide ? (
+            <strong>{name}</strong>
+          ) : (
+            <span className="competition-winners__stack">
+              <strong>{name}</strong>
+              {winner.note ? <Text type="secondary">{winner.note}</Text> : null}
+            </span>
+          ),
       },
+      ...(wide
+        ? [
+            {
+              title: t('competitions.form.winnerNote'),
+              dataIndex: 'note',
+              key: 'note',
+              render: (note: string | null) => note || <Text type="secondary">—</Text>,
+            },
+          ]
+        : []),
     ],
-    [t],
+    [t, wide],
   )
 
   return (

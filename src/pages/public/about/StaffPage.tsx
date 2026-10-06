@@ -1,6 +1,6 @@
 import { CalendarOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
 import { Avatar, Card, Col, Empty, Row, Skeleton, Typography } from 'antd'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { assetUrl } from '../../../api/client'
 import { usePreferences } from '../../../app/preferences'
@@ -9,6 +9,7 @@ import { staffStatus, type StaffStatus } from '../../../features/staff/status'
 import type { StaffMember } from '../../../features/staff/types'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { formatDate } from '../../../shared/format'
+import { HeaderSearch, matchesQuery } from '../../../shared/HeaderSearch'
 import { PageHeader } from '../../../shared/PageHeader'
 
 const { Title, Paragraph, Text } = Typography
@@ -82,14 +83,28 @@ export function StaffPage() {
   const { t } = usePreferences()
   const staff = usePublishedStaff()
   const members = staff.data ?? NO_STAFF
+  const [search, setSearch] = useState('')
 
-  const withStatus = useMemo(() => members.map((member) => ({ member, status: staffStatus(member) })), [members])
+  // Name, position, introduction — whatever the visitor remembers.
+  const withStatus = useMemo(
+    () =>
+      members
+        .filter((member) => matchesQuery(search, [member.name, member.position, member.bio, member.email]))
+        .map((member) => ({ member, status: staffStatus(member) })),
+    [members, search],
+  )
+  const searching = search.trim().length > 0
   const current = useMemo(() => withStatus.filter((entry) => entry.status !== 'former'), [withStatus])
   const former = useMemo(() => withStatus.filter((entry) => entry.status === 'former'), [withStatus])
 
   return (
     <div className="page-layout">
-      <PageHeader kicker={t('siteNav.about')} title={t('pageCopy.staffTitle')} description={t('pageCopy.staffSubtitle')} />
+      <PageHeader
+        kicker={t('siteNav.about')}
+        title={t('pageCopy.staffTitle')}
+        description={t('pageCopy.staffSubtitle')}
+        extra={members.length > 0 ? <HeaderSearch value={search} onChange={setSearch} placeholder={t('staff.searchPlaceholder')} /> : null}
+      />
 
       <ErrorAlert error={staff.error} fallback={t('staff.loadFailed')} />
 
@@ -103,23 +118,29 @@ export function StaffPage() {
             </Col>
           ))}
         </Row>
+      ) : members.length > 0 && searching && withStatus.length === 0 ? (
+        <Card className="surface-card empty-card">
+          <Empty description={t('common.noMatches', { query: search.trim() })} />
+        </Card>
       ) : members.length > 0 ? (
         <div className="course-groups">
-          <section className="course-group" aria-labelledby="staff-current">
-            <div className="course-group__heading">
-              <Title level={2} id="staff-current">
-                {t('staff.currentHeading')}
-              </Title>
-              <Text type="secondary">{t('staff.count', { count: current.length })}</Text>
-            </div>
-            {current.length > 0 ? (
-              <StaffGrid members={current} />
-            ) : (
-              <Card className="surface-card empty-card">
-                <Empty description={t('about.staffEmpty')} />
-              </Card>
-            )}
-          </section>
+          {searching && current.length === 0 ? null : (
+            <section className="course-group" aria-labelledby="staff-current">
+              <div className="course-group__heading">
+                <Title level={2} id="staff-current">
+                  {t('staff.currentHeading')}
+                </Title>
+                <Text type="secondary">{t('staff.count', { count: current.length })}</Text>
+              </div>
+              {current.length > 0 ? (
+                <StaffGrid members={current} />
+              ) : (
+                <Card className="surface-card empty-card">
+                  <Empty description={t('about.staffEmpty')} />
+                </Card>
+              )}
+            </section>
+          )}
 
           {former.length > 0 ? (
             <section className="course-group" aria-labelledby="staff-former">

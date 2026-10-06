@@ -1,6 +1,6 @@
 import { UserOutlined } from '@ant-design/icons'
 import { Card, Empty, Skeleton, Typography } from 'antd'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { assetUrl } from '../../../api/client'
 import { usePreferences } from '../../../app/preferences'
@@ -8,6 +8,7 @@ import { useStudies } from '../../../features/studies/queries'
 import { otherName, studyText } from '../../../features/studies/text'
 import type { StudyAbroad } from '../../../features/studies/types'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
+import { HeaderSearch, matchesQuery } from '../../../shared/HeaderSearch'
 import { PageHeader } from '../../../shared/PageHeader'
 
 const { Title, Text } = Typography
@@ -41,9 +42,7 @@ function StudentCard({ student, number }: { student: StudyAbroad; number: number
   return (
     <Card className="surface-card study-card">
       <div className="study-card__head">
-        <div className="study-card__photo">
-          {student.photo ? <img src={assetUrl(student.photo)} alt="" loading="lazy" /> : <UserOutlined />}
-        </div>
+        <div className="study-card__photo">{student.photo ? <img src={assetUrl(student.photo)} alt="" loading="lazy" /> : <UserOutlined />}</div>
 
         <div className="study-card__names">
           <span className="study-card__number">{number}</span>
@@ -78,23 +77,54 @@ export function StudiesPage() {
   const { t } = usePreferences()
   const studies = useStudies()
   const students = studies.data ?? NO_STUDENTS
+  const [search, setSearch] = useState('')
 
-  /** The API already sorts oldest first; the years are read off that order. */
+  /** All years, from the first student to the last — the range the page covers. */
+  const span = students.length > 0 ? { from: students[0].year, to: students[students.length - 1].year } : null
+
+  /**
+   * The API already sorts oldest first; the years are read off that order.
+   * A search keeps each student's number from the full list (they are
+   * 1st, 2nd … ever sent) and drops the years left empty.
+   */
   const years = useMemo(() => {
     const byYear = new Map<number, Array<{ student: StudyAbroad; number: number }>>()
 
     students.forEach((student, index) => {
+      // Both scripts of every field, so a Korean or a Kyrgyz query finds them.
+      const found = matchesQuery(search, [
+        student.name,
+        student.nameKy,
+        student.university,
+        student.universityKy,
+        student.major,
+        student.majorKy,
+        student.programme,
+        student.programmeKy,
+        student.duration,
+        student.durationKy,
+        student.year,
+      ])
+      if (!found) return
       const entries = byYear.get(student.year) ?? []
       entries.push({ student, number: index + 1 })
       byYear.set(student.year, entries)
     })
 
     return [...byYear.entries()]
-  }, [students])
+  }, [search, students])
+
+  const found = years.reduce((total, [, entries]) => total + entries.length, 0)
+  const searching = search.trim().length > 0
 
   return (
     <div className="page-layout">
-      <PageHeader kicker={t('siteNav.history')} title={t('studies.title')} description={t('studies.subtitle')} />
+      <PageHeader
+        kicker={t('siteNav.history')}
+        title={t('studies.title')}
+        description={t('studies.subtitle')}
+        extra={students.length > 0 ? <HeaderSearch value={search} onChange={setSearch} placeholder={t('studies.searchPlaceholder')} /> : null}
+      />
 
       <ErrorAlert error={studies.error} fallback={t('studies.loadFailed')} />
 
@@ -106,10 +136,18 @@ export function StudiesPage() {
         <>
           <Card className="surface-card filter-card">
             <div className="filter-footer">
-              <Text type="secondary">{t('studies.count', { count: students.length })}</Text>
-              <Text type="secondary">{t('studies.range', { from: years[0][0], to: years[years.length - 1][0] })}</Text>
+              <Text type="secondary">
+                {searching ? t('studies.found', { count: found, total: students.length }) : t('studies.count', { count: students.length })}
+              </Text>
+              {span ? <Text type="secondary">{t('studies.range', span)}</Text> : null}
             </div>
           </Card>
+
+          {searching && found === 0 ? (
+            <Card className="surface-card empty-card">
+              <Empty description={t('common.noMatches', { query: search.trim() })} />
+            </Card>
+          ) : null}
 
           <div className="study-years">
             {years.map(([year, entries]) => (

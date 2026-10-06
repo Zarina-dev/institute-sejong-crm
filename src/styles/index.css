@@ -1160,15 +1160,17 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* A title is never cut: it is the one thing a reader picks a post by. It
+   breaks between words (keep-all keeps Korean words whole), and only a
+   word longer than the line may break inside. The lede below is what gets
+   shortened. */
 .notice-row h3.ant-typography {
-  display: -webkit-box;
-  overflow: hidden;
   margin: 0;
   color: var(--color-text);
   font-size: var(--text-xl);
   line-height: var(--leading-snug);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .notice-row__excerpt.ant-typography {
@@ -1198,6 +1200,34 @@
 
   .notice-row__chevron {
     display: none;
+  }
+}
+
+/* A phone gives the text the width: a cover shrinks to a small square at
+   the top, and a post without one shows no placeholder at all. */
+@media (max-width: 560px) {
+  .notice-row {
+    grid-template-columns: 64px minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+
+  .notice-row__media {
+    aspect-ratio: 1;
+    font-size: 20px;
+  }
+
+  .notice-row--bare {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .notice-row--bare .notice-row__media {
+    display: none;
+  }
+
+  .notice-row h3.ant-typography {
+    font-size: var(--text-lg);
   }
 }
 
@@ -5516,4 +5546,14 @@ button.attachment-chip:hover {
   display: flex;
   justify-content: space-between;
   gap: var(--space-6);
+}
+
+/* 행사·대회 results on a phone: 소속·상품 under the name. */
+.competition-winners__stack {
+  display: grid;
+  gap: 2px;
+}
+
+.competition-winners__stack .ant-typography {
+  font-size: var(--text-sm);
 }

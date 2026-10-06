@@ -1,5 +1,5 @@
-import { CloseOutlined, EnvironmentOutlined, PhoneOutlined, SearchOutlined } from '@ant-design/icons'
-import { Button, Card, Input, Tooltip, Typography } from 'antd'
+import { EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons'
+import { Button, Card, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 
 import { contact, phoneHref } from '../../../app/contact'
@@ -11,6 +11,7 @@ import { useTerms } from '../../../features/terms/queries'
 import { TermPicker } from '../../../features/terms/TermPicker'
 import type { AcademicTerm } from '../../../features/terms/types'
 import { useTermChoice } from '../../../features/terms/useTermChoice'
+import { HeaderSearch, matchesQuery } from '../../../shared/HeaderSearch'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { formatDate } from '../../../shared/format'
 import { PageHeader } from '../../../shared/PageHeader'
@@ -33,7 +34,6 @@ type CoursesPageProps = {
  */
 export function CoursesPage({ category }: CoursesPageProps) {
   const { t, language } = usePreferences()
-  const [searchOpen, setSearchOpen] = useState(false)
   const [search, setSearch] = useState('')
 
   /**
@@ -52,23 +52,10 @@ export function CoursesPage({ category }: CoursesPageProps) {
 
   /** Class, programme, teacher and room — whatever the visitor remembers. */
   const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase()
-
-    if (!query) {
-      return inCategory
-    }
-
     return inCategory.filter((course) =>
-      [course.subject, course.title, course.teacherName, course.classroom, course.description]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(query)),
+      matchesQuery(search, [course.subject, course.title, course.teacherName, course.classroom, course.description]),
     )
   }, [inCategory, search])
-
-  const closeSearch = () => {
-    setSearchOpen(false)
-    setSearch('')
-  }
 
   return (
     <div className="page-layout">
@@ -76,30 +63,7 @@ export function CoursesPage({ category }: CoursesPageProps) {
         kicker={t('siteNav.programmes')}
         title={t(category === 'culture' ? 'pageCopy.cultureTitle' : 'pageCopy.coursesTitle')}
         description={t(category === 'culture' ? 'pageCopy.cultureSubtitle' : 'pageCopy.coursesSubtitle')}
-        extra={
-          searchOpen ? (
-            <div className="material-search">
-              <Input
-                autoFocus
-                allowClear
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder={t('courses.searchPlaceholder')}
-                prefix={<SearchOutlined />}
-              />
-              <Button type="text" icon={<CloseOutlined />} aria-label={t('common.cancel')} onClick={closeSearch} />
-            </div>
-          ) : (
-            <Tooltip title={t('common.search')}>
-              <Button
-                className="icon-button"
-                icon={<SearchOutlined />}
-                aria-label={t('common.search')}
-                onClick={() => setSearchOpen(true)}
-              />
-            </Tooltip>
-          )
-        }
+        extra={<HeaderSearch value={search} onChange={setSearch} placeholder={t('courses.searchPlaceholder')} />}
       />
 
       <ErrorAlert error={courses.error ?? terms.error} fallback={t('courses.loadFailed')} />

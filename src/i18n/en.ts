@@ -51,6 +51,7 @@ export const en = {
     materials: 'Study materials',
   },
   common: {
+    noMatches: 'Nothing matches “{{query}}”.',
     save: 'Save',
     add: 'Add',
     edit: 'Edit',
@@ -656,6 +657,7 @@ export const en = {
     },
   },
   staff: {
+    searchPlaceholder: 'Search by name or position',
     upcoming: 'Joining soon',
     toPresent: 'present',
     joinsOn: 'Joins on {{date}}',
@@ -983,6 +985,8 @@ export const en = {
     },
   },
   studies: {
+    searchPlaceholder: 'Search by name, university or major',
+    found: '{{count}} of {{total}} students',
     title: 'Studying in Korea',
     subtitle: 'Everyone the institute has sent to Korea, from the first student onwards.',
     adminTitle: 'Studying in Korea',
