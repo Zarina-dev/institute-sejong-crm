@@ -667,6 +667,9 @@
 
 .filter-footer {
   display: flex;
+  /* On a phone the controls and the actions take a line each instead of
+     pushing the page sideways. */
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
@@ -679,6 +682,24 @@
 
 .filter-footer .ant-btn-link {
   padding: 0;
+}
+
+/* The counts and actions stay on the right, also when they wrap below. */
+.filter-footer > :last-child:not(:first-child) {
+  margin-left: auto;
+}
+
+/* A segmented control cannot wrap; when its options outgrow a phone it
+   scrolls within itself rather than widening the page. */
+.filter-footer .ant-segmented {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filter-footer .ant-space,
+.filter-footer .ant-space-item {
+  max-width: 100%;
 }
 
 /* A footer with no filter row above it needs no divider. */
@@ -3141,6 +3162,13 @@ a.activity-row:hover b {
   gap: var(--space-8);
 }
 
+/* Grid items default to min-width: auto and would grow to the table's full
+   width, pushing the page sideways on a phone; this lets the table scroll
+   inside its card instead. */
+.semester-tables > * {
+  min-width: 0;
+}
+
 .semester-heading {
   display: flex;
   flex-wrap: wrap;
@@ -3777,6 +3805,12 @@ a.attachment-chip:hover {
 /* A year, picked from a list — narrow, because it holds four digits. */
 .year-select.ant-select {
   min-width: 118px;
+}
+
+/* Filter cards stretch their selects to full width; a year picker sits
+   beside the semester buttons instead, at the width of a year. */
+.filter-card .year-select.ant-select {
+  width: auto;
 }
 
 .year-select .ant-select-selector {
