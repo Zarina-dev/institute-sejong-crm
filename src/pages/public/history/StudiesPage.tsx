@@ -1,5 +1,5 @@
-import { BankOutlined, ReadOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons'
-import { Card, Empty, Skeleton, Tag, Typography } from 'antd'
+import { UserOutlined } from '@ant-design/icons'
+import { Card, Empty, Skeleton, Typography } from 'antd'
 import { useMemo } from 'react'
 
 import { assetUrl } from '../../../api/client'
@@ -18,55 +18,52 @@ const NO_STUDENTS: StudyAbroad[] = []
  * One student. Every text is shown in the reader's language, falling back to
  * the other one; the name also carries its other script underneath —
  * 아지모바 굴잔 / Азимова Гулжан — since that is how both readers know them.
+ *
+ * The card has one fixed structure whatever the language: portrait and name
+ * side by side, then label | value rows. A long Kyrgyz value
+ * ("Информациялык коммуникациялык инженерия") wraps inside its value
+ * column instead of reflowing the whole card, so a row of cards reads the
+ * same in Korean, Kyrgyz or any mix of the two.
  */
 function StudentCard({ student, number }: { student: StudyAbroad; number: number }) {
-  const { language } = usePreferences()
+  const { t, language } = usePreferences()
   const text = (field: Parameters<typeof studyText>[1]) => studyText(student, field, language)
   const alias = otherName(student, language)
 
-  const university = text('university')
-  const major = text('major')
-  const duration = text('duration')
-  const programme = text('programme')
+  const facts = [
+    { label: t('studies.form.university'), value: text('university') },
+    { label: t('studies.form.major'), value: text('major') },
+    { label: t('studies.form.duration'), value: text('duration') },
+    { label: t('studies.form.programme'), value: text('programme') },
+  ].filter((fact) => fact.value)
   const note = text('note')
 
   return (
     <Card className="surface-card study-card">
-      <span className="study-card__number">{number}</span>
+      <div className="study-card__head">
+        <div className="study-card__photo">
+          {student.photo ? <img src={assetUrl(student.photo)} alt="" loading="lazy" /> : <UserOutlined />}
+        </div>
 
-      <div className="study-card__photo">
-        {student.photo ? <img src={assetUrl(student.photo)} alt="" loading="lazy" /> : <UserOutlined />}
+        <div className="study-card__names">
+          <span className="study-card__number">{number}</span>
+          <Title level={3}>{text('name')}</Title>
+          {alias ? <Text className="study-card__alias">{alias}</Text> : null}
+        </div>
       </div>
 
-      <div className="study-card__names">
-        <Title level={3}>{text('name')}</Title>
-        {alias ? <Text className="study-card__alias">{alias}</Text> : null}
-      </div>
-
-      <ul className="study-card__facts">
-        {university ? (
-          <li>
-            <BankOutlined /> {university}
-          </li>
-        ) : null}
-        {major ? (
-          <li>
-            <ReadOutlined /> {major}
-          </li>
-        ) : null}
-        {duration ? (
-          <li>
-            <SolutionOutlined /> {duration}
-          </li>
-        ) : null}
-      </ul>
-
-      {programme ? <Tag className="study-card__programme">{programme}</Tag> : null}
-      {note ? (
-        <Text type="secondary" className="study-card__note">
-          {note}
-        </Text>
+      {facts.length > 0 ? (
+        <dl className="study-card__facts">
+          {facts.map((fact) => (
+            <div className="study-card__fact" key={fact.label}>
+              <dt>{fact.label}</dt>
+              <dd>{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
       ) : null}
+
+      {note ? <Text className="study-card__note">{note}</Text> : null}
     </Card>
   )
 }
