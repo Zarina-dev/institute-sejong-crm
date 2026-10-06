@@ -25,6 +25,9 @@ export type AdminNavGroup = {
 /** Shown above the groups; it belongs to no section of the site. */
 export const adminDashboard: AdminNavItem = { to: '/admin', labelKey: 'adminNav.dashboard', end: true }
 
+/** Shown below the groups: deletions from every section end up here. */
+export const adminTrash: AdminNavItem = { to: '/admin/trash', labelKey: 'adminNav.trash' }
+
 /**
  * The admin menu is the public menu: the same five sections, and under each
  * one the very pages a visitor sees. An admin looking for 인사말 opens

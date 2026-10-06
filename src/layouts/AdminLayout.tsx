@@ -8,6 +8,7 @@ import {
   IdcardOutlined,
   LogoutOutlined,
   PictureOutlined,
+  RestOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   MoonOutlined,
@@ -22,7 +23,7 @@ import { languages, usePreferences } from '../app/preferences'
 import { clearSession } from '../auth/session'
 import { useSession, useSessionResolving } from '../auth/useSession'
 import { BrandMark } from '../shared/BrandMark'
-import { adminDashboard, adminNavigation, type AdminNavGroup } from './adminNavigation'
+import { adminDashboard, adminNavigation, adminTrash, type AdminNavGroup } from './adminNavigation'
 
 const { Content, Header, Sider } = Layout
 const { Title } = Typography
@@ -181,6 +182,11 @@ export function AdminLayout() {
                 </div>
               )
             })}
+
+            <NavLink className="rail-link rail-link--trash" to={adminTrash.to}>
+              <RestOutlined />
+              <span>{t(adminTrash.labelKey)}</span>
+            </NavLink>
           </nav>
 
           <div className="rail-user">

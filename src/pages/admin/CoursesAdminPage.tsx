@@ -292,7 +292,6 @@ export function CoursesAdminPage() {
     (record: CourseRecord) => {
       confirmDelete({
         target: record.title,
-        note: t('courses.deleteNote'),
         onConfirm: () =>
           deleteCourse.mutateAsync(record.id).then(
             () => message.success(t('courses.deleted')),

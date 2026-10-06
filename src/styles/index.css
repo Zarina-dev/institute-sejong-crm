@@ -731,6 +731,14 @@
   overflow-wrap: anywhere;
 }
 
+/* --- Recently deleted --- */
+
+.trash-name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
 /* --- Editable catalog picker (과목 / 과정) --- */
 
 .catalog-option {
@@ -1856,6 +1864,21 @@
 
 .rail-nav a.active .anticon {
   opacity: 1;
+}
+
+/* 최근 삭제된 항목 sits apart from the site's sections: it holds all of them. */
+.rail-nav a.rail-link--trash {
+  position: relative;
+  margin-top: var(--space-4);
+}
+
+.rail-nav a.rail-link--trash::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--space-2));
+  right: var(--space-3);
+  left: var(--space-3);
+  border-top: 1px solid var(--color-rail-border);
 }
 
 /* Pushed to the bottom of the rail by the auto margin. */

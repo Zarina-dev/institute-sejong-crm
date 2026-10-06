@@ -7,8 +7,13 @@ import { usePreferences } from '../app/preferences'
 type ConfirmDeleteOptions = {
   /** What is about to be deleted — shown in bold inside the dialog. */
   target: string
-  /** Replaces the default "this cannot be undone" note. */
+  /** What else the deletion affects, shown above the note on where it goes. */
   note?: ReactNode
+  /**
+   * Removal for good, from 최근 삭제된 항목. Every other delete only moves
+   * the record there, and the dialog says it can be restored for 30 days.
+   */
+  permanent?: boolean
   /** Rejecting keeps the dialog open with its button in a loading state. */
   onConfirm: () => void | Promise<unknown>
 }
@@ -26,18 +31,19 @@ export function useConfirmDelete() {
   const { t } = usePreferences()
 
   return useCallback(
-    ({ target, note, onConfirm }: ConfirmDeleteOptions) => {
+    ({ target, note, permanent = false, onConfirm }: ConfirmDeleteOptions) => {
       modal.confirm({
-        title: t('confirm.title'),
+        title: t(permanent ? 'confirm.purgeTitle' : 'confirm.title'),
         icon: <ExclamationCircleFilled />,
         content: (
           <div className="confirm-delete">
-            <p>{t('confirm.question')}</p>
+            <p>{t(permanent ? 'confirm.purgeQuestion' : 'confirm.question')}</p>
             <strong>{target}</strong>
-            <p>{note ?? t('confirm.irreversible')}</p>
+            {note ? <p>{note}</p> : null}
+            <p>{t(permanent ? 'confirm.irreversible' : 'confirm.toTrash')}</p>
           </div>
         ),
-        okText: t('confirm.ok'),
+        okText: t(permanent ? 'confirm.purgeOk' : 'confirm.ok'),
         okButtonProps: { danger: true },
         cancelText: t('confirm.cancel'),
         onOk: onConfirm,
