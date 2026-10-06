@@ -17,6 +17,7 @@ import { contact, phoneHref } from '../app/contact'
 import { languages, usePreferences } from '../app/preferences'
 import { useSession } from '../auth/useSession'
 import { BrandMark } from '../shared/BrandMark'
+import { useScrollReset } from '../shared/useScrollReset'
 import { navigation } from './navigation'
 
 const { Header, Content, Footer } = Layout
@@ -27,6 +28,7 @@ export function PublicLayout() {
   const { language, setLanguage, theme, toggleTheme, t } = usePreferences()
   const session = useSession()
   const { pathname } = useLocation()
+  useScrollReset()
 
   const closeMenu = () => setMenuOpen(false)
 
@@ -49,99 +51,107 @@ export function PublicLayout() {
         {t('nav.skipToContent')}
       </a>
 
-      {/* Utility strip: contact details and preferences, above the main menu. */}
-      <div className="utility-bar">
-        <div className="utility-bar__inner">
-          <div className="utility-bar__contact">
-            <a href={phoneHref}>
-              <PhoneOutlined /> {contact.phone}
-            </a>
-            <span>
-              <EnvironmentOutlined /> {contact.address}
-            </span>
-            <a href={contact.instagram} target="_blank" rel="noopener noreferrer">
-              <InstagramOutlined /> {contact.instagramHandle}
-            </a>
-          </div>
+      {/* The strip and the menu stay in view together: language, theme and
+          the sign-in are as reachable at the foot of a page as at its top. */}
+      <div className="site-top">
+        {/* Utility strip: contact details and preferences, above the main menu. */}
+        <div className="utility-bar">
+          <div className="utility-bar__inner">
+            <div className="utility-bar__contact">
+              <a href={phoneHref}>
+                <PhoneOutlined /> {contact.phone}
+              </a>
+              <span>
+                <EnvironmentOutlined /> {contact.address}
+              </span>
+              <a href={contact.instagram} target="_blank" rel="noopener noreferrer">
+                <InstagramOutlined /> {contact.instagramHandle}
+              </a>
+            </div>
 
-          <div className="utility-bar__actions">
-            <Tooltip title={t(theme === 'light' ? 'theme.dark' : 'theme.light')}>
-              <Button
-                type="text"
+            <div className="utility-bar__actions">
+              <Tooltip title={t(theme === 'light' ? 'theme.dark' : 'theme.light')}>
+                <Button
+                  type="text"
+                  size="small"
+                  aria-label={t('theme.label')}
+                  icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
+                  onClick={toggleTheme}
+                />
+              </Tooltip>
+              <Select
+                aria-label={t('language.label')}
+                className="language-select"
                 size="small"
-                aria-label={t('theme.label')}
-                icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
-                onClick={toggleTheme}
+                variant="borderless"
+                value={language}
+                onChange={setLanguage}
+                options={languages.map(({ value, label, title }) => ({ value, label, title }))}
               />
-            </Tooltip>
-            <Select
-              aria-label={t('language.label')}
-              className="language-select"
-              size="small"
-              variant="borderless"
-              value={language}
-              onChange={setLanguage}
-              options={languages.map(({ value, label, title }) => ({ value, label, title }))}
-            />
-            <NavLink to={portal.to} {...portalLinkProps}>
-              <Button type="primary" size="small" icon={portal.icon}>
-                {portal.label}
-              </Button>
-            </NavLink>
+              <NavLink to={portal.to} {...portalLinkProps}>
+                <Button type="primary" size="small" icon={portal.icon}>
+                  {portal.label}
+                </Button>
+              </NavLink>
+            </div>
           </div>
         </div>
-      </div>
 
-      <Header className="site-header">
-        <div className="header-inner">
-          <NavLink to="/" className="brand" aria-label={t('brand.name')}>
-            <BrandMark />
-            <span>
-              <strong className="brand-name--full">{t('brand.name')}</strong>
-              <strong className="brand-name--short">{t('brand.short')}</strong>
-              <small>{t('brand.tagline')}</small>
-            </span>
-          </NavLink>
-
-          <nav className="site-nav" aria-label={t('nav.navigation')}>
-            <NavLink to="/" end>
-              {t('siteNav.home')}
+        <Header className="site-header">
+          <div className="header-inner">
+            <NavLink to="/" className="brand" aria-label={t('brand.name')}>
+              <BrandMark />
+              <span>
+                <strong className="brand-name--full">{t('brand.name')}</strong>
+                <strong className="brand-name--short">{t('brand.short')}</strong>
+                <small>{t('brand.tagline')}</small>
+              </span>
             </NavLink>
-            {/* A section tab only opens its menu — hovering or clicking it never
-                leaves the current page; the sub-item does the navigating. */}
-            {navigation.map((section) => (
-              <Dropdown
-                key={section.to}
-                placement="bottomLeft"
-                trigger={['hover', 'click']}
-                menu={{
-                  items: section.children.map((child) => ({
-                    key: child.to,
-                    label: <Link to={child.to}>{t(child.labelKey)}</Link>,
-                  })),
-                }}
-              >
-                <button
-                  type="button"
-                  className={isCurrentSection(section.to) ? 'site-nav__section active' : 'site-nav__section'}
-                  aria-current={isCurrentSection(section.to) ? 'page' : undefined}
-                  aria-haspopup="menu"
-                >
-                  {t(section.labelKey)} <DownOutlined className="site-nav__caret" />
-                </button>
-              </Dropdown>
-            ))}
-          </nav>
 
-          <Button
-            className="menu-button icon-button"
-            aria-label={t('nav.menu')}
-            aria-expanded={menuOpen}
-            icon={<MenuOutlined />}
-            onClick={() => setMenuOpen(true)}
-          />
-        </div>
-      </Header>
+            <nav className="site-nav" aria-label={t('nav.navigation')}>
+              <NavLink to="/" end>
+                {t('siteNav.home')}
+              </NavLink>
+              {/* A section tab only opens its menu — hovering or clicking it never
+                leaves the current page; the sub-item does the navigating. */}
+              {navigation.map((section) => (
+                <Dropdown
+                  key={section.to}
+                  placement="bottomLeft"
+                  trigger={['hover', 'click']}
+                  // Inside the pinned header, not at the end of <body>: a menu
+                  // opened at the foot of a long page otherwise sits at
+                  // document coordinates and the page jumps up to it.
+                  getPopupContainer={(trigger) => trigger.parentElement ?? document.body}
+                  menu={{
+                    items: section.children.map((child) => ({
+                      key: child.to,
+                      label: <Link to={child.to}>{t(child.labelKey)}</Link>,
+                    })),
+                  }}
+                >
+                  <button
+                    type="button"
+                    className={isCurrentSection(section.to) ? 'site-nav__section active' : 'site-nav__section'}
+                    aria-current={isCurrentSection(section.to) ? 'page' : undefined}
+                    aria-haspopup="menu"
+                  >
+                    {t(section.labelKey)} <DownOutlined className="site-nav__caret" />
+                  </button>
+                </Dropdown>
+              ))}
+            </nav>
+
+            <Button
+              className="menu-button icon-button"
+              aria-label={t('nav.menu')}
+              aria-expanded={menuOpen}
+              icon={<MenuOutlined />}
+              onClick={() => setMenuOpen(true)}
+            />
+          </div>
+        </Header>
+      </div>
 
       <Drawer title={t('nav.navigation')} placement="right" open={menuOpen} onClose={closeMenu}>
         <nav className="mobile-nav" aria-label={t('nav.navigation')}>

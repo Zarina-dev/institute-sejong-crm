@@ -1,9 +1,8 @@
 import {
   CalendarOutlined,
   DeleteOutlined,
-  DownloadOutlined,
   EditOutlined,
-  FileOutlined,
+  EyeOutlined,
   LockOutlined,
   PaperClipOutlined,
   PlusOutlined,
@@ -13,7 +12,6 @@ import { Alert, App, Button, Card, Drawer, Empty, Form, Input, Modal, Skeleton, 
 import type { UploadProps } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
-import { assetUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -27,6 +25,7 @@ import { formatDate, formatFileSize } from '../../shared/format'
 import { PageHeader } from '../../shared/PageHeader'
 import { RichContent } from '../../shared/RichContent'
 import { RichTextEditor } from '../../shared/RichTextEditor'
+import { FilePreview, type PreviewFile } from '../../shared/FilePreview'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { YearSelect } from '../../shared/YearSelect'
 
@@ -72,6 +71,7 @@ export function MeetingsAdminPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [openId, setOpenId] = useState<string | null>(null)
+  const [preview, setPreview] = useState<PreviewFile | null>(null)
   const [uploading, setUploading] = useState(false)
   const [form] = Form.useForm<MeetingFormValues>()
   const queryClient = useQueryClient()
@@ -83,7 +83,7 @@ export function MeetingsAdminPage() {
 
   const years = useMemo(() => [...new Set(all.map((meeting) => meeting.heldOn.slice(0, 4)))].sort().reverse(), [all])
   const [year, setYear] = useState<string | null>(null)
-  const activeYear = year && years.includes(year) ? year : years[0] ?? null
+  const activeYear = year && years.includes(year) ? year : (years[0] ?? null)
   const rows = useMemo(() => all.filter((meeting) => meeting.heldOn.startsWith(activeYear ?? '')), [activeYear, all])
 
   const open = rows.find((meeting) => meeting.id === openId) ?? null
@@ -235,13 +235,14 @@ export function MeetingsAdminPage() {
                 </span>
               </div>
 
-              {/* Files are one click from the list — no need to open the entry. */}
+              {/* Files are one click from the list — no need to open the entry.
+                  They open for reading; the download is in the preview. */}
               <div className="meeting-row__files" onClick={(event) => event.stopPropagation()} role="presentation">
                 {(meeting.attachments ?? []).map((file) => (
-                  <a className="attachment-chip" key={file.url} href={assetUrl(file.url)} download={file.name} title={file.name}>
-                    <DownloadOutlined />
+                  <button type="button" className="attachment-chip" key={file.url} title={file.name} onClick={() => setPreview(file)}>
+                    <EyeOutlined />
                     <span>{file.name}</span>
-                  </a>
+                  </button>
                 ))}
               </div>
 
@@ -314,11 +315,11 @@ export function MeetingsAdminPage() {
                 <Text className="section-kicker">{t('meetings.attachments')}</Text>
                 <div className="attachment-row">
                   {open.attachments.map((file) => (
-                    <a className="attachment-chip" key={file.url} href={assetUrl(file.url)} download={file.name}>
-                      <FileOutlined />
+                    <button type="button" className="attachment-chip" key={file.url} title={t('preview.open')} onClick={() => setPreview(file)}>
+                      <EyeOutlined />
                       <span>{file.name}</span>
                       <Text type="secondary">{formatFileSize(file.size)}</Text>
-                    </a>
+                    </button>
                   ))}
                 </div>
               </section>
@@ -361,7 +362,7 @@ export function MeetingsAdminPage() {
 
           <Form.Item label={t('meetings.attachments')} extra={t('meetings.form.filesHint')}>
             <Form.Item name="attachments" noStyle>
-              <AttachmentList />
+              <AttachmentList onPreview={setPreview} />
             </Form.Item>
             <Upload accept={DOCUMENT_ACCEPT} beforeUpload={beforeUpload} showUploadList={false} multiple>
               <Button icon={<PaperClipOutlined />} loading={uploading}>
@@ -371,12 +372,26 @@ export function MeetingsAdminPage() {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Last, so it opens over the form when a file is checked while editing. */}
+      <FilePreview file={preview} onClose={() => setPreview(null)} />
     </div>
   )
 }
 
-/** Controlled by `Form.Item`: what is attached, and a way to drop one. */
-function AttachmentList({ value = [], onChange }: { value?: MeetingAttachment[]; onChange?: (value: MeetingAttachment[]) => void }) {
+/**
+ * Controlled by `Form.Item`: what is attached, a look at each file — so the
+ * right one is checked before saving — and a way to drop one.
+ */
+function AttachmentList({
+  value = [],
+  onChange,
+  onPreview,
+}: {
+  value?: MeetingAttachment[]
+  onChange?: (value: MeetingAttachment[]) => void
+  onPreview: (file: MeetingAttachment) => void
+}) {
   const { t } = usePreferences()
 
   if (value.length === 0) {
@@ -387,8 +402,10 @@ function AttachmentList({ value = [], onChange }: { value?: MeetingAttachment[];
     <div className="attachment-row attachment-row--editable">
       {value.map((file) => (
         <span className="attachment-chip" key={file.url}>
-          <FileOutlined />
-          <span>{file.name}</span>
+          <button type="button" className="attachment-chip__open" title={t('preview.open')} onClick={() => onPreview(file)}>
+            <EyeOutlined />
+            <span>{file.name}</span>
+          </button>
           <Text type="secondary">{formatFileSize(file.size)}</Text>
           <Button
             type="text"

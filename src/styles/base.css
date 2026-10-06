@@ -15,7 +15,7 @@
 html {
   scroll-behavior: smooth;
   /* Keep sticky-header offsets out of anchored content. */
-  scroll-padding-top: calc(var(--layout-header-height) + var(--space-4));
+  scroll-padding-top: calc(var(--layout-sticky-offset) + var(--space-4));
   -webkit-text-size-adjust: 100%;
 }
 
@@ -50,7 +50,7 @@ video {
 }
 
 :target {
-  scroll-margin-top: calc(var(--layout-header-height) + var(--space-4));
+  scroll-margin-top: calc(var(--layout-sticky-offset) + var(--space-4));
 }
 
 /* A single, consistent focus ring for every interactive element. Mouse users

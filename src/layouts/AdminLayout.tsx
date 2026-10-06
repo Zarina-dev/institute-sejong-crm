@@ -23,6 +23,7 @@ import { languages, usePreferences } from '../app/preferences'
 import { clearSession } from '../auth/session'
 import { useSession, useSessionResolving } from '../auth/useSession'
 import { BrandMark } from '../shared/BrandMark'
+import { useScrollReset } from '../shared/useScrollReset'
 import { adminDashboard, adminNavigation, adminTrash, type AdminNavGroup } from './adminNavigation'
 
 const { Content, Header, Sider } = Layout
@@ -81,6 +82,7 @@ export function AdminLayout() {
   const { pathname, search } = useLocation()
   const url = `${pathname}${search}`
   const { open, toggle } = useOpenSections(url)
+  useScrollReset()
   const currentSection = sectionOf(url)
   const [collapsed, setCollapsed] = useState(false)
 

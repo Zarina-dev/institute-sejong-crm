@@ -39,12 +39,13 @@ const SUGGESTIONS: Record<'programme' | 'duration', { ko: string[]; ky: string[]
 }
 
 /** The rows of the translation table, in the order a record is read. */
+// Hints are invented examples: never a real student's name or school.
 const ROWS: Array<{ field: BilingualField; label: TranslationKey; placeholder: { ko: string; ky: string } }> = [
-  { field: 'name', label: 'studies.form.name', placeholder: { ko: '아지모바 굴잔', ky: 'Азимова Гулжан' } },
-  { field: 'university', label: 'studies.form.university', placeholder: { ko: '경희대학교', ky: 'Кёнхи университети' } },
-  { field: 'major', label: 'studies.form.major', placeholder: { ko: '경영학', ky: 'Менеджмент' } },
-  { field: 'programme', label: 'studies.form.programme', placeholder: { ko: '정부초청장학생(GKS)', ky: 'GKS стипендиясы' } },
-  { field: 'duration', label: 'studies.form.duration', placeholder: { ko: '4년 (학사)', ky: '4 жыл (бакалавр)' } },
+  { field: 'name', label: 'studies.form.name', placeholder: { ko: '마마토바 아이다', ky: 'Маматова Айда' } },
+  { field: 'university', label: 'studies.form.university', placeholder: { ko: '부산대학교', ky: 'Пусан улуттук университети' } },
+  { field: 'major', label: 'studies.form.major', placeholder: { ko: '국제통상학', ky: 'Эл аралык соода' } },
+  { field: 'programme', label: 'studies.form.programme', placeholder: { ko: '대학 자체 장학생', ky: 'Университеттин стипендиясы' } },
+  { field: 'duration', label: 'studies.form.duration', placeholder: { ko: '1년 (어학) + 2년 (석사)', ky: '1 жыл (тил) + 2 жыл (магистр)' } },
   { field: 'note', label: 'studies.form.note', placeholder: { ko: '', ky: '' } },
 ]
 

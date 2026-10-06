@@ -1,12 +1,12 @@
 import { CalendarOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { Alert, App, Button, Card, Form, Input, InputNumber, Modal, Segmented, Space, Table, Tag, Typography } from 'antd'
+import { Alert, App, Button, Card, Form, Input, InputNumber, Modal, Segmented, Space, Table, Tag, Tooltip, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import type { TranslationKey } from '../../app/preferences'
 import { breakSeason, termDisplayName, termMemo } from '../../features/terms/labels'
-import { useCreateTerm, useDeleteTerm, useTerms, useUpdateTerm } from '../../features/terms/queries'
+import { useCreateTerm, useDeleteTerm, useTermUsage, useTerms, useUpdateTerm } from '../../features/terms/queries'
 import { type AcademicTerm, type BreakSeason, type TermKind } from '../../features/terms/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
@@ -64,6 +64,7 @@ export function TermsAdminPage() {
   const createTerm = useCreateTerm()
   const updateTerm = useUpdateTerm()
   const deleteTerm = useDeleteTerm()
+  const usage = useTermUsage()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -142,7 +143,6 @@ export function TermsAdminPage() {
     (term: AcademicTerm) => {
       confirmDelete({
         target: termDisplayName(term, t),
-        note: t('terms.deleteNote'),
         onConfirm: () =>
           deleteTerm.mutateAsync(term.id).then(
             () => message.success(t('terms.deleted')),
@@ -178,21 +178,51 @@ export function TermsAdminPage() {
         ),
       },
       {
+        title: t('terms.usage'),
+        key: 'usage',
+        width: 170,
+        render: (_, term) => {
+          const held = usage.data?.[term.code]
+          const parts = [
+            held?.courses ? t('terms.usageCourses', { count: held.courses }) : null,
+            held?.events ? t('terms.usageEvents', { count: held.events }) : null,
+          ].filter(Boolean)
+
+          return parts.length ? <Text>{parts.join(' · ')}</Text> : <Text type="secondary">{t('terms.usageNone')}</Text>
+        },
+      },
+      {
         title: t('common.actions'),
         key: 'actions',
         width: 160,
         align: 'right',
-        render: (_, term) => (
-          <Space>
-            <Button size="small" icon={<EditOutlined />} onClick={() => openEditModal(term)}>
-              {t('common.edit')}
-            </Button>
-            <Button size="small" danger icon={<DeleteOutlined />} aria-label={t('common.delete')} onClick={() => handleDelete(term)} />
-          </Space>
-        ),
+        render: (_, term) => {
+          const held = usage.data?.[term.code]
+          // The site lists classes and events by semester: one that holds
+          // any is edited, never deleted. Until usage loads, nothing is.
+          const locked = !usage.data || Boolean(held && (held.courses > 0 || held.events > 0))
+
+          return (
+            <Space>
+              <Button size="small" icon={<EditOutlined />} onClick={() => openEditModal(term)}>
+                {t('common.edit')}
+              </Button>
+              <Tooltip title={locked && usage.data ? t('terms.inUseHint') : undefined} placement="topRight">
+                <Button
+                  size="small"
+                  danger
+                  icon={<DeleteOutlined />}
+                  aria-label={t('common.delete')}
+                  disabled={locked}
+                  onClick={() => handleDelete(term)}
+                />
+              </Tooltip>
+            </Space>
+          )
+        },
       },
     ],
-    [current?.id, handleDelete, language, openEditModal, t],
+    [current?.id, handleDelete, language, openEditModal, t, usage.data],
   )
 
   return (
@@ -281,7 +311,11 @@ export function TermsAdminPage() {
           </div>
 
           <div className="form-row">
-            <Form.Item name="startDate" label={t('courses.form.startDate')} rules={[{ required: true, message: t('courses.form.startDateRequired') }]}>
+            <Form.Item
+              name="startDate"
+              label={t('courses.form.startDate')}
+              rules={[{ required: true, message: t('courses.form.startDateRequired') }]}
+            >
               <Input type="date" />
             </Form.Item>
             <Form.Item

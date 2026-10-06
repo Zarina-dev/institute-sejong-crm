@@ -186,6 +186,10 @@
   --layout-container: 1240px;
   --layout-container-wide: 1600px;
   --layout-header-height: 76px;
+  /* The utility strip above the menu; both stay pinned to the top. */
+  --layout-utility-height: 36px;
+  /* What a sticky element or an anchor must clear: strip + menu. */
+  --layout-sticky-offset: calc(var(--layout-utility-height) + var(--layout-header-height));
   --layout-rail-width: 260px;
   --layout-gutter: var(--space-6);
   --layout-gutter-compact: var(--space-4);

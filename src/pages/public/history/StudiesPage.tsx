@@ -17,7 +17,7 @@ const NO_STUDENTS: StudyAbroad[] = []
 /**
  * One student. Every text is shown in the reader's language, falling back to
  * the other one; the name also carries its other script underneath —
- * 아지모바 굴잔 / Азимова Гулжан — since that is how both readers know them.
+ * 마마토바 아이다 / Маматова Айда — since that is how both readers know them.
  *
  * The card has one fixed structure whatever the language: portrait and name
  * side by side, then label | value rows. A long Kyrgyz value

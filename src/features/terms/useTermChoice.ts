@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useReducer } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
 
 import { termInProgress } from './current'
@@ -6,75 +6,66 @@ import type { AcademicTerm } from './types'
 
 /**
  * Where a choice is remembered: per page, and the admin apart from the site.
- * Each page opens on the semester in progress the first time it is entered,
- * and on the visitor's own choice when they come back to it — a semester
- * picked on 강좌 안내 is not carried to 문화 강좌, where it may well be empty.
+ * A semester picked on 강좌 안내 is not carried to 문화 강좌, where it may
+ * well be empty.
  */
 type Scope = 'site' | 'admin'
 
-const storageKey = (scope: Scope, page: string) => `institut-term:${scope}:${page}`
-
-// sessionStorage can be unavailable (private mode, blocked storage); a
-// forgotten choice is harmless, so failures are ignored.
-function readRemembered(scope: Scope, page: string) {
-  try {
-    return window.sessionStorage.getItem(storageKey(scope, page))
-  } catch {
-    return null
-  }
-}
-
-function remember(scope: Scope, page: string, code: string) {
-  try {
-    window.sessionStorage.setItem(storageKey(scope, page), code)
-  } catch {
-    /* not remembered — the page still works */
-  }
-}
+/**
+ * Kept in memory only, on purpose. Moving around the site keeps each page's
+ * choice — coming back to 강좌 안내 through the menu does not snap back —
+ * but a reload, like a new visit, opens on the semester in progress. Nothing
+ * goes in the URL or in storage, since either would survive the reload.
+ */
+const chosen = new Map<string, string>()
 
 /**
- * Which semester a page is showing. In order:
- *
- * 1. `?term=` in the URL — so the back button, a reload and a shared link
- *    all come back to the same semester;
- * 2. the semester last picked on this page in this tab — coming back to it
- *    through the menu does not snap back to the current one;
- * 3. the semester in progress — what a first-time visitor should see without
- *    choosing anything;
- * 4. the most recent one defined (`terms` arrive newest first).
- *
- * A remembered or linked semester that no longer exists is simply skipped.
+ * Which semester a page is showing: the one picked on this page since the
+ * site was loaded, otherwise the semester in progress, otherwise the most
+ * recent one defined (`terms` arrive newest first). A choice whose semester
+ * no longer exists is simply skipped.
  */
 export function useTermChoice(terms: AcademicTerm[], { scope = 'site' }: { scope?: Scope } = {}) {
-  const [params, setParams] = useSearchParams()
   const page = useLocation().pathname
-  // Read on every render, not kept in state: 강좌 안내 and 문화 강좌 are one
-  // component on two routes, and state would carry one page's choice into
-  // the other. Selecting re-renders through the URL change.
-  const remembered = readRemembered(scope, page)
+  const key = `${scope}:${page}`
+  // The choice lives outside React (it must outlast the page's unmount), so
+  // picking one re-renders by hand.
+  const [, rerender] = useReducer((count: number) => count + 1, 0)
+  useDropLegacyParam()
 
   const fallback = useMemo(() => termInProgress(terms) ?? terms[0] ?? null, [terms])
-  const linked = params.get('term')
-
-  const active =
-    terms.find((term) => term.code === linked) ?? terms.find((term) => term.code === remembered) ?? fallback
+  const remembered = chosen.get(key)
+  const active = terms.find((term) => term.code === remembered) ?? fallback
 
   const select = useCallback(
     (code: string) => {
-      remember(scope, page, code)
-      // A filter, not a destination: replace the entry rather than stacking
-      // one per change in the history.
+      chosen.set(key, code)
+      rerender()
+    },
+    [key],
+  )
+
+  return { active, select }
+}
+
+/**
+ * Links and bookmarks from before carry `?term=`; it no longer decides
+ * anything, so it is taken out of the address rather than left to mislead.
+ */
+function useDropLegacyParam() {
+  const [params, setParams] = useSearchParams()
+  const legacy = params.has('term')
+
+  useEffect(() => {
+    if (legacy) {
       setParams(
         (previous) => {
           const next = new URLSearchParams(previous)
-          next.set('term', code)
+          next.delete('term')
           return next
         },
         { replace: true },
       )
-    },
-    [page, scope, setParams],
-  )
-
-  return { active, select }
+    }
+  }, [legacy, setParams])
 }

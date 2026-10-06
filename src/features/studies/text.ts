@@ -17,8 +17,8 @@ export function studyText(student: StudyAbroad, field: BilingualField, language:
 }
 
 /**
- * The name in the other script, shown under the main one — 아지모바 굴잔 /
- * Азимова Гулжан — when both exist and differ.
+ * The name in the other script, shown under the main one — 마마토바 아이다 /
+ * Маматова Айда — when both exist and differ.
  */
 export function otherName(student: StudyAbroad, language: Language) {
   const korean = student.name?.trim() ?? ''

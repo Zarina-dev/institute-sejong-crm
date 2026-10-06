@@ -1,12 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { createTerm, deleteTerm, getTerms, updateTerm } from './api'
+import { createTerm, deleteTerm, getTermUsage, getTerms, updateTerm } from './api'
 import type { AcademicTermInput } from './types'
 
-export const termKeys = { all: ['terms'] as const }
+export const termKeys = { all: ['terms'] as const, usage: ['terms', 'usage'] as const }
 
 export function useTerms() {
   return useQuery({ queryKey: termKeys.all, queryFn: getTerms, staleTime: 5 * 60_000 })
+}
+
+/**
+ * Classes and events are added elsewhere, so this is read fresh each time
+ * 학기 관리 opens rather than kept in step by every mutation that files one.
+ */
+export function useTermUsage() {
+  return useQuery({ queryKey: termKeys.usage, queryFn: getTermUsage, staleTime: 0 })
 }
 
 function useInvalidateTerms() {
