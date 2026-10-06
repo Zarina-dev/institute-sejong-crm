@@ -12,6 +12,13 @@
    ========================================================================== */
 
 :root {
+  /* The site's own theme decides how native controls are drawn, not the
+     computer's: index.html announces "light dark", so without this a
+     computer in dark mode gave the light site white input text — and a
+     white caret on white in every Select and AutoComplete search box. The
+     dark theme below sets it back to dark. */
+  color-scheme: light;
+
   /* ---------- Layer 1: palette ---------- */
 
   --brand-50: #eef4ff;
