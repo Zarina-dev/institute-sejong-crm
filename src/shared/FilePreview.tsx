@@ -76,6 +76,15 @@ export function FilePreview({ file, onClose }: { file: PreviewFile | null; onClo
   )
 }
 
+/** The same reader set into a page rather than a dialog — 회의록's original, shown as soon as it is opened. */
+export function FileView({ file }: { file: PreviewFile }) {
+  return (
+    <div className="file-view">
+      <PreviewBody key={file.url} file={file} href={sourceOf(file.url)} />
+    </div>
+  )
+}
+
 function PreviewBody({ file, href }: { file: PreviewFile; href: string }) {
   const { t } = usePreferences()
   const extension = extensionOf(file.name)

@@ -5393,3 +5393,92 @@ button.attachment-chip:hover {
 .unfiled-events > .ant-typography {
   flex-basis: 100%;
 }
+
+/* --- 회의록: the minutes as paper, the original in place, 참석 현황 --- */
+
+.meeting-detail__paper {
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--neutral-100);
+  overflow-x: auto;
+}
+
+.meeting-detail__paper .meeting-doc {
+  min-width: 640px;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+}
+
+.file-view {
+  height: min(78vh, 1100px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.file-view > .file-preview__frame,
+.file-view > .file-preview__status,
+.file-view > .file-preview__text,
+.file-view > .file-preview__document,
+.file-view > .file-preview__sheets {
+  height: 100%;
+  overflow: auto;
+}
+
+.attendance-picker {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.attendance-option {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.attendance-rows {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+
+.attendance-rows__row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: baseline;
+}
+
+.attendance-rows__label.ant-typography {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.attendance-rows__people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.attendance-person.ant-tag {
+  margin: 0;
+  cursor: pointer;
+}
+
+.attendance-person span {
+  color: var(--color-text-muted);
+}
+
+.attendance-rows__total.ant-typography {
+  justify-self: end;
+}
+
+@media (max-width: 760px) {
+  .attendance-rows__row {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+}

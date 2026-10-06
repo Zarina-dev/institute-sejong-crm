@@ -1,0 +1,137 @@
+/*
+ * 회의록 as a printed form. Self-contained on purpose: the same rules are
+ * injected into the print frame and used for the PDF (exportMeeting.ts),
+ * where the app's stylesheets do not exist. Paper and ink are fixed — the
+ * record is black on white in the dark theme too.
+ */
+.meeting-doc {
+  --doc-ink: #111;
+  --doc-paper: #fff;
+  --doc-rule: #222;
+  --doc-muted: #555;
+
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 794px; /* A4 at 96 dpi */
+  margin: 0 auto;
+  padding: 36px 32px;
+  background: var(--doc-paper);
+  color: var(--doc-ink);
+  font-family: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.meeting-doc *,
+.meeting-doc *::before,
+.meeting-doc *::after {
+  box-sizing: border-box;
+}
+
+.meeting-doc__table {
+  width: 100%;
+  border: 2px solid var(--doc-rule);
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.meeting-doc__table th,
+.meeting-doc__table td {
+  padding: 8px 10px;
+  border: 1px solid var(--doc-rule);
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.meeting-doc__table th {
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.meeting-doc__title {
+  height: 104px;
+  text-align: center;
+}
+
+.meeting-doc__title span,
+.meeting-doc__title strong {
+  display: block;
+}
+
+.meeting-doc__title strong {
+  font-size: 17px;
+}
+
+.meeting-doc__sign-head {
+  height: 36px;
+}
+
+.meeting-doc__sign {
+  height: 68px;
+  text-align: center;
+  font-size: 15px;
+}
+
+.meeting-doc__center {
+  text-align: center;
+}
+
+.meeting-doc__table th.meeting-doc__role {
+  padding: 4px 6px;
+  font-size: 13px;
+}
+
+.meeting-doc__total {
+  text-align: right;
+  padding-right: 48px;
+  font-weight: 700;
+}
+
+.meeting-doc__content {
+  height: 360px;
+  vertical-align: top;
+}
+
+.meeting-doc__table td.meeting-doc__content {
+  padding: 16px 18px;
+}
+
+/* What the rich-text editor writes. */
+.meeting-doc__content p {
+  margin: 0 0 0.6em;
+}
+
+.meeting-doc__content h2,
+.meeting-doc__content h3 {
+  margin: 0.8em 0 0.4em;
+  font-size: 15px;
+}
+
+.meeting-doc__content ul,
+.meeting-doc__content ol {
+  margin: 0 0 0.6em;
+  padding-left: 1.4em;
+}
+
+.meeting-doc__content blockquote {
+  margin: 0 0 0.6em;
+  padding-left: 0.8em;
+  border-left: 3px solid var(--doc-muted);
+  color: var(--doc-muted);
+}
+
+.meeting-doc__content img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.4em auto;
+}
+
+.meeting-doc__content [style*='text-align: center'] {
+  text-align: center;
+}
+
+.meeting-doc__content > div > :last-child {
+  margin-bottom: 0;
+}
