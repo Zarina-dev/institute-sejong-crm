@@ -386,6 +386,7 @@ const ko: LocaleDictionary = {
     emptyWeek: '이번 주에는 수업이 없습니다.',
     showAll: '전체 수업 보기',
     room: '강의실',
+    roomUnset: '미정',
     teacher: '강사',
     loadFailed: '시간표를 불러오지 못했습니다.',
   },

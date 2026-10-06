@@ -180,11 +180,18 @@ export function CalendarPage() {
                     </span>
                   ) : null}
                 </div>
+                {/* Same block whatever the room: a fixed column, the label over
+                    the name, a long name wrapping to two lines at most and an
+                    unknown one said in words — so cards line up down the day. */}
                 <div className="lesson-room">
                   <EnvironmentOutlined />
-                  <span>
+                  <span className="lesson-room__text">
                     <Text type="secondary">{t('schedule.room')}</Text>
-                    <b>{item.classroom ?? '-'}</b>
+                    {item.classroom?.trim() ? (
+                      <b title={item.classroom.trim()}>{item.classroom.trim()}</b>
+                    ) : (
+                      <b className="is-unset">{t('schedule.roomUnset')}</b>
+                    )}
                   </span>
                 </div>
               </Card>

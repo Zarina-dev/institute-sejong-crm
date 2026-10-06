@@ -854,7 +854,8 @@
 
 .lesson-card .ant-card-body {
   display: grid;
-  grid-template-columns: 175px 1fr 125px;
+  /* Time and room are fixed columns, so every card on the day lines up. */
+  grid-template-columns: 175px minmax(0, 1fr) 200px;
   align-items: center;
   gap: var(--space-5);
   padding: var(--space-5) var(--space-6);
@@ -894,22 +895,42 @@
 
 .lesson-room {
   display: flex;
-  justify-content: flex-end;
+  align-items: flex-start;
   gap: var(--space-2);
+  min-width: 0;
   color: var(--color-primary-text);
 }
 
-.lesson-room span {
-  display: grid;
-  gap: 2px;
+/* Level with the label's first line. */
+.lesson-room > .anticon {
+  flex: none;
+  margin-top: 3px;
 }
 
-.lesson-room .ant-typography {
+.lesson-room__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lesson-room__text .ant-typography {
   font-size: var(--text-xs);
 }
 
-.lesson-room b {
+/* A long room name wraps once, then ends in an ellipsis (full name on hover). */
+.lesson-room__text b {
+  display: -webkit-box;
+  overflow: hidden;
   color: var(--color-text);
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.lesson-room__text b.is-unset {
+  color: var(--color-text-muted);
+  font-weight: var(--weight-regular);
 }
 
 /* ==========================================================================

@@ -413,6 +413,7 @@ const ru: LocaleDictionary = {
     emptyWeek: 'На этой неделе занятий нет.',
     showAll: 'Показать все занятия',
     room: 'Аудитория',
+    roomUnset: 'Уточняется',
     teacher: 'Преподаватель',
     loadFailed: 'Не удалось загрузить расписание.',
   },

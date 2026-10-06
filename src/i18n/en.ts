@@ -399,6 +399,7 @@ export const en = {
     emptyWeek: 'No classes this week.',
     showAll: 'Show all classes',
     room: 'Room',
+    roomUnset: 'To be announced',
     teacher: 'Teacher',
     loadFailed: 'Could not load the schedule.',
   },

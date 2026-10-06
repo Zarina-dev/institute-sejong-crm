@@ -192,36 +192,29 @@ export function MeetingsAdminPage() {
   const openMeeting = useCallback((meeting: MeetingSummary) => setOpenId(meeting.id), [])
 
   /**
-   * A new entry starts from the last one written on the form: the same
-   * meeting, place and people week after week, so only what changed is typed.
+   * A new entry starts empty — only today's date is filled in. Earlier
+   * answers are offered by the fields' suggestions, never written in.
    */
   const openCreateModal = useCallback(() => {
     setEditingId(null)
     setEditingFrom(null)
     form.resetFields()
-    const last = all.find((meeting) => meeting.attendeeList?.length) ?? all.find((meeting) => !meeting.original)
-    const day = today()
-
     form.setFieldsValue({
       mode: 'written',
-      heldOn: day,
-      title: last?.title || DEFAULT_TITLE,
-      method: last?.method ?? '',
-      place: last?.place ?? '',
-      drafter: last?.drafter ?? '',
-      approver: last?.approver ?? '',
-      // Only people still working here are carried over.
-      attendeeList: (last?.attendeeList ?? []).filter((attendee) => {
-        const member = staffList.find((candidate) => candidate.id === attendee.staffId)
-        return !attendee.staffId || (member ? employedOn(member, day) : false)
-      }),
+      heldOn: today(),
+      title: '',
+      method: '',
+      place: '',
+      drafter: '',
+      approver: '',
+      attendeeList: [],
       body: '',
       decisions: '',
       attachments: [],
       original: null,
     })
     setModalOpen(true)
-  }, [all, form, staffList])
+  }, [form])
 
   /**
    * The form opens at once with what the row has, disabled until the notes

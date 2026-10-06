@@ -391,6 +391,7 @@ const ky: LocaleDictionary = {
     emptyWeek: 'Бул аптада сабак жок.',
     showAll: 'Бардык сабактарды көрсөтүү',
     room: 'Аудитория',
+    roomUnset: 'Такталат',
     teacher: 'Мугалим',
     loadFailed: 'Жадыбалды жүктөө мүмкүн болбоду.',
   },
