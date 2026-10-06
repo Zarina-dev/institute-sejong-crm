@@ -5482,3 +5482,8 @@ button.attachment-chip:hover {
     gap: var(--space-1);
   }
 }
+
+/* Switching an existing 회의록 between written and original drops the other. */
+.meeting-form__warning {
+  margin-bottom: var(--space-4);
+}

@@ -48,7 +48,7 @@ import type { StaffMember } from '../../features/staff/types'
 import { DOCUMENT_ACCEPT, MAX_DOCUMENT_SIZE, uploadDocument } from '../../features/uploads/api'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
-import { FilePreview, FileView, type PreviewFile } from '../../shared/FilePreview'
+import { FilePreview, fileDownloadUrl, FileView, type PreviewFile } from '../../shared/FilePreview'
 import { formatDate, formatFileSize } from '../../shared/format'
 import { PageHeader } from '../../shared/PageHeader'
 import { RichTextEditor } from '../../shared/RichTextEditor'
@@ -57,7 +57,14 @@ import { YearSelect } from '../../shared/YearSelect'
 
 const { Text } = Typography
 
+/**
+ * An entry is one or the other: written here on the form, or the minutes the
+ * office already wrote (a .hwp, a scan) put up as they are.
+ */
+type MeetingMode = 'written' | 'original'
+
 type MeetingFormValues = {
+  mode: MeetingMode
   title: string
   heldOn: string
   method?: string
@@ -119,11 +126,11 @@ function attendeesOf(meeting: Pick<MeetingSummary, 'attendeeList' | 'attendees'>
 }
 
 /**
- * 회의록 — weekly minutes, read one year at a time. Written here on the
- * institute's own form (MeetingDocument), or kept as the file the office
- * already wrote (원본 자료), or both. Opening an entry shows the minutes
- * themselves at once — the written form, the original in place — with
- * print and PDF at hand.
+ * 회의록 — weekly minutes, read one year at a time. Each entry is either
+ * written here on the institute's own form (MeetingDocument), or the file
+ * the office already wrote (원본), put up as it is — never both. Opening an
+ * entry shows the minutes themselves at once: the form with print and PDF,
+ * or the original in place with its download.
  */
 export function MeetingsAdminPage() {
   const { t, language } = usePreferences()
@@ -140,7 +147,8 @@ export function MeetingsAdminPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [openId, setOpenId] = useState<string | null>(null)
-  const [view, setView] = useState<'written' | 'original'>('written')
+  // What the entry being edited was, to warn before switching loses it.
+  const [editingFrom, setEditingFrom] = useState<MeetingMode | null>(null)
   const [preview, setPreview] = useState<PreviewFile | null>(null)
   const [uploading, setUploading] = useState<'attachment' | 'original' | null>(null)
   const [exporting, setExporting] = useState(false)
@@ -162,8 +170,6 @@ export function MeetingsAdminPage() {
   // The list has no notes or decisions; the open meeting brings its own.
   const openDetail = useMeeting(openId)
   const full = openDetail.data
-  const hasWritten = Boolean(full && (full.body || full.decisions || full.attendeeList?.length || full.method || full.place || full.attendees))
-  const shown: 'written' | 'original' = open?.original ? (hasWritten ? view : 'original') : 'written'
 
   const options = useMemo(
     () => ({
@@ -183,10 +189,7 @@ export function MeetingsAdminPage() {
     [all],
   )
 
-  const openMeeting = useCallback((meeting: MeetingSummary) => {
-    setOpenId(meeting.id)
-    setView('written')
-  }, [])
+  const openMeeting = useCallback((meeting: MeetingSummary) => setOpenId(meeting.id), [])
 
   /**
    * A new entry starts from the last one written on the form: the same
@@ -194,11 +197,13 @@ export function MeetingsAdminPage() {
    */
   const openCreateModal = useCallback(() => {
     setEditingId(null)
+    setEditingFrom(null)
     form.resetFields()
-    const last = all.find((meeting) => meeting.attendeeList?.length) ?? all[0]
+    const last = all.find((meeting) => meeting.attendeeList?.length) ?? all.find((meeting) => !meeting.original)
     const day = today()
 
     form.setFieldsValue({
+      mode: 'written',
       heldOn: day,
       title: last?.title || DEFAULT_TITLE,
       method: last?.method ?? '',
@@ -224,10 +229,13 @@ export function MeetingsAdminPage() {
    */
   const openEditModal = useCallback(
     (meeting: MeetingSummary) => {
+      const mode: MeetingMode = meeting.original ? 'original' : 'written'
       setEditingId(meeting.id)
+      setEditingFrom(mode)
       form.resetFields()
       form.setFieldsValue({
-        title: meeting.title,
+        mode,
+        title: meeting.title || DEFAULT_TITLE,
         heldOn: meeting.heldOn,
         method: meeting.method,
         place: meeting.place,
@@ -254,6 +262,13 @@ export function MeetingsAdminPage() {
     [form, message, queryClient, staffList, t],
   )
 
+  // The form sits under an open drawer (it is pre-rendered, so its layer is
+  // older): editing replaces reading rather than opening behind it.
+  const editFromDrawer = (meeting: MeetingSummary) => {
+    setOpenId(null)
+    openEditModal(meeting)
+  }
+
   const submitForm = async () => {
     const values = await form.validateFields().catch(() => null)
 
@@ -261,7 +276,36 @@ export function MeetingsAdminPage() {
       return
     }
 
-    const payload = { ...values, attendeeList: values.attendeeList ?? [], original: values.original ?? null }
+    // Only the chosen kind is kept: switching clears the other, so an entry
+    // never carries a form nobody sees, or a file nobody opens.
+    const payload =
+      values.mode === 'original'
+        ? {
+            heldOn: values.heldOn,
+            title: '',
+            method: '',
+            place: '',
+            drafter: '',
+            approver: '',
+            attendeeList: [],
+            body: '',
+            decisions: '',
+            attachments: values.attachments ?? [],
+            original: values.original ?? null,
+          }
+        : {
+            heldOn: values.heldOn,
+            title: values.title,
+            method: values.method ?? '',
+            place: values.place ?? '',
+            drafter: values.drafter ?? '',
+            approver: values.approver ?? '',
+            attendeeList: values.attendeeList ?? [],
+            body: values.body ?? '',
+            decisions: values.decisions ?? '',
+            attachments: values.attachments ?? [],
+            original: null,
+          }
 
     try {
       if (editingId) {
@@ -348,7 +392,7 @@ export function MeetingsAdminPage() {
       return Upload.LIST_IGNORE
     }
 
-  /** An attachment that is in fact the minutes: make it the original (the old original, if any, becomes an attachment). */
+  /** An attachment that is in fact the minutes: make it the original (the old one, if any, becomes an attachment). */
   const makeOriginal = (file: MeetingAttachment) => {
     const previous: MeetingAttachment | null = form.getFieldValue('original') ?? null
     const attachments: MeetingAttachment[] = (form.getFieldValue('attachments') ?? []).filter((item: MeetingAttachment) => item.url !== file.url)
@@ -444,7 +488,11 @@ export function MeetingsAdminPage() {
         extra={
           open ? (
             <Space wrap>
-              {shown === 'written' && full ? (
+              {open.original ? (
+                <a href={fileDownloadUrl(open.original)} download={open.original.name}>
+                  <Button icon={<DownloadOutlined />}>{t('meetings.downloadOriginal')}</Button>
+                </a>
+              ) : full ? (
                 <>
                   <Button icon={<PrinterOutlined />} onClick={handlePrint}>
                     {t('meetings.print')}
@@ -454,7 +502,7 @@ export function MeetingsAdminPage() {
                   </Button>
                 </>
               ) : null}
-              <Button type="primary" icon={<EditOutlined />} onClick={() => openEditModal(open)}>
+              <Button type="primary" icon={<EditOutlined />} onClick={() => editFromDrawer(open)}>
                 {t('common.edit')}
               </Button>
             </Space>
@@ -463,18 +511,7 @@ export function MeetingsAdminPage() {
       >
         {open ? (
           <div className="meeting-detail">
-            {open.original && hasWritten ? (
-              <Segmented
-                value={shown}
-                onChange={(value) => setView(value as 'written' | 'original')}
-                options={[
-                  { value: 'written', label: t('meetings.viewWritten') },
-                  { value: 'original', label: t('meetings.viewOriginal') },
-                ]}
-              />
-            ) : null}
-
-            {shown === 'original' && open.original ? (
+            {open.original ? (
               <FileView file={open.original} />
             ) : openDetail.isPending || !full ? (
               <Skeleton active paragraph={{ rows: 8 }} />
@@ -515,84 +552,45 @@ export function MeetingsAdminPage() {
         width={920}
         className="editor-modal"
       >
-        {/* Laid out in the order of the form it prints as. */}
         <Form form={form} layout="vertical" disabled={saving || loadingMeeting} className="meeting-form">
-          <div className="form-row">
-            <Form.Item
-              name="title"
-              label={t('meetings.form.title')}
-              rules={[{ required: true, whitespace: true, message: t('meetings.form.titleRequired') }]}
-            >
-              <AutoComplete options={options.title} filterOption={matches} maxLength={255} />
-            </Form.Item>
-            <Form.Item name="method" label={t('meetings.form.method')}>
-              <AutoComplete options={options.method} filterOption={matches} maxLength={100} />
-            </Form.Item>
-          </div>
+          <Form.Item name="mode" label={t('meetings.form.mode')}>
+            <Segmented
+              block
+              options={[
+                { value: 'written', label: t('meetings.form.modeWritten'), icon: <EditOutlined /> },
+                { value: 'original', label: t('meetings.form.modeOriginal'), icon: <UploadOutlined /> },
+              ]}
+            />
+          </Form.Item>
 
-          <div className="form-row">
-            <Form.Item name="heldOn" label={t('meetings.form.heldOn')} rules={[{ required: true, message: t('meetings.form.heldOnRequired') }]}>
-              <Input type="date" />
-            </Form.Item>
-            <Form.Item name="place" label={t('meetings.form.place')}>
-              <AutoComplete options={options.place} filterOption={matches} maxLength={200} />
-            </Form.Item>
-          </div>
-
-          <Form.Item noStyle shouldUpdate={(previous, next) => previous.heldOn !== next.heldOn}>
+          <Form.Item noStyle shouldUpdate={(previous, next) => previous.mode !== next.mode}>
             {({ getFieldValue }) => {
-              const day: string = getFieldValue('heldOn') || today()
-              const names = staffList
-                .filter((member) => employedOn(member, day))
-                .map((member) => ({ value: member.name, label: `${member.name} · ${member.position}` }))
+              const mode: MeetingMode = getFieldValue('mode') ?? 'written'
+              // Switching an existing entry drops what it was: say so before saving.
+              const losing =
+                editingFrom && editingFrom !== mode ? t(mode === 'original' ? 'meetings.form.dropsWritten' : 'meetings.form.dropsOriginal') : null
 
               return (
                 <>
-                  <div className="form-row">
-                    <Form.Item name="drafter" label={t('meetings.form.drafter')}>
-                      <AutoComplete options={names} filterOption={matches} maxLength={120} />
+                  {losing ? <Alert type="warning" showIcon message={losing} className="meeting-form__warning" /> : null}
+                  {mode === 'original' ? (
+                    <OriginalFields uploading={uploading === 'original'} beforeUpload={uploadInto('original')} onPreview={setPreview} />
+                  ) : (
+                    <WrittenFields staff={staffList} options={options} />
+                  )}
+                  <Form.Item label={t('meetings.attachments')} extra={t('meetings.form.filesHint', { max: formatFileSize(MAX_DOCUMENT_SIZE) })}>
+                    <Form.Item name="attachments" noStyle>
+                      <AttachmentList onPreview={setPreview} onMakeOriginal={mode === 'original' ? makeOriginal : undefined} />
                     </Form.Item>
-                    <Form.Item name="approver" label={t('meetings.form.approver')}>
-                      <AutoComplete options={names} filterOption={matches} maxLength={120} />
-                    </Form.Item>
-                  </div>
-
-                  <Form.Item name="attendeeList" label={t('meetings.form.attendance')} extra={t('meetings.form.attendanceHint')}>
-                    <AttendancePicker staff={staffList} day={day} />
+                    <Upload accept={DOCUMENT_ACCEPT} beforeUpload={uploadInto('attachment')} showUploadList={false} multiple>
+                      <Button icon={<PaperClipOutlined />} loading={uploading === 'attachment'}>
+                        {t('meetings.form.addFile')}
+                      </Button>
+                    </Upload>
                   </Form.Item>
                 </>
               )
             }}
-          </Form.Item>
-
-          <Form.Item name="body" label={t('meetings.form.body')}>
-            <RichTextEditor minHeight={260} />
-          </Form.Item>
-
-          <Form.Item name="decisions" label={t('meetings.form.decisions')} extra={t('meetings.form.decisionsHint')}>
-            <RichTextEditor minHeight={120} />
-          </Form.Item>
-
-          <Form.Item label={t('meetings.form.original')} extra={t('meetings.form.originalHint')}>
-            <Form.Item name="original" noStyle>
-              <OriginalField onPreview={setPreview} />
-            </Form.Item>
-            <Upload accept={DOCUMENT_ACCEPT} beforeUpload={uploadInto('original')} showUploadList={false}>
-              <Button icon={<UploadOutlined />} loading={uploading === 'original'}>
-                {t('meetings.form.uploadOriginal')}
-              </Button>
-            </Upload>
-          </Form.Item>
-
-          <Form.Item label={t('meetings.attachments')} extra={t('meetings.form.filesHint', { max: formatFileSize(MAX_DOCUMENT_SIZE) })}>
-            <Form.Item name="attachments" noStyle>
-              <AttachmentList onPreview={setPreview} onMakeOriginal={makeOriginal} />
-            </Form.Item>
-            <Upload accept={DOCUMENT_ACCEPT} beforeUpload={uploadInto('attachment')} showUploadList={false} multiple>
-              <Button icon={<PaperClipOutlined />} loading={uploading === 'attachment'}>
-                {t('meetings.form.addFile')}
-              </Button>
-            </Upload>
           </Form.Item>
         </Form>
       </Modal>
@@ -600,6 +598,112 @@ export function MeetingsAdminPage() {
       {/* Last, so it opens over the form when a file is checked while editing. */}
       <FilePreview file={preview} onClose={() => setPreview(null)} />
     </div>
+  )
+}
+
+type SuggestionLists = Record<'title' | 'method' | 'place', Array<{ value: string }>>
+
+/** 원본: the date it was held and the file itself — nothing else is typed. */
+function OriginalFields({
+  uploading,
+  beforeUpload,
+  onPreview,
+}: {
+  uploading: boolean
+  beforeUpload: UploadProps['beforeUpload']
+  onPreview: (file: MeetingAttachment) => void
+}) {
+  const { t } = usePreferences()
+
+  return (
+    <>
+      <Form.Item name="heldOn" label={t('meetings.form.heldOn')} rules={[{ required: true, message: t('meetings.form.heldOnRequired') }]}>
+        <Input type="date" />
+      </Form.Item>
+
+      <Form.Item
+        name="original"
+        label={t('meetings.form.original')}
+        extra={t('meetings.form.originalHint')}
+        rules={[{ required: true, message: t('meetings.form.originalRequired') }]}
+      >
+        <OriginalField onPreview={onPreview} />
+      </Form.Item>
+      <Form.Item noStyle shouldUpdate={(previous, next) => previous.original !== next.original}>
+        {({ getFieldValue }) => (
+          <Upload accept={DOCUMENT_ACCEPT} beforeUpload={beforeUpload} showUploadList={false}>
+            <Button icon={<UploadOutlined />} loading={uploading} className="meeting-form__upload-original">
+              {t(getFieldValue('original') ? 'meetings.form.replaceOriginal' : 'meetings.form.uploadOriginal')}
+            </Button>
+          </Upload>
+        )}
+      </Form.Item>
+    </>
+  )
+}
+
+/** The institute's form, field by field in the order it prints. */
+function WrittenFields({ staff, options }: { staff: StaffMember[]; options: SuggestionLists }) {
+  const { t } = usePreferences()
+
+  return (
+    <>
+      <div className="form-row">
+        <Form.Item
+          name="title"
+          label={t('meetings.form.title')}
+          rules={[{ required: true, whitespace: true, message: t('meetings.form.titleRequired') }]}
+        >
+          <AutoComplete options={options.title} filterOption={matches} maxLength={255} />
+        </Form.Item>
+        <Form.Item name="method" label={t('meetings.form.method')}>
+          <AutoComplete options={options.method} filterOption={matches} maxLength={100} />
+        </Form.Item>
+      </div>
+
+      <div className="form-row">
+        <Form.Item name="heldOn" label={t('meetings.form.heldOn')} rules={[{ required: true, message: t('meetings.form.heldOnRequired') }]}>
+          <Input type="date" />
+        </Form.Item>
+        <Form.Item name="place" label={t('meetings.form.place')}>
+          <AutoComplete options={options.place} filterOption={matches} maxLength={200} />
+        </Form.Item>
+      </div>
+
+      <Form.Item noStyle shouldUpdate={(previous, next) => previous.heldOn !== next.heldOn}>
+        {({ getFieldValue }) => {
+          const day: string = getFieldValue('heldOn') || today()
+          const names = staff
+            .filter((member) => employedOn(member, day))
+            .map((member) => ({ value: member.name, label: `${member.name} · ${member.position}` }))
+
+          return (
+            <>
+              <div className="form-row">
+                <Form.Item name="drafter" label={t('meetings.form.drafter')}>
+                  <AutoComplete options={names} filterOption={matches} maxLength={120} />
+                </Form.Item>
+                <Form.Item name="approver" label={t('meetings.form.approver')}>
+                  <AutoComplete options={names} filterOption={matches} maxLength={120} />
+                </Form.Item>
+              </div>
+
+              <Form.Item name="attendeeList" label={t('meetings.form.attendance')} extra={t('meetings.form.attendanceHint')}>
+                <AttendancePicker staff={staff} day={day} />
+              </Form.Item>
+            </>
+          )
+        }}
+      </Form.Item>
+
+      <Form.Item name="body" label={t('meetings.form.body')}>
+        <RichTextEditor minHeight={260} />
+      </Form.Item>
+
+      <Form.Item name="decisions" label={t('meetings.form.decisions')} extra={t('meetings.form.decisionsHint')}>
+        <RichTextEditor minHeight={120} />
+      </Form.Item>
+    </>
   )
 }
 
@@ -764,8 +868,8 @@ function OriginalField({
 
 /**
  * Controlled by `Form.Item`: what is attached, a look at each file — so the
- * right one is checked before saving — a way to drop one, and to mark the
- * one that is the minutes themselves as the original.
+ * right one is checked before saving — a way to drop one, and, for an entry
+ * kept as its original, to mark the one that is the minutes themselves.
  */
 function AttachmentList({
   value = [],
@@ -776,7 +880,7 @@ function AttachmentList({
   value?: MeetingAttachment[]
   onChange?: (value: MeetingAttachment[]) => void
   onPreview: (file: MeetingAttachment) => void
-  onMakeOriginal: (file: MeetingAttachment) => void
+  onMakeOriginal?: (file: MeetingAttachment) => void
 }) {
   const { t } = usePreferences()
 
@@ -793,9 +897,11 @@ function AttachmentList({
             <span>{file.name}</span>
           </button>
           <Text type="secondary">{formatFileSize(file.size)}</Text>
-          <Button type="link" size="small" onClick={() => onMakeOriginal(file)}>
-            {t('meetings.form.makeOriginal')}
-          </Button>
+          {onMakeOriginal ? (
+            <Button type="link" size="small" onClick={() => onMakeOriginal(file)}>
+              {t('meetings.form.makeOriginal')}
+            </Button>
+          ) : null}
           <Button
             type="text"
             size="small"

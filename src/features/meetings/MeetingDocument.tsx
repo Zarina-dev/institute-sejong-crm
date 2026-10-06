@@ -96,7 +96,7 @@ export const MeetingDocument = forwardRef<HTMLDivElement, { meeting: DocumentMee
             {legacy ? (
               <>
                 <th className="meeting-doc__role">참 석 자</th>
-                <td colSpan={4}>{legacyNames.length ? `-. ${legacyNames.join(', ')}` : ''}</td>
+                <td colSpan={4}>{legacyNames.length ? `- ${legacyNames.join(', ')}` : ''}</td>
               </>
             ) : (
               <AttendanceRow label={ROLE_LABEL[ATTENDEE_ROLES[0]]} names={namesIn(list, ATTENDEE_ROLES[0])} />
@@ -150,7 +150,7 @@ function AttendanceRow({ label, names }: { label: string; names: string[] }) {
   return (
     <>
       <th className="meeting-doc__role">{label}</th>
-      <td colSpan={4}>{names.length ? `-. ${names.join(', ')}` : ''}</td>
+      <td colSpan={4}>{names.length ? `- ${names.join(', ')}` : ''}</td>
     </>
   )
 }

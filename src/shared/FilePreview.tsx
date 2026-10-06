@@ -85,6 +85,9 @@ export function FileView({ file }: { file: PreviewFile }) {
   )
 }
 
+/** A link that downloads the file under its own name. */
+export const fileDownloadUrl = (file: PreviewFile) => downloadOf(file.url, file.name)
+
 function PreviewBody({ file, href }: { file: PreviewFile; href: string }) {
   const { t } = usePreferences()
   const extension = extensionOf(file.name)
