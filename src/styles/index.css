@@ -5429,8 +5429,10 @@ button.attachment-chip:hover {
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
 }
 
+/* The original fills the drawer below its header: one scroll, no empty band under it. */
 .file-view {
-  height: min(78vh, 1100px);
+  height: calc(100vh - 130px);
+  min-height: 420px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -5507,4 +5509,11 @@ button.attachment-chip:hover {
 /* Switching an existing 회의록 between written and original drops the other. */
 .meeting-form__warning {
   margin-bottom: var(--space-4);
+}
+
+/* 회의록 내려받기: the format, and its extension beside it. */
+.export-option {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-6);
 }

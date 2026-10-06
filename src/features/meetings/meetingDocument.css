@@ -88,13 +88,19 @@
   font-weight: 700;
 }
 
-.meeting-doc__content {
-  height: 360px;
+/*
+ * The texts read from the top of their cell, as typed — the generic rule
+ * above centres cells, and a tall cell then showed its few lines adrift in
+ * the middle. 회의 내용 keeps the form's generous box (a minimum: it grows
+ * with the text); 결정 사항 is only as tall as what it holds.
+ */
+.meeting-doc__table td.meeting-doc__content {
+  padding: 14px 18px;
   vertical-align: top;
 }
 
-.meeting-doc__table td.meeting-doc__content {
-  padding: 16px 18px;
+.meeting-doc__table td.meeting-doc__content--body {
+  height: 240px;
 }
 
 /* What the rich-text editor writes. */
@@ -112,6 +118,20 @@
 .meeting-doc__content ol {
   margin: 0 0 0.6em;
   padding-left: 1.4em;
+}
+
+/* The editor wraps each item in a paragraph: keep items as close as lines. */
+.meeting-doc__content li {
+  margin: 0.15em 0;
+}
+
+.meeting-doc__content li > p {
+  margin: 0;
+}
+
+.meeting-doc__content li > ul,
+.meeting-doc__content li > ol {
+  margin: 0.15em 0 0;
 }
 
 .meeting-doc__content blockquote {

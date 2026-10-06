@@ -1,8 +1,12 @@
 import {
   DeleteOutlined,
   DownloadOutlined,
+  DownOutlined,
   EditOutlined,
   EyeOutlined,
+  FileExcelOutlined,
+  FilePdfOutlined,
+  FileWordOutlined,
   FileTextOutlined,
   LockOutlined,
   PaperClipOutlined,
@@ -32,9 +36,9 @@ import {
   Upload,
 } from 'antd'
 import type { UploadProps } from 'antd'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 
-import { usePreferences } from '../../app/preferences'
+import { usePreferences, type TranslationKey } from '../../app/preferences'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { getMeeting } from '../../features/meetings/api'
@@ -81,8 +85,18 @@ type MeetingFormValues = {
 const NO_MEETINGS: MeetingSummary[] = []
 const NO_STAFF: StaffMember[] = []
 
-/** The institute's name as its form prints it. */
-const INSTITUTE = '오시1 세종학당'
+type ExportFormat = 'pdf' | 'docx' | 'xlsx'
+
+/**
+ * What the written minutes can be downloaded as. A real .hwp cannot be made
+ * in the browser (Hancom's format needs Hancom's engine); 한글 opens the Word
+ * file and saves it as .hwp.
+ */
+const EXPORT_FORMATS: Array<{ key: ExportFormat; label: TranslationKey; icon: ReactNode }> = [
+  { key: 'pdf', label: 'meetings.formatPdf', icon: <FilePdfOutlined /> },
+  { key: 'docx', label: 'meetings.formatWord', icon: <FileWordOutlined /> },
+  { key: 'xlsx', label: 'meetings.formatExcel', icon: <FileExcelOutlined /> },
+]
 /** What the form is filled with when there is nothing earlier to go by. */
 const DEFAULT_TITLE = '주간업무회의'
 const METHOD_SUGGESTIONS = ['현장 회의', '화상 회의', '화상 회의 및 현장 토의']
@@ -341,17 +355,32 @@ export function MeetingsAdminPage() {
     }
   }
 
-  const handlePdf = async () => {
-    if (!documentRef.current || !open) {
+  /**
+   * The written minutes as a file in the format asked for. PDF is drawn from
+   * the page itself; Word and Excel are built from the same cells
+   * (documentModel), so all three read like the form. Each writer loads only
+   * when its format is picked.
+   */
+  const handleDownload = async (format: ExportFormat) => {
+    if (!open || !full) {
       return
     }
 
     setExporting(true)
+    const name = `${fileName(open)}.${format}`
 
     try {
-      await downloadMeetingPdf(documentRef.current, `${fileName(open)}.pdf`)
+      if (format === 'pdf') {
+        if (documentRef.current) await downloadMeetingPdf(documentRef.current, name)
+      } else if (format === 'docx') {
+        const { downloadMeetingDocx } = await import('../../features/meetings/exportDocx')
+        await downloadMeetingDocx(full, name)
+      } else {
+        const { downloadMeetingXlsx } = await import('../../features/meetings/exportXlsx')
+        await downloadMeetingXlsx(full, name)
+      }
     } catch (err) {
-      message.error(getErrorMessage(err, t('meetings.pdfFailed')))
+      message.error(getErrorMessage(err, t('meetings.exportFailed')))
     } finally {
       setExporting(false)
     }
@@ -490,9 +519,27 @@ export function MeetingsAdminPage() {
                   <Button icon={<PrinterOutlined />} onClick={handlePrint}>
                     {t('meetings.print')}
                   </Button>
-                  <Button icon={<DownloadOutlined />} loading={exporting} onClick={handlePdf}>
-                    {t('meetings.downloadPdf')}
-                  </Button>
+                  <Dropdown
+                    trigger={['click']}
+                    disabled={exporting}
+                    menu={{
+                      items: EXPORT_FORMATS.map((format) => ({
+                        key: format.key,
+                        icon: format.icon,
+                        label: (
+                          <span className="export-option">
+                            <span>{t(format.label)}</span>
+                            <Text type="secondary">.{format.key}</Text>
+                          </span>
+                        ),
+                      })),
+                      onClick: ({ key }) => void handleDownload(key as ExportFormat),
+                    }}
+                  >
+                    <Button icon={<DownloadOutlined />} loading={exporting}>
+                      {t('meetings.download')} <DownOutlined />
+                    </Button>
+                  </Dropdown>
                 </>
               ) : null}
               <Button type="primary" icon={<EditOutlined />} onClick={() => editFromDrawer(open)}>
@@ -510,7 +557,7 @@ export function MeetingsAdminPage() {
               <Skeleton active paragraph={{ rows: 8 }} />
             ) : (
               <div className="meeting-detail__paper">
-                <MeetingDocument ref={documentRef} meeting={full} institute={INSTITUTE} />
+                <MeetingDocument ref={documentRef} meeting={full} />
               </div>
             )}
 
