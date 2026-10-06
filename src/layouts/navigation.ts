@@ -57,8 +57,8 @@ export const navigation: NavSection[] = [
     to: '/history',
     labelKey: 'siteNav.history',
     children: [
-      { to: '/history', labelKey: 'siteNav.historyAlbums' },
-      { to: '/history/competitions', labelKey: 'siteNav.historyCompetitions' },
+      // Events and competitions are one record of the institute's years.
+      { to: '/history', labelKey: 'siteNav.historyRecords' },
       { to: '/history/studies', labelKey: 'siteNav.historyStudies' },
     ],
   },

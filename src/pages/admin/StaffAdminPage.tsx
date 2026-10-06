@@ -28,6 +28,7 @@ type StaffFormValues = {
   photoUrl: string | null
   sortOrder: number
   isPublished: boolean
+  isCurrent: boolean
 }
 
 const NO_STAFF: StaffMember[] = []
@@ -91,6 +92,7 @@ export function StaffAdminPage() {
         photoUrl: member.photoUrl,
         sortOrder: member.sortOrder,
         isPublished: member.isPublished,
+        isCurrent: member.isCurrent ?? true,
       })
       setModalOpen(true)
     },
@@ -180,6 +182,16 @@ export function StaffAdminPage() {
         responsive: ['md'],
       },
       {
+        // 재직 / 퇴직 — what visitors see on the card, not whether it is shown.
+        title: t('staff.columns.employment'),
+        dataIndex: 'isCurrent',
+        key: 'isCurrent',
+        width: 110,
+        render: (value: boolean) => (
+          <Tag color={value ? 'blue' : 'default'}>{value ? t('staff.current') : t('staff.former')}</Tag>
+        ),
+      },
+      {
         title: t('staff.columns.status'),
         dataIndex: 'isPublished',
         key: 'isPublished',
@@ -262,7 +274,7 @@ export function StaffAdminPage() {
         forceRender
         width={640}
       >
-        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: true, sortOrder: 0, photoUrl: null }}>
+        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: true, isCurrent: true, sortOrder: 0, photoUrl: null }}>
           <Form.Item name="photoUrl" label={t('staff.form.photo')}>
             <ImageUploadField shape="square" hint={t('staff.form.photoHint')} />
           </Form.Item>
@@ -277,6 +289,10 @@ export function StaffAdminPage() {
           </Form.Item>
           <Form.Item name="email" label={t('staff.form.email')} rules={[{ type: 'email', message: t('staff.form.emailInvalid') }]}>
             <Input type="email" maxLength={255} />
+          </Form.Item>
+          {/* Leaving does not remove someone from the page; it marks them as former. */}
+          <Form.Item name="isCurrent" label={t('staff.form.current')} extra={t('staff.form.currentHint')} valuePropName="checked">
+            <Switch checkedChildren={t('staff.current')} unCheckedChildren={t('staff.former')} />
           </Form.Item>
           <Form.Item name="isPublished" label={t('staff.form.published')} valuePropName="checked">
             <Switch />

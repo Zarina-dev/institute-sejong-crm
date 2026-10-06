@@ -1,6 +1,6 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, PushpinFilled } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, Button, Card, Form, Input, Modal, Segmented, Select, Space, Switch, Table, Tag, Typography } from 'antd'
+import { App, Button, Card, Form, Input, Modal, Select, Space, Switch, Table, Tag, Typography } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -235,15 +235,8 @@ export function NewsAdminPage() {
       />
 
       <Card className="surface-card filter-card">
+        {/* 공지사항 or 보도 자료 is chosen in the admin menu, not here. */}
         <div className="filter-footer">
-          <Segmented
-            value={view}
-            onChange={(value) => setParams({ view: value as NewsView })}
-            options={[
-              { value: 'notices', label: t('siteNav.noticesNotice') },
-              { value: 'press', label: t('siteNav.noticesPress') },
-            ]}
-          />
           <Space wrap>
             <Text>{t('news.count', { count: posts.length })}</Text>
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>

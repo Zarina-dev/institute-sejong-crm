@@ -6,7 +6,6 @@ import { PublicLayout } from '../layouts/PublicLayout'
 import { GreetingPage } from '../pages/public/about/GreetingPage'
 import { LocationPage } from '../pages/public/about/LocationPage'
 import { StaffPage } from '../pages/public/about/StaffPage'
-import { CompetitionsPage } from '../pages/public/history/CompetitionsPage'
 import { StudiesPage } from '../pages/public/history/StudiesPage'
 import { HistoryPage } from '../pages/public/HistoryPage'
 import { HomePage } from '../pages/public/HomePage'
@@ -81,12 +80,13 @@ export function AppRouter() {
           <Route path="/resources/links" element={<LinksPage />} />
 
           {/* 학당 발자취 */}
+          {/* 행사·대회: events and competitions together, a year at a time. */}
           <Route path="/history" element={<HistoryPage />} />
-          <Route path="/history/competitions" element={<CompetitionsPage />} />
           <Route path="/history/studies" element={<StudiesPage />} />
-          {/* The two competitions used to have a page each. */}
-          <Route path="/history/speech" element={<Navigate to="/history/competitions" replace />} />
-          <Route path="/history/writing" element={<Navigate to="/history/competitions" replace />} />
+          {/* Competitions used to have pages of their own; old links still land. */}
+          <Route path="/history/competitions" element={<Navigate to="/history" replace />} />
+          <Route path="/history/speech" element={<Navigate to="/history" replace />} />
+          <Route path="/history/writing" element={<Navigate to="/history" replace />} />
 
           <Route path="/login" element={<LoginPage />} />
 

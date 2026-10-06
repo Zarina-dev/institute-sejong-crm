@@ -8,6 +8,8 @@
   email: string | null
   sortOrder: number
   isPublished: boolean
+  /** 재직 중; false for someone who has left (still shown, marked as such). */
+  isCurrent: boolean
   createdAt: string
   updatedAt: string
 }
@@ -20,4 +22,5 @@ export type StaffInput = {
   email?: string | null
   sortOrder?: number
   isPublished?: boolean
+  isCurrent?: boolean
 }

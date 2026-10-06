@@ -1,14 +1,19 @@
 import type { TranslateFn } from '../../app/preferences'
-import type { AcademicTerm } from './types'
+import type { AcademicTerm, BreakSeason } from './types'
 
-type Named = Pick<AcademicTerm, 'year' | 'kind' | 'startDate'>
+type Named = Pick<AcademicTerm, 'year' | 'kind' | 'startDate' | 'season'>
 
 /**
- * 여름방학 or 겨울방학. The data model has one kind of break — the institute
- * may have one or several a year — so the season is read off when it starts:
- * a break that begins in spring or summer is the summer one.
+ * Which break it is. The admin says so in 학기 관리 (봄 · 여름 · 가을 ·
+ * 겨울방학) — institutes divide the year differently, and this one has a
+ * 가을방학. Breaks set up before that choice existed fall back to a reading
+ * of the dates: one that starts in spring or summer is the summer break.
  */
-export function breakSeason(term: Pick<AcademicTerm, 'startDate'>): 'summer' | 'winter' {
+export function breakSeason(term: Pick<AcademicTerm, 'startDate' | 'season'>): BreakSeason {
+  if (term.season) {
+    return term.season
+  }
+
   const month = Number(term.startDate.slice(5, 7))
 
   return month >= 4 && month <= 9 ? 'summer' : 'winter'
@@ -29,7 +34,7 @@ export function termDisplayName(term: Named, t: TranslateFn): string {
     return t('terms.display.second', { year: term.year })
   }
 
-  return t(breakSeason(term) === 'summer' ? 'terms.display.summer' : 'terms.display.winter', { year: term.year })
+  return t(`terms.display.${breakSeason(term)}`, { year: term.year })
 }
 
 /** The memo, when there is one worth showing next to the standard name. */

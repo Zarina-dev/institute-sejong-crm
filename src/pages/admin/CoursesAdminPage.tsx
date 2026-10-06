@@ -499,19 +499,9 @@ export function CoursesAdminPage() {
 
       <Card className="surface-card filter-card no-print">
         <div className="filter-footer">
-          <Space wrap>
-            <Segmented
-              value={view}
-              onChange={(value) => setParams({ view: value as CourseView })}
-              options={Object.entries(COURSE_VIEWS).map(([value, labelKey]) => ({
-                value,
-                label: t(labelKey),
-                disabled: DISABLED_VIEWS.includes(value as CourseView),
-              }))}
-            />
-            {/* The semester being looked at; it opens on the one in progress. */}
-            <TermPicker terms={terms.data ?? NO_TERMS} active={activeTerm} onSelect={selectTerm} />
-          </Space>
+          {/* Which list this is comes from the admin menu (강좌 안내 / 문화 강좌);
+              the page only chooses the semester. */}
+          <TermPicker terms={terms.data ?? NO_TERMS} active={activeTerm} onSelect={selectTerm} />
           <Space wrap>
             <Text>{t('courses.count', { count: rows.length })}</Text>
             {/* The table doubles as the office's semester report. */}

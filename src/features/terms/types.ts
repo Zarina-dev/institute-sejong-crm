@@ -2,6 +2,10 @@
 export const TERM_KINDS = ['first', 'second', 'break'] as const
 export type TermKind = (typeof TERM_KINDS)[number]
 
+/** Which break — chosen by the admin; this institute runs 가을방학 · 1학기 · 여름방학 · 2학기. */
+export const BREAK_SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const
+export type BreakSeason = (typeof BREAK_SEASONS)[number]
+
 /**
  * 학기 — the institute decides when each one runs, so the dates come from
  * the API rather than from the calendar.
@@ -12,7 +16,9 @@ export type AcademicTerm = {
   code: string
   year: number
   kind: TermKind
-  /** Optional name the institute uses. */
+  /** For a break: which one. Null for a semester, and for older breaks (then read from the dates). */
+  season?: BreakSeason | null
+  /** Optional memo for the office; the site shows the standard name. */
   name: string
   startDate: string
   endDate: string
@@ -23,6 +29,7 @@ export type AcademicTerm = {
 export type AcademicTermInput = {
   year: number
   kind: TermKind
+  season?: BreakSeason | null
   name?: string
   startDate: string
   endDate: string

@@ -5,9 +5,9 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import type { TranslationKey } from '../../app/preferences'
-import { termDisplayName, termMemo } from '../../features/terms/labels'
+import { breakSeason, termDisplayName, termMemo } from '../../features/terms/labels'
 import { useCreateTerm, useDeleteTerm, useTerms, useUpdateTerm } from '../../features/terms/queries'
-import { TERM_KINDS, type AcademicTerm, type TermKind } from '../../features/terms/types'
+import { type AcademicTerm, type BreakSeason, type TermKind } from '../../features/terms/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { formatDate } from '../../shared/format'
@@ -18,7 +18,7 @@ const { Text } = Typography
 
 type TermFormValues = {
   year: number
-  kind: TermKind
+  slot: TermSlot
   name?: string
   startDate: string
   endDate: string
@@ -26,10 +26,26 @@ type TermFormValues = {
 
 const NO_TERMS: AcademicTerm[] = []
 
-const KIND_LABEL: Record<TermKind, TranslationKey> = {
-  first: 'terms.first',
-  second: 'terms.second',
-  break: 'terms.breakKind',
+/**
+ * What the admin picks: the semester, or which break. One choice of six
+ * rather than 「방학」 plus a guess — the institute's year is 가을방학 ·
+ * 1학기 · 여름방학 · 2학기, and the site names each exactly as set here.
+ */
+type TermSlot = 'first' | 'second' | `break:${BreakSeason}`
+
+const SLOTS: Array<{ value: TermSlot; label: TranslationKey }> = [
+  { value: 'first', label: 'terms.first' },
+  { value: 'second', label: 'terms.second' },
+  { value: 'break:spring', label: 'terms.seasons.spring' },
+  { value: 'break:summer', label: 'terms.seasons.summer' },
+  { value: 'break:autumn', label: 'terms.seasons.autumn' },
+  { value: 'break:winter', label: 'terms.seasons.winter' },
+]
+
+const toSlot = (term: AcademicTerm): TermSlot => (term.kind === 'break' ? `break:${breakSeason(term)}` : term.kind)
+
+function fromSlot(slot: TermSlot): { kind: TermKind; season: BreakSeason | null } {
+  return slot.startsWith('break:') ? { kind: 'break', season: slot.slice(6) as BreakSeason } : { kind: slot as TermKind, season: null }
 }
 
 const today = () => new Date().toISOString().slice(0, 10)
@@ -83,14 +99,14 @@ export function TermsAdminPage() {
   const openCreateModal = useCallback(() => {
     setEditingId(null)
     form.resetFields()
-    form.setFieldsValue({ year: new Date().getFullYear(), kind: 'first' })
+    form.setFieldsValue({ year: new Date().getFullYear(), slot: 'first' })
     setModalOpen(true)
   }, [form])
 
   const openEditModal = useCallback(
     (term: AcademicTerm) => {
       setEditingId(term.id)
-      form.setFieldsValue({ year: term.year, kind: term.kind, name: term.name, startDate: term.startDate, endDate: term.endDate })
+      form.setFieldsValue({ year: term.year, slot: toSlot(term), name: term.name, startDate: term.startDate, endDate: term.endDate })
       setModalOpen(true)
     },
     [form],
@@ -103,12 +119,15 @@ export function TermsAdminPage() {
       return
     }
 
+    const { slot, ...rest } = values
+    const payload = { ...rest, ...fromSlot(slot) }
+
     try {
       if (editingId) {
-        await updateTerm.mutateAsync({ id: editingId, payload: values })
+        await updateTerm.mutateAsync({ id: editingId, payload })
         message.success(t('terms.updated'))
       } else {
-        await createTerm.mutateAsync(values)
+        await createTerm.mutateAsync(payload)
         message.success(t('terms.created'))
       }
 
@@ -247,18 +266,19 @@ export function TermsAdminPage() {
             />
           ) : null}
 
+          {/* The semester, or which break — the site names it exactly so. */}
+          <Form.Item name="slot" label={t('terms.label')} extra={t('terms.slotHint')} rules={[{ required: true }]}>
+            <Segmented options={SLOTS.map((slot) => ({ value: slot.value, label: t(slot.label) }))} />
+          </Form.Item>
+
           <div className="form-row">
             <Form.Item name="year" label={t('terms.year')} rules={[{ required: true, message: t('terms.yearRequired') }]}>
               <InputNumber min={1990} max={2100} style={{ width: '100%' }} />
             </Form.Item>
-            <Form.Item name="kind" label={t('terms.label')} rules={[{ required: true }]}>
-              <Segmented options={TERM_KINDS.map((value) => ({ value, label: t(KIND_LABEL[value]) }))} />
+            <Form.Item name="name" label={t('terms.name')} extra={t('terms.nameHint')}>
+              <Input maxLength={120} />
             </Form.Item>
           </div>
-
-          <Form.Item name="name" label={t('terms.name')} extra={t('terms.nameHint')}>
-            <Input maxLength={120} placeholder={t('terms.spring', { year: new Date().getFullYear() })} />
-          </Form.Item>
 
           <div className="form-row">
             <Form.Item name="startDate" label={t('courses.form.startDate')} rules={[{ required: true, message: t('courses.form.startDateRequired') }]}>

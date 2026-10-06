@@ -1511,6 +1511,48 @@
   gap: var(--space-4);
 }
 
+/* 재직 중 / 퇴직 — the first thing on the card, above the name, so it can
+   never collide with a long one. */
+.staff-status {
+  align-self: flex-start;
+  margin-bottom: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.staff-status__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-subtle);
+}
+
+.staff-status.is-current {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.staff-status.is-current .staff-status__dot {
+  background: var(--color-success);
+}
+
+/* Someone who has left stays readable, but clearly in the past tense. */
+.staff-card.is-former .staff-card__head,
+.staff-card.is-former .staff-card__bio {
+  opacity: 0.72;
+}
+
+.staff-card.is-former .ant-avatar {
+  filter: grayscale(1);
+}
+
 .staff-card .ant-avatar {
   flex: none;
   border: 3px solid var(--color-surface);
@@ -2939,6 +2981,30 @@ a.activity-row:hover b {
 
 .gallery-filters__years {
   justify-items: end;
+}
+
+.filter-card .history-kind.ant-select {
+  width: auto;
+  min-width: 180px;
+}
+
+/* 행사·대회: inside a year, the competitions and then the albums, each
+   under a small label of its own. */
+.history-year {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.history-block {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.history-block__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
 }
 
 .album-link {

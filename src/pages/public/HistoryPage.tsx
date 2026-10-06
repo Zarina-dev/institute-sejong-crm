@@ -4,6 +4,9 @@ import { useMemo, useState } from 'react'
 
 import { assetUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
+import { CompetitionCard } from '../../features/competitions/CompetitionCard'
+import { usePublishedCompetitions } from '../../features/competitions/queries'
+import type { Competition } from '../../features/competitions/types'
 import { usePublishedAlbums } from '../../features/gallery/queries'
 import type { GalleryAlbum } from '../../features/gallery/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
@@ -14,7 +17,7 @@ import { ALL_YEARS, YearSelect } from '../../shared/YearSelect'
 const { Title, Text } = Typography
 
 const NO_ALBUMS: GalleryAlbum[] = []
-const ALL = 'all'
+const NO_COMPETITIONS: Competition[] = []
 
 function AlbumCard({ album }: { album: GalleryAlbum }) {
   const { t } = usePreferences()
@@ -81,58 +84,79 @@ function AlbumCard({ album }: { album: GalleryAlbum }) {
   )
 }
 
-/** 학당 발자취 — event albums grouped by year, filtered by year and event. */
+/** What the page lists: both, or one of the two records. */
+type Show = 'all' | 'competitions' | 'albums'
+
+type YearGroup = { year: number; competitions: Competition[]; albums: GalleryAlbum[] }
+
+/**
+ * 학당 발자취 › 행사·대회 — the institute's events and competitions in one
+ * place, read a year at a time. A competition and the photos of the day
+ * belong to the same story, so a year shows its competitions (with their
+ * results) and then its event albums, instead of two pages that split it.
+ * Opens on the latest year; 구분 narrows it to one of the two.
+ */
 export function HistoryPage() {
   const { t } = usePreferences()
   const albums = usePublishedAlbums()
+  const competitions = usePublishedCompetitions()
+  const [show, setShow] = useState<Show>('all')
   const [pickedYear, setPickedYear] = useState<string | null>(null)
-  const [tag, setTag] = useState<string>(ALL)
 
-  const list = albums.data ?? NO_ALBUMS
+  const albumList = show === 'competitions' ? NO_ALBUMS : (albums.data ?? NO_ALBUMS)
+  const competitionList = show === 'albums' ? NO_COMPETITIONS : (competitions.data ?? NO_COMPETITIONS)
 
-  const years = useMemo(() => [...new Set(list.map((album) => album.year))].sort((a, b) => b - a), [list])
-  const tags = useMemo(() => [...new Set(list.map((album) => album.eventTag))], [list])
+  const years = useMemo(
+    () => [...new Set([...albumList.map((album) => album.year), ...competitionList.map((record) => record.year)])].sort((a, b) => b - a),
+    [albumList, competitionList],
+  )
 
-  // Opens on the latest year, as 대회 기록 does: every album of every year at
-  // once is hundreds of photo cards before the visitor has chosen anything.
-  // 전체 is still one choice away.
-  const year = pickedYear ?? (years.length ? String(years[0]) : ALL_YEARS)
+  // The latest year that has something, unless the visitor chose another
+  // (or 전체); a choice that the 구분 filter has emptied falls back too.
+  const year =
+    pickedYear === ALL_YEARS || (pickedYear && years.includes(Number(pickedYear))) ? pickedYear : years.length ? String(years[0]) : ALL_YEARS
 
-  const byYear = useMemo(() => {
-    const filtered = list.filter((album) => (year === ALL_YEARS || album.year === Number(year)) && (tag === ALL || album.eventTag === tag))
-    const map = new Map<number, GalleryAlbum[]>()
+  const groups = useMemo(() => {
+    const byYear = new Map<number, YearGroup>()
+    const groupOf = (value: number) => {
+      const existing = byYear.get(value)
 
-    for (const album of filtered) {
-      const bucket = map.get(album.year)
-
-      if (bucket) {
-        bucket.push(album)
-      } else {
-        map.set(album.year, [album])
+      if (existing) {
+        return existing
       }
+
+      const created: YearGroup = { year: value, competitions: [], albums: [] }
+      byYear.set(value, created)
+      return created
     }
 
-    return [...map.entries()].sort((a, b) => b[0] - a[0])
-  }, [list, tag, year])
+    const inYear = (value: number) => year === ALL_YEARS || value === Number(year)
+
+    for (const record of competitionList) {
+      if (inYear(record.year)) groupOf(record.year).competitions.push(record)
+    }
+
+    for (const album of albumList) {
+      if (inYear(album.year)) groupOf(album.year).albums.push(album)
+    }
+
+    return [...byYear.values()].sort((a, b) => b.year - a.year)
+  }, [albumList, competitionList, year])
+
+  const pending = albums.isPending || competitions.isPending
+  const nothingAtAll = !pending && !(albums.data?.length || competitions.data?.length)
 
   return (
     <div className="page-layout">
-      <PageHeader kicker={t('siteNav.history')} title={t('pageCopy.historyTitle')} description={t('pageCopy.historySubtitle')} />
+      <PageHeader kicker={t('siteNav.history')} title={t('siteNav.historyRecords')} description={t('pageCopy.historySubtitle')} />
 
+      <ErrorAlert error={albums.error ?? competitions.error} fallback={t('gallery.loadFailed')} />
 
-      <ErrorAlert error={albums.error} fallback={t('gallery.loadFailed')} />
-
-      {albums.isPending ? (
-        <Row gutter={[18, 18]} className="card-grid">
-          {Array.from({ length: 3 }, (_, index) => (
-            <Col xs={24} sm={12} lg={8} key={index}>
-              <Card className="surface-card album-card">
-                <Skeleton active paragraph={{ rows: 2 }} />
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      ) : list.length === 0 ? (
+      {pending ? (
+        <Card className="surface-card">
+          <Skeleton active paragraph={{ rows: 5 }} />
+        </Card>
+      ) : nothingAtAll ? (
         <Card className="surface-card empty-card">
           <Empty description={t('gallery.empty')} />
         </Card>
@@ -141,12 +165,16 @@ export function HistoryPage() {
           <Card className="surface-card filter-card">
             <div className="gallery-filters">
               <div>
-                <Text>{t('gallery.event')}</Text>
+                <Text>{t('pageCopy.historyKind')}</Text>
                 <Select
-                  value={tag}
-                  onChange={setTag}
-                  style={{ minWidth: 220 }}
-                  options={[{ value: ALL, label: t('gallery.allTags') }, ...tags.map((value) => ({ value, label: t(`gallery.tags.${value}`) }))]}
+                  className="history-kind"
+                  value={show}
+                  onChange={setShow}
+                  options={[
+                    { value: 'all', label: t('competitions.allKinds') },
+                    { value: 'competitions', label: t('siteNav.historyCompetitions') },
+                    { value: 'albums', label: t('siteNav.historyAlbums') },
+                  ]}
                 />
               </div>
               <div className="gallery-filters__years">
@@ -157,27 +185,49 @@ export function HistoryPage() {
             </div>
           </Card>
 
-          {byYear.length === 0 ? (
+          {groups.length === 0 ? (
             <Card className="surface-card empty-card">
               <Empty description={t('gallery.empty')} />
             </Card>
           ) : (
             <div className="course-groups">
-              {byYear.map(([albumYear, items]) => (
-                <section className="course-group" key={albumYear} aria-labelledby={`gallery-${albumYear}`}>
+              {groups.map((group) => (
+                <section className="course-group history-year" key={group.year} aria-labelledby={`history-${group.year}`}>
                   <div className="course-group__heading">
-                    <Title level={2} id={`gallery-${albumYear}`}>
-                      {albumYear}
+                    <Title level={2} id={`history-${group.year}`}>
+                      {group.year}
                     </Title>
-                    <Text type="secondary">{t('gallery.albumCount', { count: items.length })}</Text>
                   </div>
-                  <Row gutter={[18, 18]} className="card-grid">
-                    {items.map((album) => (
-                      <Col xs={24} sm={12} lg={8} key={album.id}>
-                        <AlbumCard album={album} />
-                      </Col>
-                    ))}
-                  </Row>
+
+                  {group.competitions.length > 0 ? (
+                    <div className="history-block">
+                      <div className="history-block__head">
+                        <Text className="section-kicker">{t('siteNav.historyCompetitions')}</Text>
+                        <Text type="secondary">{t('competitions.count', { count: group.competitions.length })}</Text>
+                      </div>
+                      <div className="competition-list">
+                        {group.competitions.map((record) => (
+                          <CompetitionCard record={record} key={record.id} />
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {group.albums.length > 0 ? (
+                    <div className="history-block">
+                      <div className="history-block__head">
+                        <Text className="section-kicker">{t('siteNav.historyAlbums')}</Text>
+                        <Text type="secondary">{t('gallery.albumCount', { count: group.albums.length })}</Text>
+                      </div>
+                      <Row gutter={[18, 18]} className="card-grid">
+                        {group.albums.map((album) => (
+                          <Col xs={24} sm={12} lg={8} key={album.id}>
+                            <AlbumCard album={album} />
+                          </Col>
+                        ))}
+                      </Row>
+                    </div>
+                  ) : null}
                 </section>
               ))}
             </div>
