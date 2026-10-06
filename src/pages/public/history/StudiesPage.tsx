@@ -5,6 +5,7 @@ import { useMemo } from 'react'
 import { assetUrl } from '../../../api/client'
 import { usePreferences } from '../../../app/preferences'
 import { useStudies } from '../../../features/studies/queries'
+import { otherName, studyText } from '../../../features/studies/text'
 import type { StudyAbroad } from '../../../features/studies/types'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { PageHeader } from '../../../shared/PageHeader'
@@ -13,7 +14,22 @@ const { Title, Text } = Typography
 
 const NO_STUDENTS: StudyAbroad[] = []
 
+/**
+ * One student. Every text is shown in the reader's language, falling back to
+ * the other one; the name also carries its other script underneath —
+ * 아지모바 굴잔 / Азимова Гулжан — since that is how both readers know them.
+ */
 function StudentCard({ student, number }: { student: StudyAbroad; number: number }) {
+  const { language } = usePreferences()
+  const text = (field: Parameters<typeof studyText>[1]) => studyText(student, field, language)
+  const alias = otherName(student, language)
+
+  const university = text('university')
+  const major = text('major')
+  const duration = text('duration')
+  const programme = text('programme')
+  const note = text('note')
+
   return (
     <Card className="surface-card study-card">
       <span className="study-card__number">{number}</span>
@@ -22,30 +38,33 @@ function StudentCard({ student, number }: { student: StudyAbroad; number: number
         {student.photo ? <img src={assetUrl(student.photo)} alt="" loading="lazy" /> : <UserOutlined />}
       </div>
 
-      <Title level={3}>{student.name}</Title>
+      <div className="study-card__names">
+        <Title level={3}>{text('name')}</Title>
+        {alias ? <Text className="study-card__alias">{alias}</Text> : null}
+      </div>
 
       <ul className="study-card__facts">
-        {student.university ? (
+        {university ? (
           <li>
-            <BankOutlined /> {student.university}
+            <BankOutlined /> {university}
           </li>
         ) : null}
-        {student.major ? (
+        {major ? (
           <li>
-            <ReadOutlined /> {student.major}
+            <ReadOutlined /> {major}
           </li>
         ) : null}
-        {student.duration ? (
+        {duration ? (
           <li>
-            <SolutionOutlined /> {student.duration}
+            <SolutionOutlined /> {duration}
           </li>
         ) : null}
       </ul>
 
-      {student.programme ? <Tag className="study-card__programme">{student.programme}</Tag> : null}
-      {student.note ? (
+      {programme ? <Tag className="study-card__programme">{programme}</Tag> : null}
+      {note ? (
         <Text type="secondary" className="study-card__note">
-          {student.note}
+          {note}
         </Text>
       ) : null}
     </Card>

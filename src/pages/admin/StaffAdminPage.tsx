@@ -56,7 +56,13 @@ export function StaffAdminPage() {
   const [form] = Form.useForm<StaffFormValues>()
   const saving = createStaff.isPending || updateStaff.isPending
 
-  const rows = staff.data ?? NO_STAFF
+  // Those who have left go to the bottom, in their own order — as soon as
+  // their last day has passed, since the status is read off the dates. The
+  // dragged order applies within each group, and saving it keeps them there.
+  const rows = useMemo(() => {
+    const all = staff.data ?? NO_STAFF
+    return [...all.filter((member) => staffStatus(member) !== 'former'), ...all.filter((member) => staffStatus(member) === 'former')]
+  }, [staff.data])
   const rowIds = useMemo(() => rows.map((member) => member.id), [rows])
 
   // A small distance threshold keeps a plain click on the handle from starting a drag.

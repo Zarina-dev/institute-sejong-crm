@@ -1,12 +1,14 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, MoreOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
 import { App, AutoComplete, Avatar, Button, Card, Dropdown, Form, Input, InputNumber, Modal, Switch, Table, Tag, Typography } from 'antd'
-import { useCallback, useMemo, useState } from 'react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 
 import { assetUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
+import type { TranslationKey } from '../../app/preferences'
 import { useAllStudies, useCreateStudy, useDeleteStudy, useUpdateStudy } from '../../features/studies/queries'
-import type { StudyAbroad } from '../../features/studies/types'
+import { languagesFilled } from '../../features/studies/text'
+import { BILINGUAL_FIELDS, type BilingualField, type StudyAbroad } from '../../features/studies/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { ImageUploadField } from '../../shared/ImageUploadField'
@@ -16,29 +18,48 @@ import { useTableLayout } from '../../shared/useTableLayout'
 
 const { Text } = Typography
 
-type StudyFormValues = {
+type StudyFormValues = Partial<Record<BilingualField | `${BilingualField}Ky`, string>> & {
   year: number
-  name: string
-  university?: string
-  major?: string
-  programme?: string
-  duration?: string
   photo: string | null
-  note?: string
   isPublished: boolean
 }
 
 const NO_STUDENTS: StudyAbroad[] = []
 
 /** Suggested rather than fixed: the institute knows its own programmes. */
-const PROGRAMME_SUGGESTIONS = ['정부초청장학생(GKS)', '교환학생', '어학연수', '대학 장학생', '자비 유학']
-const DURATION_SUGGESTIONS = ['6개월', '1년', '2년', '4년 (학사)', '2년 (석사)']
+const SUGGESTIONS: Record<'programme' | 'duration', { ko: string[]; ky: string[] }> = {
+  programme: {
+    ko: ['정부초청장학생(GKS)', '교환학생', '어학연수', '대학 장학생', '자비 유학'],
+    ky: ['Корея өкмөтүнүн стипендиясы (GKS)', 'Алмашуу программасы', 'Тил курсу', 'Университеттин стипендиясы', 'Өз каражатына'],
+  },
+  duration: {
+    ko: ['6개월', '1년', '2년', '4년 (학사)', '2년 (석사)'],
+    ky: ['6 ай', '1 жыл', '2 жыл', '4 жыл (бакалавр)', '2 жыл (магистр)'],
+  },
+}
+
+/** The rows of the translation table, in the order a record is read. */
+const ROWS: Array<{ field: BilingualField; label: TranslationKey; placeholder: { ko: string; ky: string } }> = [
+  { field: 'name', label: 'studies.form.name', placeholder: { ko: '아지모바 굴잔', ky: 'Азимова Гулжан' } },
+  { field: 'university', label: 'studies.form.university', placeholder: { ko: '경희대학교', ky: 'Кёнхи университети' } },
+  { field: 'major', label: 'studies.form.major', placeholder: { ko: '경영학', ky: 'Менеджмент' } },
+  { field: 'programme', label: 'studies.form.programme', placeholder: { ko: '정부초청장학생(GKS)', ky: 'GKS стипендиясы' } },
+  { field: 'duration', label: 'studies.form.duration', placeholder: { ko: '4년 (학사)', ky: '4 жыл (бакалавр)' } },
+  { field: 'note', label: 'studies.form.note', placeholder: { ko: '', ky: '' } },
+]
+
+const matches = (input: string, option?: { value?: unknown }) => String(option?.value ?? '').toLowerCase().includes(input.toLowerCase())
 
 /**
  * 한국 유학 현황 — the record of everyone the institute has sent to Korea.
  * The table is read in the order it is published: earliest year first, a new
  * student at the end. The number is the position, so there is nothing to
  * renumber when a student is added.
+ *
+ * Every text is entered in Korean and in Kyrgyz. The form lays them out as a
+ * translation table — one row per item, the two languages side by side — so
+ * filling in the second language is reading across, not hunting for fields.
+ * Either side may stay empty; the site falls back to the other.
  */
 export function StudiesAdminPage() {
   const { t } = usePreferences()
@@ -58,18 +79,16 @@ export function StudiesAdminPage() {
 
   const rows = studies.data ?? NO_STUDENTS
 
-  // What the institute has already written, offered before the defaults.
-  const options = useCallback(
-    (field: 'programme' | 'duration', suggestions: string[]) => {
-      const used = rows.map((student) => student[field]).filter(Boolean)
+  // What the institute has already written, offered before the defaults — per language.
+  const optionsFor = useCallback(
+    (field: 'programme' | 'duration', language: 'ko' | 'ky') => {
+      const key = language === 'ko' ? field : (`${field}Ky` as const)
+      const used = rows.map((student) => student[key]).filter(Boolean)
 
-      return [...new Set([...used, ...suggestions])].map((value) => ({ value }))
+      return [...new Set([...used, ...SUGGESTIONS[field][language]])].map((value) => ({ value }))
     },
     [rows],
   )
-
-  const programmeOptions = useMemo(() => options('programme', PROGRAMME_SUGGESTIONS), [options])
-  const durationOptions = useMemo(() => options('duration', DURATION_SUGGESTIONS), [options])
 
   const openCreateModal = useCallback(() => {
     setEditingId(null)
@@ -82,14 +101,9 @@ export function StudiesAdminPage() {
     (student: StudyAbroad) => {
       setEditingId(student.id)
       form.setFieldsValue({
+        ...Object.fromEntries(BILINGUAL_FIELDS.flatMap((field) => [[field, student[field]], [`${field}Ky`, student[`${field}Ky`]]])),
         year: student.year,
-        name: student.name,
-        university: student.university,
-        major: student.major,
-        programme: student.programme,
-        duration: student.duration,
         photo: student.photo,
-        note: student.note,
         isPublished: student.isPublished,
       })
       setModalOpen(true)
@@ -133,7 +147,7 @@ export function StudiesAdminPage() {
   const handleDelete = useCallback(
     (student: StudyAbroad) => {
       confirmDelete({
-        target: student.name,
+        target: student.name || student.nameKy,
         onConfirm: () =>
           deleteStudy.mutateAsync(student.id).then(
             () => message.success(t('studies.deleted')),
@@ -164,24 +178,23 @@ export function StudiesAdminPage() {
       },
       { title: t('studies.form.year'), dataIndex: 'year', key: 'year', width: 90 },
       {
+        // Both scripts, the way the two lists name them.
         title: t('studies.form.name'),
-        dataIndex: 'name',
         key: 'name',
-        render: (name: string, student) => (
+        render: (_, student) => (
           <div className="cell-stack">
-            <Text strong>{name}</Text>
-            {student.note ? <Text type="secondary">{student.note}</Text> : null}
+            <Text strong>{student.name || student.nameKy}</Text>
+            {student.name && student.nameKy ? <Text type="secondary">{student.nameKy}</Text> : null}
           </div>
         ),
       },
       {
         title: t('studies.form.university'),
-        dataIndex: 'university',
         key: 'university',
-        render: (university: string, student) => (
+        render: (_, student) => (
           <div className="cell-stack">
-            <Text>{university || '—'}</Text>
-            {student.major ? <Text type="secondary">{student.major}</Text> : null}
+            <Text>{student.university || student.universityKy || '—'}</Text>
+            {student.major || student.majorKy ? <Text type="secondary">{student.major || student.majorKy}</Text> : null}
           </div>
         ),
       },
@@ -190,12 +203,37 @@ export function StudiesAdminPage() {
         key: 'programme',
         width: 200,
         responsive: ['lg'],
-        render: (_, student) => (
-          <div className="cell-stack">
-            {student.programme ? <Tag color="blue">{student.programme}</Tag> : <Text type="secondary">—</Text>}
-            {student.duration ? <Text type="secondary">{student.duration}</Text> : null}
-          </div>
-        ),
+        render: (_, student) => {
+          const programme = student.programme || student.programmeKy
+          const duration = student.duration || student.durationKy
+
+          return (
+            <div className="cell-stack">
+              {programme ? <Tag color="blue">{programme}</Tag> : <Text type="secondary">—</Text>}
+              {duration ? <Text type="secondary">{duration}</Text> : null}
+            </div>
+          )
+        },
+      },
+      {
+        // Which languages are filled in, so a missing translation shows.
+        title: t('studies.columns.languages'),
+        key: 'languages',
+        width: 110,
+        render: (_, student) => {
+          const filled = languagesFilled(student)
+
+          return (
+            <span className="lang-marks">
+              <span className={`lang-mark${filled.ko ? ' is-filled' : ''}`} title={t('studies.form.korean')}>
+                한
+              </span>
+              <span className={`lang-mark${filled.ky ? ' is-filled' : ''}`} title={t('studies.form.kyrgyz')}>
+                Кы
+              </span>
+            </span>
+          )
+        },
       },
       {
         title: t('courses.columns.visibility'),
@@ -235,6 +273,42 @@ export function StudiesAdminPage() {
     [handleDelete, handleTogglePublished, openEditModal, pinActions, t],
   )
 
+  /** One input of the translation table; programme and duration suggest. */
+  const cell = (field: BilingualField, language: 'ko' | 'ky', placeholder: string) => {
+    const name = language === 'ko' ? field : (`${field}Ky` as const)
+    const max = field === 'duration' ? 60 : field === 'name' ? 150 : 255
+
+    const input =
+      field === 'programme' || field === 'duration' ? (
+        <AutoComplete options={optionsFor(field, language)} placeholder={placeholder} filterOption={matches} />
+      ) : (
+        <Input maxLength={max} placeholder={placeholder} />
+      )
+
+    // A student needs a name in at least one of the two languages.
+    const rules =
+      field === 'name' && language === 'ko'
+        ? [
+            ({ getFieldValue }: { getFieldValue: (key: string) => unknown }) => ({
+              validator: (_: unknown, value?: string) =>
+                value?.trim() || String(getFieldValue('nameKy') ?? '').trim()
+                  ? Promise.resolve()
+                  : Promise.reject(new Error(t('studies.form.nameRequired'))),
+            }),
+          ]
+        : undefined
+
+    // The wrapper carries the language for the phone layout, where the column
+    // headers are gone; Form.Item would not pass data-* through to the page.
+    return (
+      <div className="bilingual-grid__cell" data-lang={language === 'ko' ? t('studies.form.korean') : t('studies.form.kyrgyz')}>
+        <Form.Item name={name} dependencies={field === 'name' && language === 'ko' ? ['nameKy'] : undefined} rules={rules}>
+          {input}
+        </Form.Item>
+      </div>
+    )
+  }
+
   return (
     <div className="page-layout">
       <PageHeader kicker={t('siteNav.history')} title={t('studies.adminTitle')} description={t('studies.adminSubtitle')} />
@@ -272,14 +346,15 @@ export function StudiesAdminPage() {
         cancelText={t('common.cancel')}
         confirmLoading={saving}
         forceRender
-        width={720}
+        width={820}
+        className="study-modal"
       >
         <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: true, photo: null }}>
-          <Form.Item name="photo" label={t('studies.form.photo')} extra={t('studies.form.photoHint')}>
-            <ImageUploadField shape="square" />
-          </Form.Item>
-
-          <div className="form-row">
+          {/* What does not depend on the language: the portrait and the year. */}
+          <div className="study-form__head">
+            <Form.Item name="photo" label={t('studies.form.photo')} extra={t('studies.form.photoHint')}>
+              <ImageUploadField shape="square" />
+            </Form.Item>
             <Form.Item
               name="year"
               label={t('studies.form.year')}
@@ -288,47 +363,34 @@ export function StudiesAdminPage() {
             >
               <InputNumber min={1990} max={2100} style={{ width: '100%' }} />
             </Form.Item>
-            <Form.Item
-              name="name"
-              label={t('studies.form.name')}
-              rules={[{ required: true, whitespace: true, message: t('studies.form.nameRequired') }]}
-            >
-              <Input maxLength={150} placeholder="Азимова Гулжан" />
-            </Form.Item>
           </div>
 
-          <div className="form-row">
-            <Form.Item name="university" label={t('studies.form.university')}>
-              <Input maxLength={255} placeholder="Кёнхи унив." />
-            </Form.Item>
-            <Form.Item name="major" label={t('studies.form.major')}>
-              <Input maxLength={255} placeholder="Менеджмент" />
-            </Form.Item>
+          {/* The translation table: one row per item, Korean | Kyrgyz. */}
+          <div className="bilingual-grid" role="group" aria-label={t('studies.form.texts')}>
+            <span className="bilingual-grid__corner" aria-hidden="true" />
+            <span className="bilingual-grid__lang">
+              <span className="lang-mark is-filled">한</span> {t('studies.form.korean')}
+            </span>
+            <span className="bilingual-grid__lang">
+              <span className="lang-mark is-filled">Кы</span> {t('studies.form.kyrgyz')}
+            </span>
+
+            {ROWS.map((row) => (
+              <Fragment key={row.field}>
+                <span className="bilingual-grid__label">
+                  {t(row.label)}
+                  {row.field === 'name' ? <span className="bilingual-grid__required" aria-hidden="true"> *</span> : null}
+                </span>
+                {cell(row.field, 'ko', row.placeholder.ko)}
+                {cell(row.field, 'ky', row.placeholder.ky)}
+              </Fragment>
+            ))}
           </div>
+          <Text type="secondary" className="bilingual-grid__hint">
+            {t('studies.form.languagesHint')}
+          </Text>
 
-          {/* How they went, and for how long — what the next student asks. */}
-          <div className="form-row">
-            <Form.Item name="programme" label={t('studies.form.programme')} extra={t('studies.form.programmeHint')}>
-              <AutoComplete
-                options={programmeOptions}
-                placeholder="정부초청장학생(GKS)"
-                filterOption={(input, option) => String(option?.value ?? '').toLowerCase().includes(input.toLowerCase())}
-              />
-            </Form.Item>
-            <Form.Item name="duration" label={t('studies.form.duration')} extra={t('studies.form.durationHint')}>
-              <AutoComplete
-                options={durationOptions}
-                placeholder="4년 (학사)"
-                filterOption={(input, option) => String(option?.value ?? '').toLowerCase().includes(input.toLowerCase())}
-              />
-            </Form.Item>
-          </div>
-
-          <Form.Item name="note" label={t('studies.form.note')}>
-            <Input maxLength={255} />
-          </Form.Item>
-
-          <Form.Item name="isPublished" label={t('courses.form.visibility')} valuePropName="checked">
+          <Form.Item name="isPublished" label={t('courses.form.visibility')} valuePropName="checked" className="study-form__publish">
             <Switch />
           </Form.Item>
         </Form>
