@@ -18,6 +18,7 @@ import { useTermChoice } from '../../features/terms/useTermChoice'
 import { useTerms } from '../../features/terms/queries'
 import type { AcademicTerm } from '../../features/terms/types'
 import { useAllStaff } from '../../features/staff/queries'
+import { staffStatus } from '../../features/staff/status'
 import type { CourseRecord, CourseSession } from '../../features/courses/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
@@ -328,20 +329,27 @@ export function CoursesAdminPage() {
   }, [activeTerm?.code, language, message, rows, t, view])
 
   /**
-   * Teachers come from 교직원. Names already stored on a course are kept as
-   * options too, so editing an old course never silently drops its teacher.
+   * Teachers come from 교직원: those working here and those about to join (a
+   * class for next semester may go to someone starting next month) — never
+   * those who have left. The one exception is the teacher already on the
+   * class being edited, kept and marked 퇴직, so opening an old class never
+   * silently drops its teacher.
    */
+  const assignedTeacher = Form.useWatch('teacherName', form)
   const staffOptions = useMemo(() => {
-    const names = new Set((staff.data ?? []).map((member) => member.name))
+    const options = (staff.data ?? [])
+      .filter((member) => staffStatus(member) !== 'former')
+      .map((member) => ({
+        value: member.name,
+        label: staffStatus(member) === 'upcoming' ? `${member.name} · ${t('staff.upcoming')}` : member.name,
+      }))
 
-    for (const course of courses.data ?? []) {
-      if (course.teacherName) {
-        names.add(course.teacherName)
-      }
+    if (assignedTeacher && !options.some((option) => option.value === assignedTeacher)) {
+      options.push({ value: assignedTeacher, label: `${assignedTeacher} · ${t('staff.former')}` })
     }
 
-    return [...names].sort((a, b) => a.localeCompare(b)).map((value) => ({ value, label: value }))
-  }, [courses.data, staff.data])
+    return options.sort((a, b) => a.value.localeCompare(b.value))
+  }, [assignedTeacher, staff.data, t])
 
   const columns = useMemo<NonNullable<TableProps<CourseRecord>['columns']>>(
     () => [

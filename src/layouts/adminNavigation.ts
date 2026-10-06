@@ -79,8 +79,8 @@ export const adminNavigation: AdminNavGroup[] = [
   {
     labelKey: 'siteNav.history',
     items: [
-      { to: '/admin/gallery', labelKey: 'siteNav.historyAlbums' },
-      { to: '/admin/competitions', labelKey: 'siteNav.historyCompetitions' },
+      // One record for every event, contests included — as on the site.
+      { to: '/admin/competitions', labelKey: 'siteNav.historyRecords' },
       { to: '/admin/studies', labelKey: 'siteNav.historyStudies' },
     ],
   },

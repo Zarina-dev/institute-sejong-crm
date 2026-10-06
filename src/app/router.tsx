@@ -31,7 +31,6 @@ const CoursesAdminPage = lazy(() => import('../pages/admin/CoursesAdminPage').th
 const MaterialsAdminPage = lazy(() => import('../pages/admin/MaterialsAdminPage').then((m) => ({ default: m.MaterialsAdminPage })))
 const NewsAdminPage = lazy(() => import('../pages/admin/NewsAdminPage').then((m) => ({ default: m.NewsAdminPage })))
 const StaffAdminPage = lazy(() => import('../pages/admin/StaffAdminPage').then((m) => ({ default: m.StaffAdminPage })))
-const GalleryAdminPage = lazy(() => import('../pages/admin/GalleryAdminPage').then((m) => ({ default: m.GalleryAdminPage })))
 const ContentAdminPage = lazy(() => import('../pages/admin/ContentAdminPage').then((m) => ({ default: m.ContentAdminPage })))
 const TextbooksAdminPage = lazy(() => import('../pages/admin/TextbooksAdminPage').then((m) => ({ default: m.TextbooksAdminPage })))
 const CompetitionsAdminPage = lazy(() => import('../pages/admin/CompetitionsAdminPage').then((m) => ({ default: m.CompetitionsAdminPage })))
@@ -107,7 +106,8 @@ export function AppRouter() {
           <Route path="courses" element={<CoursesAdminPage />} />
           <Route path="materials" element={<MaterialsAdminPage />} />
           <Route path="news" element={<NewsAdminPage />} />
-          <Route path="gallery" element={<GalleryAdminPage />} />
+          {/* Albums are 행사·대회 records now; the old address still lands. */}
+          <Route path="gallery" element={<Navigate to="/admin/competitions" replace />} />
           <Route path="staff" element={<StaffAdminPage />} />
           <Route path="textbooks" element={<TextbooksAdminPage />} />
           <Route path="content" element={<ContentAdminPage />} />

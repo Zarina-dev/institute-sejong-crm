@@ -9,6 +9,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { assetUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
 import { useAllStaff, useCreateStaff, useDeleteStaff, useReorderStaff, useUpdateStaff } from '../../features/staff/queries'
+import { staffStatus } from '../../features/staff/status'
 import type { StaffMember } from '../../features/staff/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
@@ -28,10 +29,14 @@ type StaffFormValues = {
   photoUrl: string | null
   sortOrder: number
   isPublished: boolean
-  isCurrent: boolean
+  startDate?: string
+  endDate?: string
 }
 
 const NO_STAFF: StaffMember[] = []
+
+const STATUS_LABEL = { current: 'staff.current', upcoming: 'staff.upcoming', former: 'staff.former' } as const
+const STATUS_COLOUR = { current: 'green', upcoming: 'blue', former: 'default' } as const
 
 /** Admin CRUD for the people shown on the About page. */
 export function StaffAdminPage() {
@@ -92,7 +97,8 @@ export function StaffAdminPage() {
         photoUrl: member.photoUrl,
         sortOrder: member.sortOrder,
         isPublished: member.isPublished,
-        isCurrent: member.isCurrent ?? true,
+        startDate: member.startDate ?? undefined,
+        endDate: member.endDate ?? undefined,
       })
       setModalOpen(true)
     },
@@ -106,7 +112,14 @@ export function StaffAdminPage() {
       return
     }
 
-    const payload = { ...values, email: values.email?.trim() || null, bio: values.bio ?? '' }
+    // A cleared date input gives '' — sent as null, which clears the date.
+    const payload = {
+      ...values,
+      email: values.email?.trim() || null,
+      bio: values.bio ?? '',
+      startDate: values.startDate || null,
+      endDate: values.endDate || null,
+    }
 
     try {
       if (editingId) {
@@ -182,14 +195,25 @@ export function StaffAdminPage() {
         responsive: ['md'],
       },
       {
-        // 재직 / 퇴직 — what visitors see on the card, not whether it is shown.
+        // 재직 중 · 입사 예정 · 퇴직, read off the dates — what visitors see on
+        // the card, which is not the same as whether the card is shown.
         title: t('staff.columns.employment'),
-        dataIndex: 'isCurrent',
-        key: 'isCurrent',
-        width: 110,
-        render: (value: boolean) => (
-          <Tag color={value ? 'blue' : 'default'}>{value ? t('staff.current') : t('staff.former')}</Tag>
-        ),
+        key: 'employment',
+        width: 190,
+        render: (_, member) => {
+          const status = staffStatus(member)
+
+          return (
+            <div className="cell-stack">
+              <Tag color={STATUS_COLOUR[status]}>{t(STATUS_LABEL[status])}</Tag>
+              {member.startDate ? (
+                <Text type="secondary">
+                  {member.startDate} ~ {member.endDate ?? ''}
+                </Text>
+              ) : null}
+            </div>
+          )
+        },
       },
       {
         title: t('staff.columns.status'),
@@ -274,7 +298,7 @@ export function StaffAdminPage() {
         forceRender
         width={640}
       >
-        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: true, isCurrent: true, sortOrder: 0, photoUrl: null }}>
+        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: true, sortOrder: 0, photoUrl: null }}>
           <Form.Item name="photoUrl" label={t('staff.form.photo')}>
             <ImageUploadField shape="square" hint={t('staff.form.photoHint')} />
           </Form.Item>
@@ -290,10 +314,30 @@ export function StaffAdminPage() {
           <Form.Item name="email" label={t('staff.form.email')} rules={[{ type: 'email', message: t('staff.form.emailInvalid') }]}>
             <Input type="email" maxLength={255} />
           </Form.Item>
-          {/* Leaving does not remove someone from the page; it marks them as former. */}
-          <Form.Item name="isCurrent" label={t('staff.form.current')} extra={t('staff.form.currentHint')} valuePropName="checked">
-            <Switch checkedChildren={t('staff.current')} unCheckedChildren={t('staff.former')} />
-          </Form.Item>
+          {/* Whether they work here follows from these two dates — a start
+              ahead is 입사 예정, an end behind is 퇴직 — so it turns over on
+              the day by itself. Leaving never removes anyone from the page. */}
+          <div className="form-row">
+            <Form.Item name="startDate" label={t('staff.form.startDate')} extra={t('staff.form.startHint')}>
+              <Input type="date" />
+            </Form.Item>
+            <Form.Item
+              name="endDate"
+              label={t('staff.form.endDate')}
+              extra={t('staff.form.endHint')}
+              dependencies={['startDate']}
+              rules={[
+                ({ getFieldValue }) => ({
+                  validator: (_, value?: string) =>
+                    !value || !getFieldValue('startDate') || value >= getFieldValue('startDate')
+                      ? Promise.resolve()
+                      : Promise.reject(new Error(t('staff.form.endBeforeStart'))),
+                }),
+              ]}
+            >
+              <Input type="date" />
+            </Form.Item>
+          </div>
           <Form.Item name="isPublished" label={t('staff.form.published')} valuePropName="checked">
             <Switch />
           </Form.Item>

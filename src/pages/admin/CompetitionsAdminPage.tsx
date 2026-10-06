@@ -1,6 +1,6 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, MinusCircleOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, Button, Card, Dropdown, Form, Input, InputNumber, Modal, Space, Switch, Table, Tag, Typography } from 'antd'
+import { App, Button, Card, Collapse, Dropdown, Form, Input, InputNumber, Modal, Space, Switch, Table, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
@@ -62,11 +62,13 @@ export function CompetitionsAdminPage() {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  /** Whether the optional participants/results section is open. */
+  const [resultsOpen, setResultsOpen] = useState(false)
   const [form] = Form.useForm<CompetitionFormValues>()
   const saving = createCompetition.isPending || updateCompetition.isPending
 
-  // Every competition is managed together; the filter is a view, not a
-  // separate page, so an edition can be moved between them by editing it.
+  // Every kind of event is managed together; the filter is a view, not a
+  // separate page, so a record can be moved to another kind by editing it.
   const kindOptions = useMemo(() => competitionKindOptions(competitions.data ?? NO_RECORDS, t), [competitions.data, t])
   const [kind, setKind] = useState<CompetitionKind>(ALL_KINDS)
   const ofKind = useMemo(
@@ -83,7 +85,9 @@ export function CompetitionsAdminPage() {
   const openCreateModal = useCallback(() => {
     setEditingId(null)
     form.resetFields()
-    form.setFieldsValue({ kind: kind === ALL_KINDS ? 'speech' : kind, year: new Date().getFullYear() })
+    // No 구분 preselected unless the list is filtered: most events are not contests.
+    form.setFieldsValue({ kind: kind === ALL_KINDS ? undefined : kind, year: new Date().getFullYear() })
+    setResultsOpen(false)
     setModalOpen(true)
   }, [form, kind])
 
@@ -104,6 +108,7 @@ export function CompetitionsAdminPage() {
         albumUrl: record.albumUrl ?? '',
         isPublished: record.isPublished,
       })
+      setResultsOpen(record.participants != null || record.winners.length > 0)
       setModalOpen(true)
     },
     [form],
@@ -305,7 +310,7 @@ export function CompetitionsAdminPage() {
             label={t('competitions.form.title')}
             rules={[{ required: true, whitespace: true, message: t('competitions.form.titleRequired') }]}
           >
-            <Input maxLength={255} placeholder="제10회 한국어 말하기 대회" />
+            <Input maxLength={255} placeholder="2026 봄학기 개강식" />
           </Form.Item>
 
           <div className="form-row">
@@ -314,9 +319,6 @@ export function CompetitionsAdminPage() {
             </Form.Item>
             <Form.Item name="heldOn" label={t('competitions.form.heldOn')}>
               <Input type="date" />
-            </Form.Item>
-            <Form.Item name="participants" label={t('competitions.form.participants')}>
-              <InputNumber min={0} max={10000} style={{ width: '100%' }} />
             </Form.Item>
           </div>
 
@@ -336,40 +338,63 @@ export function CompetitionsAdminPage() {
             <RichTextEditor minHeight={220} />
           </Form.Item>
 
-          {/* 수상자 — the results table, one row per place. */}
-          <Form.Item label={t('competitions.form.winners')}>
-            <Form.List name="winners">
-              {(fields, { add, remove }) => (
-                <div className="winner-rows">
-                  {fields.map((field) => (
-                    <div className="winner-row" key={field.key}>
-                      <Form.Item name={[field.name, 'rank']} rules={[{ required: true, message: t('competitions.rank') }]} noStyle>
-                        <InputNumber min={1} max={99} placeholder={t('competitions.rank')} />
-                      </Form.Item>
-                      <Form.Item
-                        name={[field.name, 'name']}
-                        rules={[{ required: true, whitespace: true, message: t('competitions.form.winnerName') }]}
-                        noStyle
-                      >
-                        <Input placeholder={t('competitions.form.winnerName')} maxLength={150} />
-                      </Form.Item>
-                      <Form.Item name={[field.name, 'note']} noStyle>
-                        <Input placeholder={t('competitions.form.winnerNote')} maxLength={255} />
-                      </Form.Item>
-                      <Button type="text" icon={<MinusCircleOutlined />} aria-label={t('common.remove')} onClick={() => remove(field.name)} />
-                    </div>
-                  ))}
-                  <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({ rank: fields.length + 1, name: '', note: '' })} block>
-                    {t('competitions.form.addWinner')}
-                  </Button>
-                </div>
-              )}
-            </Form.List>
-          </Form.Item>
-
           <Form.Item name="albumUrl" label={t('competitions.form.album')}>
             <Input placeholder="https://photos.app.goo.gl/…" maxLength={500} />
           </Form.Item>
+
+          {/* Most events are not contests, so participants and results are an
+              optional section — open when the record already has them. It is
+              rendered even when closed, so collapsing it loses nothing. */}
+          <Collapse
+            className="results-section"
+            activeKey={resultsOpen ? ['results'] : []}
+            onChange={(keys) => setResultsOpen(keys.length > 0)}
+            items={[
+              {
+                key: 'results',
+                forceRender: true,
+                label: t('competitions.form.resultsSection'),
+                children: (
+                  <>
+                    <Form.Item name="participants" label={t('competitions.form.participants')}>
+                      <InputNumber min={0} max={10000} style={{ width: 200 }} />
+                    </Form.Item>
+
+                    {/* 수상자 — the results table, one row per place. */}
+                    <Form.Item label={t('competitions.form.winners')} style={{ marginBottom: 0 }}>
+                      <Form.List name="winners">
+                        {(fields, { add, remove }) => (
+                          <div className="winner-rows">
+                            {fields.map((field) => (
+                              <div className="winner-row" key={field.key}>
+                                <Form.Item name={[field.name, 'rank']} rules={[{ required: true, message: t('competitions.rank') }]} noStyle>
+                                  <InputNumber min={1} max={99} placeholder={t('competitions.rank')} />
+                                </Form.Item>
+                                <Form.Item
+                                  name={[field.name, 'name']}
+                                  rules={[{ required: true, whitespace: true, message: t('competitions.form.winnerName') }]}
+                                  noStyle
+                                >
+                                  <Input placeholder={t('competitions.form.winnerName')} maxLength={150} />
+                                </Form.Item>
+                                <Form.Item name={[field.name, 'note']} noStyle>
+                                  <Input placeholder={t('competitions.form.winnerNote')} maxLength={255} />
+                                </Form.Item>
+                                <Button type="text" icon={<MinusCircleOutlined />} aria-label={t('common.remove')} onClick={() => remove(field.name)} />
+                              </div>
+                            ))}
+                            <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({ rank: fields.length + 1, name: '', note: '' })} block>
+                              {t('competitions.form.addWinner')}
+                            </Button>
+                          </div>
+                        )}
+                      </Form.List>
+                    </Form.Item>
+                  </>
+                ),
+              },
+            ]}
+          />
 
           <Form.Item name="isPublished" label={t('competitions.form.visibility')} valuePropName="checked">
             <Switch />

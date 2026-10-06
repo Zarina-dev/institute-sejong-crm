@@ -18,6 +18,7 @@ const RANK_COLOUR = ['gold', 'silver', '#cd7f32'] as const
 function Winners({ winners }: { winners: CompetitionWinner[] }) {
   const { t } = usePreferences()
 
+  // Only rendered when there are winners (see CompetitionCard).
   const columns = useMemo<NonNullable<TableProps<CompetitionWinner>['columns']>>(
     () => [
       {
@@ -43,10 +44,6 @@ function Winners({ winners }: { winners: CompetitionWinner[] }) {
     [t],
   )
 
-  if (winners.length === 0) {
-    return <Text type="secondary">{t('competitions.noWinners')}</Text>
-  }
-
   return (
     <Table
       className="admin-table competition-winners"
@@ -60,8 +57,8 @@ function Winners({ winners }: { winners: CompetitionWinner[] }) {
 }
 
 /**
- * One running of a competition: its photos, the facts, the summary and the
- * results table. Shown on 학당 발자취 beside the event albums of the same year.
+ * One event on 학당 발자취 › 행사·대회: its photos, the facts, the summary,
+ * and — for a contest — the participants and the results table.
  */
 export function CompetitionCard({ record }: { record: Competition }) {
   const { t, language } = usePreferences()
@@ -110,10 +107,13 @@ export function CompetitionCard({ record }: { record: Competition }) {
 
       {record.summary ? <RichContent className="competition-card__summary" html={record.summary} /> : null}
 
-      <div className="competition-card__winners">
-        <Text className="section-kicker">{t('competitions.winners')}</Text>
-        <Winners winners={record.winners} />
-      </div>
+      {/* Results only where there are some: most events are not contests. */}
+      {record.winners.length > 0 ? (
+        <div className="competition-card__winners">
+          <Text className="section-kicker">{t('competitions.winners')}</Text>
+          <Winners winners={record.winners} />
+        </div>
+      ) : null}
     </Card>
   )
 }

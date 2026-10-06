@@ -8,8 +8,10 @@
   email: string | null
   sortOrder: number
   isPublished: boolean
-  /** 재직 중; false for someone who has left (still shown, marked as such). */
-  isCurrent: boolean
+  /** 근무 시작일 (ISO) — may lie ahead for someone joining later. */
+  startDate: string | null
+  /** 퇴직일 (ISO) — only for someone who has left or is leaving. */
+  endDate: string | null
   createdAt: string
   updatedAt: string
 }
@@ -22,5 +24,6 @@ export type StaffInput = {
   email?: string | null
   sortOrder?: number
   isPublished?: boolean
-  isCurrent?: boolean
+  startDate?: string | null
+  endDate?: string | null
 }

@@ -1,9 +1,23 @@
 /**
- * 말하기 대회 · 백일장 — the two the institute has always run, kept as codes
- * because the site translates them. A competition added later is stored
- * under the name the admin gives it, so a kind is just a string.
+ * The kinds of event the institute has always had, kept as codes because the
+ * site translates them. A kind added later is stored under the name the
+ * admin gives it, so a kind is just a string.
  */
-export const BUILTIN_COMPETITION_KINDS = ['speech', 'writing'] as const
+export const BUILTIN_COMPETITION_KINDS = [
+  'speech',
+  'writing',
+  // The occasions 행사 사진첩 used to file albums under; since 행사 사진첩 and
+  // 대회 기록 became one record, a "competition" is any event.
+  'foodExperience',
+  'opening',
+  'graduation',
+  'folkGames',
+  'historyTour',
+  'camp',
+  'ska',
+  'topik',
+  'other',
+] as const
 export type CompetitionKind = string
 
 /** One line of the results table. */

@@ -1543,14 +1543,25 @@
   background: var(--color-success);
 }
 
-/* Someone who has left stays readable, but clearly in the past tense. */
-.staff-card.is-former .staff-card__head,
-.staff-card.is-former .staff-card__bio {
-  opacity: 0.72;
+/* 입사 예정 — someone joining soon, in the site's point colour. */
+.staff-status.is-upcoming {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
 }
 
-.staff-card.is-former .ant-avatar {
-  filter: grayscale(1);
+.staff-status.is-upcoming .staff-status__dot {
+  background: var(--color-primary);
+}
+
+/* A former member's card looks like everyone else's: the badge and the
+   dates say they have left; nothing is faded or greyed out. */
+.staff-card__period.ant-typography {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
 }
 
 .staff-card .ant-avatar {

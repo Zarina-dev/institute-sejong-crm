@@ -1,28 +1,39 @@
-import { MailOutlined, UserOutlined } from '@ant-design/icons'
+import { CalendarOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
 import { Avatar, Card, Col, Empty, Row, Skeleton, Typography } from 'antd'
 import { useMemo } from 'react'
 
 import { assetUrl } from '../../../api/client'
 import { usePreferences } from '../../../app/preferences'
 import { usePublishedStaff } from '../../../features/staff/queries'
+import { staffStatus, type StaffStatus } from '../../../features/staff/status'
 import type { StaffMember } from '../../../features/staff/types'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
+import { formatDate } from '../../../shared/format'
 import { PageHeader } from '../../../shared/PageHeader'
 
 const { Title, Paragraph, Text } = Typography
 
 const NO_STAFF: StaffMember[] = []
 
-function StaffCard({ member }: { member: StaffMember }) {
-  const { t } = usePreferences()
-  const current = member.isCurrent !== false
+const STATUS_LABEL = { current: 'staff.current', upcoming: 'staff.upcoming', former: 'staff.former' } as const
+
+function StaffCard({ member, status }: { member: StaffMember; status: StaffStatus }) {
+  const { t, language } = usePreferences()
+
+  // "2013년 9월 1일 ~ 현재", "~ 2015년 12월 31일", "2026년 11월 1일 입사 예정".
+  const period =
+    status === 'upcoming' && member.startDate
+      ? t('staff.joinsOn', { date: formatDate(member.startDate, language) })
+      : member.startDate
+        ? `${formatDate(member.startDate, language)} ~ ${member.endDate ? formatDate(member.endDate, language) : t('staff.toPresent')}`
+        : null
 
   return (
-    <Card className={`surface-card staff-card${current ? '' : ' is-former'}`}>
-      {/* Whether they work here now, readable before anything else on the card. */}
-      <span className={`staff-status${current ? ' is-current' : ''}`}>
+    <Card className="surface-card staff-card">
+      {/* Whether they work here, readable before anything else on the card. */}
+      <span className={`staff-status is-${status}`}>
         <span className="staff-status__dot" aria-hidden="true" />
-        {current ? t('staff.current') : t('staff.former')}
+        {t(STATUS_LABEL[status])}
       </span>
 
       <div className="staff-card__head">
@@ -32,9 +43,14 @@ function StaffCard({ member }: { member: StaffMember }) {
           <Text className="staff-card__position">{member.position}</Text>
         </div>
       </div>
+      {period ? (
+        <Text type="secondary" className="staff-card__period">
+          <CalendarOutlined /> {period}
+        </Text>
+      ) : null}
       {member.bio ? <Paragraph className="staff-card__bio">{member.bio}</Paragraph> : null}
       {/* A former colleague's address is no longer how to reach the institute. */}
-      {member.email && current ? (
+      {member.email && status !== 'former' ? (
         <a className="staff-card__email" href={`mailto:${member.email}`}>
           <MailOutlined /> {member.email}
         </a>
@@ -43,12 +59,12 @@ function StaffCard({ member }: { member: StaffMember }) {
   )
 }
 
-function StaffGrid({ members }: { members: StaffMember[] }) {
+function StaffGrid({ members }: { members: Array<{ member: StaffMember; status: StaffStatus }> }) {
   return (
     <Row gutter={[18, 18]} className="card-grid">
-      {members.map((member) => (
+      {members.map(({ member, status }) => (
         <Col xs={24} sm={12} lg={8} key={member.id}>
-          <StaffCard member={member} />
+          <StaffCard member={member} status={status} />
         </Col>
       ))}
     </Row>
@@ -57,17 +73,19 @@ function StaffGrid({ members }: { members: StaffMember[] }) {
 
 /**
  * 강사 소개 — the teachers and administrators, managed at /admin/staff.
- * Those working here now come first, each card saying so; those who have
- * left follow under their own heading, because who taught here is part of
- * the institute's record — but a visitor must not mistake them for current.
+ * Those working here, and those about to join, come first; those who have
+ * left follow under their own heading — who taught here is part of the
+ * institute's record, so they stay, plainly marked rather than faded out.
+ * Each status is read off the member's dates, so it turns over by itself.
  */
 export function StaffPage() {
   const { t } = usePreferences()
   const staff = usePublishedStaff()
   const members = staff.data ?? NO_STAFF
 
-  const current = useMemo(() => members.filter((member) => member.isCurrent !== false), [members])
-  const former = useMemo(() => members.filter((member) => member.isCurrent === false), [members])
+  const withStatus = useMemo(() => members.map((member) => ({ member, status: staffStatus(member) })), [members])
+  const current = useMemo(() => withStatus.filter((entry) => entry.status !== 'former'), [withStatus])
+  const former = useMemo(() => withStatus.filter((entry) => entry.status === 'former'), [withStatus])
 
   return (
     <div className="page-layout">
