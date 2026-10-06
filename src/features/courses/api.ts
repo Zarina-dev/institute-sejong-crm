@@ -15,6 +15,11 @@ export async function getCourses(publishedOnly = false, filters: CourseListFilte
   })
 }
 
+/** How many classes each semester has — for greying out empty ones in a picker. */
+export async function getCourseTermCounts(publishedOnly: boolean, category?: CourseListFilters['category']) {
+  return apiGet<Array<{ term: string; count: number }>>('/courses/terms', { publishedOnly, category })
+}
+
 export async function getCourse(id: string) {
   return apiGet<CourseRecord>(`/courses/${id}`)
 }

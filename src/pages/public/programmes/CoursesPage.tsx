@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react'
 import { contact, phoneHref } from '../../../app/contact'
 import { usePreferences } from '../../../app/preferences'
 import { CourseGroupList } from '../../../features/courses/CourseGroupList'
-import { useCourses } from '../../../features/courses/queries'
+import { useCourses, useCourseTermCounts } from '../../../features/courses/queries'
 import type { CourseRecord } from '../../../features/courses/types'
 import { useTerms } from '../../../features/terms/queries'
 import { TermPicker } from '../../../features/terms/TermPicker'
@@ -45,6 +45,8 @@ export function CoursesPage({ category }: CoursesPageProps) {
   const defined = terms.data ?? NO_TERMS
   const { active, select } = useTermChoice(defined)
   const courses = useCourses(true, { term: active?.code, category }, !terms.isPending)
+  // Semesters this list has nothing in are greyed out in the picker.
+  const counts = useCourseTermCounts(true, category)
 
   const inCategory = courses.data ?? NO_COURSES
 
@@ -106,7 +108,7 @@ export function CoursesPage({ category }: CoursesPageProps) {
       {defined.length > 0 ? (
         <Card className="surface-card filter-card">
           <div className="filter-footer">
-            <TermPicker terms={defined} active={active} onSelect={select} />
+            <TermPicker terms={defined} active={active} onSelect={select} counts={counts.data} emptyHint={t('terms.noClasses')} />
 
             {active ? (
               <Text type="secondary">

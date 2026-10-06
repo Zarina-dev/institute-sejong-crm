@@ -7,6 +7,7 @@ import { usePreferences } from '../../app/preferences'
 import { termLabel } from '../../features/courses/terms'
 import { useAllEvents, useCreateEvent, useDeleteEvent, useUpdateEvent } from '../../features/events/queries'
 import type { ScheduleEvent } from '../../features/events/types'
+import { termDisplayName } from '../../features/terms/labels'
 import { useTerms } from '../../features/terms/queries'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
@@ -57,7 +58,7 @@ export function EventsAdminPage() {
   const rows = events.data ?? NO_EVENTS
 
   const termLabels = useMemo(
-    () => new Map((terms.data ?? []).map((term) => [term.code, term.name || termLabel(term.code, t)])),
+    () => new Map((terms.data ?? []).map((term) => [term.code, termDisplayName(term, t)])),
     [t, terms.data],
   )
 
@@ -293,7 +294,7 @@ export function EventsAdminPage() {
             <Select
               allowClear
               placeholder={t('events.form.termAuto')}
-              options={(terms.data ?? []).map((term) => ({ value: term.code, label: term.name || termLabel(term.code, t) }))}
+              options={(terms.data ?? []).map((term) => ({ value: term.code, label: termDisplayName(term, t) }))}
             />
           </Form.Item>
 

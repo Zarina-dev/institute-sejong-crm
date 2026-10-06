@@ -24,7 +24,7 @@ import { startOfWeek, toIsoDate, weekRange } from '../../features/courses/week'
 import { usePublishedNews } from '../../features/news/queries'
 import { useTerms } from '../../features/terms/queries'
 import type { AcademicTerm } from '../../features/terms/types'
-import { useTermChoice } from '../../features/terms/useTermChoice'
+import { termInProgress } from '../../features/terms/current'
 import { formatDate } from '../../shared/format'
 
 const { Title, Paragraph, Text } = Typography
@@ -66,9 +66,10 @@ function SectionHead({ title, to, label }: { title: string; to?: string; label?:
 export function HomePage() {
   const { t, language } = usePreferences()
   const news = usePublishedNews(6)
-  // "On offer" means this semester — the same one 강좌 안내 opens on.
+  // "On offer" means the semester in progress — always, whatever a visitor
+  // last picked on 강좌 안내; this section has no picker of its own.
   const terms = useTerms()
-  const { active: currentTerm } = useTermChoice(terms.data ?? NO_TERMS)
+  const currentTerm = useMemo(() => termInProgress(terms.data ?? NO_TERMS) ?? terms.data?.[0] ?? null, [terms.data])
   const courses = useCourses(true, { term: currentTerm?.code }, !terms.isPending)
   const week = useTimetable(useMemo(() => weekRange(startOfWeek(new Date())), []))
 

@@ -3633,10 +3633,36 @@ a.activity-row:hover b {
 
 /* ---- 학기 picker · 회의록 첨부 파일 ---- */
 
+/* 학기 선택 — a labelled dropdown inside the page, never a menu level. */
 .term-picker {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.term-picker__label.ant-typography {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+/* Filter cards stretch their selects; this one is as wide as its longest name. */
+.term-picker .term-picker__select.ant-select {
+  width: auto;
+  min-width: 210px;
+}
+
+.term-option__tag.ant-typography {
+  flex: 0 0 auto;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  line-height: 20px;
 }
 
 /* The programme heading inside the single semester table. */

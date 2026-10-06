@@ -5,6 +5,7 @@ import {
   type CourseListFilters,
   createCourse,
   deleteCourse,
+  getCourseTermCounts,
   getCourses,
   getTimetable,
   publishCourse,
@@ -16,6 +17,9 @@ import type { TimetableFilters } from './types'
 export const courseKeys = {
   all: ['courses'] as const,
   list: (publishedOnly: boolean, filters: CourseListFilters = {}) => [...courseKeys.all, 'list', { publishedOnly, ...filters }] as const,
+  // Under `all`, so any course write refreshes the counts too.
+  termCounts: (publishedOnly: boolean, category?: CourseListFilters['category']) =>
+    [...courseKeys.all, 'term-counts', { publishedOnly, category }] as const,
 }
 
 export const timetableKeys = {
@@ -37,6 +41,15 @@ export function useCourses(publishedOnly: boolean, filters: CourseListFilters = 
     enabled,
     // Switching semesters keeps the last list on screen instead of a skeleton.
     placeholderData: keepPreviousData,
+  })
+}
+
+/** Classes per semester, as a lookup for TermPicker's `counts`. */
+export function useCourseTermCounts(publishedOnly: boolean, category?: CourseListFilters['category']) {
+  return useQuery({
+    queryKey: courseKeys.termCounts(publishedOnly, category),
+    queryFn: () => getCourseTermCounts(publishedOnly, category),
+    select: (rows) => new Map(rows.map((row) => [row.term, row.count])),
   })
 }
 

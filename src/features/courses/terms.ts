@@ -43,6 +43,11 @@ export function listTerms(courses: readonly CourseRecord[] | undefined): string[
   return [...terms].sort().reverse()
 }
 
+/**
+ * A name from a semester *code* alone — for codes whose term is not at hand
+ * (or no longer defined). Same wording as termDisplayName; a break's season
+ * needs its dates, so from a code it is just "방학".
+ */
 export function termLabel(term: string | null, t: Translate): string {
   if (!term) {
     return t('terms.unset')
@@ -54,7 +59,7 @@ export function termLabel(term: string | null, t: Translate): string {
     return t('terms.breakOf', { year })
   }
 
-  return t(suffix === '1' ? 'terms.spring' : 'terms.autumn', { year })
+  return t(suffix === '1' ? 'terms.display.first' : 'terms.display.second', { year })
 }
 
 /** The semester that contains today, or the most recent one on record. */

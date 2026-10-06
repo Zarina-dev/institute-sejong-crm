@@ -3,7 +3,7 @@ import { Button, Card, Empty, Skeleton, Tag, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 
 import { usePreferences } from '../../../app/preferences'
-import { useCourses, useTimetable } from '../../../features/courses/queries'
+import { useCourses, useCourseTermCounts, useTimetable } from '../../../features/courses/queries'
 import { SemesterTable } from '../../../features/courses/SemesterTable'
 import type { TimetableEntry } from '../../../features/courses/types'
 import { addDays, startOfWeek, toIsoDate, weekRange } from '../../../features/courses/week'
@@ -50,6 +50,7 @@ export function CalendarPage() {
   // Only that semester comes down. Waits for the terms, so it never fetches
   // the whole history first; with no terms defined at all it lists everything.
   const courses = useCourses(true, { term: activeTerm?.code }, !terms.isPending)
+  const counts = useCourseTermCounts(true)
   const termCourses = courses.data
 
   /* ------------------------------ 시간표 ------------------------------ */
@@ -99,7 +100,7 @@ export function CalendarPage() {
       {defined.length > 0 ? (
         <Card className="surface-card filter-card">
           <div className="filter-footer">
-            <TermPicker terms={defined} active={activeTerm} onSelect={setSelected} />
+            <TermPicker terms={defined} active={activeTerm} onSelect={setSelected} counts={counts.data} emptyHint={t('terms.noClasses')} />
 
             {activeTerm ? (
               <Text type="secondary">

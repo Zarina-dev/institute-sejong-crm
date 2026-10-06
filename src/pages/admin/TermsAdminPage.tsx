@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import type { TranslationKey } from '../../app/preferences'
+import { termDisplayName, termMemo } from '../../features/terms/labels'
 import { useCreateTerm, useDeleteTerm, useTerms, useUpdateTerm } from '../../features/terms/queries'
 import { TERM_KINDS, type AcademicTerm, type TermKind } from '../../features/terms/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
@@ -32,10 +33,6 @@ const KIND_LABEL: Record<TermKind, TranslationKey> = {
 }
 
 const today = () => new Date().toISOString().slice(0, 10)
-
-/** What a term is called when the institute did not name it itself. */
-const defaultName = (term: AcademicTerm, t: (key: TranslationKey, params?: Record<string, string | number>) => string) =>
-  term.kind === 'break' ? t('terms.breakOf', { year: term.year }) : t(term.kind === 'first' ? 'terms.spring' : 'terms.autumn', { year: term.year })
 
 /**
  * 학기 관리 — when a semester runs is the institute's decision, so the dates
@@ -125,7 +122,7 @@ export function TermsAdminPage() {
   const handleDelete = useCallback(
     (term: AcademicTerm) => {
       confirmDelete({
-        target: term.name || term.code,
+        target: termDisplayName(term, t),
         note: t('terms.deleteNote'),
         onConfirm: () =>
           deleteTerm.mutateAsync(term.id).then(
@@ -144,8 +141,8 @@ export function TermsAdminPage() {
         key: 'term',
         render: (_, term) => (
           <Space size={8}>
-            <Text strong>{term.name || defaultName(term, t)}</Text>
-            <Tag>{t(KIND_LABEL[term.kind])}</Tag>
+            <Text strong>{termDisplayName(term, t)}</Text>
+            {termMemo(term) ? <Text type="secondary">{termMemo(term)}</Text> : null}
             {term.id === current?.id ? <Tag color="green">{t('terms.inProgress')}</Tag> : null}
           </Space>
         ),
@@ -188,7 +185,7 @@ export function TermsAdminPage() {
           <Text>
             {current ? (
               <>
-                <CalendarOutlined /> {t('terms.currentIs', { term: current.name || current.code })}
+                <CalendarOutlined /> {t('terms.currentIs', { term: termDisplayName(current, t) })}
               </>
             ) : (
               t('terms.noneInProgress')
@@ -239,7 +236,7 @@ export function TermsAdminPage() {
                   {clashes.map((clash) => (
                     <li key={clash.term.id}>
                       {t('terms.overlapsWith', {
-                        term: clash.term.name || defaultName(clash.term, t),
+                        term: termDisplayName(clash.term, t),
                         period: `${formatDate(clash.term.startDate, language)} ~ ${formatDate(clash.term.endDate, language)}`,
                         overlap: `${formatDate(clash.from, language)} ~ ${formatDate(clash.to, language)}`,
                       })}

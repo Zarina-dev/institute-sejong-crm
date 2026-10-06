@@ -110,7 +110,7 @@ export function CoursesAdminPage() {
    * Excel export are all per semester, which is how the office reports.
    * Opens on the semester in progress.
    */
-  const { active: activeTerm, select: selectTerm } = useTermChoice(terms.data ?? NO_TERMS)
+  const { active: activeTerm, select: selectTerm } = useTermChoice(terms.data ?? NO_TERMS, { scope: 'admin' })
   const courses = useCourses(
     false,
     { term: activeTerm?.code, category: view === 'culture' ? 'culture' : 'language' },

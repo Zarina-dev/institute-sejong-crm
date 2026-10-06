@@ -1,4 +1,4 @@
-import { Card, Empty, Segmented, Skeleton, Table, Typography } from 'antd'
+import { Card, Empty, Skeleton, Table, Typography } from 'antd'
 import type { TableProps } from 'antd'
 import { useMemo, useState } from 'react'
 
@@ -6,23 +6,17 @@ import { usePreferences } from '../../../app/preferences'
 import { useEvents } from '../../../features/events/queries'
 import type { ScheduleEvent } from '../../../features/events/types'
 import { useTerms } from '../../../features/terms/queries'
-import type { AcademicTerm, TermKind } from '../../../features/terms/types'
+import { termDisplayName } from '../../../features/terms/labels'
+import { TermPicker } from '../../../features/terms/TermPicker'
+import type { AcademicTerm } from '../../../features/terms/types'
+import { useTermChoice } from '../../../features/terms/useTermChoice'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { PageHeader } from '../../../shared/PageHeader'
-import { YearSelect } from '../../../shared/YearSelect'
 
 const { Text } = Typography
 
 const NO_EVENTS: ScheduleEvent[] = []
 const NO_TERMS: AcademicTerm[] = []
-const ALL = 'all'
-
-const KIND_LABEL: Record<TermKind, 'terms.first' | 'terms.second' | 'terms.breakKind'> = {
-  first: 'terms.first',
-  second: 'terms.second',
-  break: 'terms.breakKind',
-}
-
 /** Weekday names in both scripts, the way the printed table carries them. */
 const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토']
 const WEEKDAY_KY = ['Жекшем', 'Дүй', 'Шейш', 'Шарш', 'Бейш', 'Жума', 'Ишем']
@@ -43,24 +37,28 @@ export function EventsPage() {
   const all = events.data ?? NO_EVENTS
   const defined = terms.data ?? NO_TERMS
 
-  // Only semesters that actually have events are worth offering.
-  const withEvents = useMemo(() => new Set(all.map((event) => event.termCode).filter(Boolean)), [all])
-  const options = useMemo(() => defined.filter((term) => withEvents.has(term.code)), [defined, withEvents])
+  // The site's semester picker: opens on the semester in progress and greys
+  // out the semesters with no events, rather than hiding them.
+  const { active: activeTerm, select } = useTermChoice(defined)
+  const counts = useMemo(() => {
+    const byTerm = new Map<string, number>()
 
-  const today = new Date().toISOString().slice(0, 10)
-  const current = options.find((term) => term.startDate <= today && today <= term.endDate) ?? null
+    for (const event of all) {
+      if (event.termCode) {
+        byTerm.set(event.termCode, (byTerm.get(event.termCode) ?? 0) + 1)
+      }
+    }
 
-  const [selected, setSelected] = useState<string | null>(null)
-  const activeTerm = selected === ALL ? null : options.find((term) => term.code === selected) ?? current
+    return byTerm
+  }, [all])
 
   /**
    * An event can fall outside every defined semester (the week before a term
-   * opens, say), so the table can always be read whole.
+   * opens, say), so the table can always be read whole — 전체 is this page's
+   * own entry, not a semester, and is not remembered across pages.
    */
-  const showAll = selected === ALL || !activeTerm
-
-  const years = useMemo(() => [...new Set(options.map((term) => String(term.year)))].sort().reverse(), [options])
-  const termsOfYear = useMemo(() => options.filter((term) => String(term.year) === String(activeTerm?.year)), [activeTerm?.year, options])
+  const [wantAll, setWantAll] = useState(false)
+  const showAll = wantAll || !activeTerm
 
   const rows = useMemo(
     () => (showAll ? all : all.filter((event) => event.termCode === activeTerm?.code)),
@@ -146,35 +144,20 @@ export function EventsPage() {
 
       <ErrorAlert error={events.error ?? terms.error} fallback={t('events.loadFailed')} />
 
-      {options.length > 0 ? (
+      {defined.length > 0 ? (
         <Card className="surface-card filter-card">
           <div className="filter-footer">
-            <div className="term-picker">
-              {years.length > 1 ? (
-                <YearSelect
-                  years={years}
-                  value={activeTerm?.year ?? years[0]}
-                  onChange={(value) => {
-                    const ofYear = options.filter((term) => String(term.year) === value)
-                    const next = ofYear.find((term) => term.kind === activeTerm?.kind) ?? ofYear[0]
-
-                    if (next) {
-                      setSelected(next.code)
-                    }
-                  }}
-                />
-              ) : null}
-
-              <Segmented
-                aria-label={t('terms.label')}
-                value={showAll ? ALL : activeTerm?.code}
-                onChange={(value) => setSelected(String(value))}
-                options={[
-                  { value: ALL, label: t('events.allTerms') },
-                  ...termsOfYear.map((term) => ({ value: term.code, label: term.name || t(KIND_LABEL[term.kind]) })),
-                ]}
-              />
-            </div>
+            <TermPicker
+              terms={defined}
+              active={activeTerm}
+              onSelect={(code) => {
+                setWantAll(false)
+                select(code)
+              }}
+              counts={counts}
+              emptyHint={t('terms.noEvents')}
+              all={{ label: t('events.allTerms'), selected: showAll, onSelect: () => setWantAll(true) }}
+            />
 
             <Text type="secondary">{t('events.count', { count: rows.length })}</Text>
           </div>
@@ -188,7 +171,7 @@ export function EventsPage() {
       ) : rows.length > 0 ? (
         <Card className="surface-card">
           <Text className="event-table__caption">
-            {showAll ? t('events.allTerms') : activeTerm?.name || `${activeTerm?.year} · ${t(KIND_LABEL[activeTerm?.kind ?? 'first'])}`}
+            {showAll || !activeTerm ? t('events.allTerms') : termDisplayName(activeTerm, t)}
           </Text>
 
           <Table
