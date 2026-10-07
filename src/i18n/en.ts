@@ -26,7 +26,7 @@ export const en = {
     navigation: 'Navigation',
     skipToContent: 'Skip to main content',
   },
-  theme: { label: 'Theme', light: 'Light', dark: 'Dark' },
+  theme: { label: 'Theme' },
   language: { label: 'Language' },
   session: {
     logout: 'Sign out',

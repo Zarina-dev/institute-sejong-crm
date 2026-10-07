@@ -18,7 +18,7 @@ const ko: LocaleDictionary = {
     navigation: '내비게이션',
     skipToContent: '본문으로 건너뛰기',
   },
-  theme: { label: '테마', light: '라이트', dark: '다크' },
+  theme: { label: '테마' },
   language: { label: '언어' },
   session: {
     logout: '로그아웃',

@@ -18,7 +18,7 @@ const ky: LocaleDictionary = {
     navigation: 'Навигация',
     skipToContent: 'Негизги мазмунга өтүү',
   },
-  theme: { label: 'Тема', light: 'Жарык', dark: 'Караңгы' },
+  theme: { label: 'Тема' },
   language: { label: 'Тил' },
   session: {
     logout: 'Чыгуу',

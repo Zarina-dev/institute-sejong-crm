@@ -34,6 +34,13 @@ function toneFor(subject: string, subjects: string[]) {
  * of the week to click through. The semesters on offer are the ones the
  * institute defined in 학기 관리; nothing here guesses at dates.
  */
+/**
+ * A weekday as short as its button: at most three letters, no trailing dot.
+ * Kyrgyz short names ("шейш.", "шарш.") are otherwise too wide for seven
+ * buttons in a phone's width; the first three letters stay distinct.
+ */
+const weekdayLabel = (name: string) => name.replace(/\.$/, '').slice(0, 3)
+
 export function CalendarPage() {
   const { t, language } = usePreferences()
 
@@ -143,7 +150,7 @@ export function CalendarPage() {
                   aria-pressed={date === day}
                   onClick={() => setDay(date)}
                 >
-                  <span>{dayName.format(value)}</span>
+                  <span>{weekdayLabel(dayName.format(value))}</span>
                   <strong>{value.getDate()}</strong>
                   {count > 0 ? <i aria-hidden="true" /> : null}
                 </button>

@@ -28,7 +28,8 @@ function Winners({ winners }: { winners: CompetitionWinner[] }) {
         title: t('competitions.rank'),
         dataIndex: 'rank',
         key: 'rank',
-        width: 96,
+        // Wide enough for "1 место" with its cup.
+        width: 116,
         render: (rank: number) => (
           <Tag color={RANK_COLOUR[rank - 1] ?? 'default'} icon={rank <= 3 ? <TrophyOutlined /> : undefined}>
             {t('competitions.rankLabel', { rank })}

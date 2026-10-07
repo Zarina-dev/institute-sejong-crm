@@ -18,7 +18,7 @@ const ru: LocaleDictionary = {
     navigation: 'Навигация',
     skipToContent: 'Перейти к основному содержанию',
   },
-  theme: { label: 'Тема', light: 'Светлая', dark: 'Тёмная' },
+  theme: { label: 'Тема' },
   language: { label: 'Язык' },
   session: {
     logout: 'Выйти',

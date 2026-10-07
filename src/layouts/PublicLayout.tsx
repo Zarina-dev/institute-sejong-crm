@@ -9,7 +9,7 @@ import {
   SunOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
-import { Button, Drawer, Dropdown, Layout, Select, Tooltip, Typography } from 'antd'
+import { Button, Drawer, Dropdown, Layout, Select, Typography } from 'antd'
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 
@@ -70,15 +70,14 @@ export function PublicLayout() {
             </div>
 
             <div className="utility-bar__actions">
-              <Tooltip title={t(theme === 'light' ? 'theme.dark' : 'theme.light')}>
-                <Button
-                  type="text"
-                  size="small"
-                  aria-label={t('theme.label')}
-                  icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
-                  onClick={toggleTheme}
-                />
-              </Tooltip>
+              {/* The moon or the sun says it all: no wording beside it. */}
+              <Button
+                type="text"
+                size="small"
+                aria-label={t('theme.label')}
+                icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
+                onClick={toggleTheme}
+              />
               <Select
                 aria-label={t('language.label')}
                 className="language-select"
@@ -176,9 +175,7 @@ export function PublicLayout() {
               {portal.label}
             </Button>
           </NavLink>
-          <Button block icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />} onClick={toggleTheme}>
-            {t(theme === 'light' ? 'theme.dark' : 'theme.light')}
-          </Button>
+          <Button block aria-label={t('theme.label')} icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />} onClick={toggleTheme} />
           <Select
             aria-label={t('language.label')}
             value={language}

@@ -1752,7 +1752,36 @@
 }
 
 .admin-sider.ant-layout-sider {
+  /* Collapsed to zero width, nothing inside may show past its edge. */
+  overflow: hidden;
   background: var(--color-rail);
+}
+
+/* Below the width where the rail collapses (AntD lg), it opens over the
+   page rather than beside it: pushed aside, the page was squeezed to a
+   third of a phone and its words broke mid-letter. */
+@media (max-width: 991px) {
+  .admin-sider.ant-layout-sider {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1001;
+    height: 100vh;
+  }
+
+  .admin-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgb(0 0 0 / 0.45);
+  }
+}
+
+/* On a phone the header keeps its buttons; the page heading below already
+   names the page, so the panel's title stands down rather than be cut. */
+@media (max-width: 560px) {
+  .admin-header h4.ant-typography {
+    display: none;
+  }
 }
 
 .rail {
@@ -3695,16 +3724,19 @@ a.activity-row:hover b {
 .meeting-row__main strong {
   color: var(--color-text);
   font-size: var(--text-md);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
+/* Who came wraps onto another line rather than being cut mid-name. */
 .meeting-row__facts {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-4);
-  overflow: hidden;
   color: var(--color-text-subtle);
   font-size: var(--text-sm);
-  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .meeting-row__files {
@@ -3773,6 +3805,35 @@ a.activity-row:hover b {
     grid-column: 1 / -1;
     justify-content: flex-start;
     max-width: none;
+  }
+}
+
+/* A phone: week and buttons on the first line, the minutes full width below. */
+@media (max-width: 560px) {
+  .meeting-row .ant-card-body {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'week actions'
+      'main main'
+      'files files';
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .meeting-row__week.ant-tag {
+    grid-area: week;
+    justify-self: start;
+  }
+
+  .meeting-row__actions {
+    grid-area: actions;
+  }
+
+  .meeting-row__main {
+    grid-area: main;
+  }
+
+  .meeting-row__files {
+    grid-area: files;
   }
 }
 
@@ -4012,6 +4073,18 @@ button.attachment-chip:hover {
 
   .day-picker__days {
     gap: 2px;
+  }
+
+  /* Seven days in a phone's width: the weekday loses its tracking and a
+     size, so "Mon" / "Дүй" fit their button. */
+  .day-chip {
+    min-width: 0;
+    padding-inline: 0;
+  }
+
+  .day-chip span {
+    font-size: var(--text-2xs);
+    letter-spacing: 0;
   }
 }
 
@@ -4473,6 +4546,9 @@ button.attachment-chip:hover {
 .notice-board,
 .class-board {
   display: grid;
+  /* As wide as the card, not as its longest title: an auto track would
+     grow to fit an unbreakable line and push the dates out of the card. */
+  grid-template-columns: minmax(0, 1fr);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -4501,12 +4577,22 @@ button.attachment-chip:hover {
 
 .notice-board__title {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
   gap: var(--space-2);
-  overflow: hidden;
+  min-width: 0;
   font-size: var(--text-base);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+/* A long title takes a second line rather than pushing the date out; past
+   two it ends in an ellipsis (the full title is on hover and one click away). */
+.notice-board__text {
+  display: -webkit-box;
+  overflow: hidden;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .notice-board time {
@@ -4568,23 +4654,33 @@ button.attachment-chip:hover {
 }
 
 .class-board__name strong {
-  overflow: hidden;
   color: var(--color-text);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .class-board__name .ant-typography {
   font-size: var(--text-sm);
 }
 
+/* A room is a short label: a long one is cut with an ellipsis (full name on
+   hover) so it never squeezes the class name beside it. */
 .class-board__room {
+  max-width: 9.5rem;
+  overflow: hidden;
   padding: 2px var(--space-3);
   border-radius: var(--radius-sm);
   background: var(--color-surface-sunken);
   color: var(--color-text-muted);
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.class-board__room.is-unset {
+  background: transparent;
+  color: var(--color-text-subtle);
 }
 
 /* ---- Programmes ---- */

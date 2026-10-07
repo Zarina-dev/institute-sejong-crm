@@ -15,7 +15,7 @@ import {
   NotificationOutlined,
   SunOutlined,
 } from '@ant-design/icons'
-import { Avatar, Button, Layout, Select, Spin, Tooltip, Typography } from 'antd'
+import { Avatar, Button, Grid, Layout, Select, Spin, Tooltip, Typography } from 'antd'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
@@ -85,6 +85,15 @@ export function AdminLayout() {
   useScrollReset()
   const currentSection = sectionOf(url)
   const [collapsed, setCollapsed] = useState(false)
+  // Below lg the rail opens over the page (see .admin-sider): a backdrop
+  // closes it, and so does going to another page.
+  const narrow = Grid.useBreakpoint().lg === false
+
+  useEffect(() => {
+    if (narrow) {
+      setCollapsed(true)
+    }
+  }, [narrow, url])
 
   // A tab opened from the public site receives the session over the
   // BroadcastChannel a moment after load; don't bounce to /login before then.
@@ -107,6 +116,8 @@ export function AdminLayout() {
       <a className="skip-link" href="#main-content">
         {t('nav.skipToContent')}
       </a>
+
+      {narrow && !collapsed ? <div className="admin-backdrop" role="presentation" onClick={() => setCollapsed(true)} /> : null}
 
       <Sider
         className="admin-sider"
@@ -223,14 +234,12 @@ export function AdminLayout() {
               </Link>
             </Tooltip>
 
-            <Tooltip title={t(theme === 'light' ? 'theme.dark' : 'theme.light')}>
-              <Button
-                className="icon-button"
-                aria-label={t('theme.label')}
-                icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
-                onClick={toggleTheme}
-              />
-            </Tooltip>
+            <Button
+              className="icon-button"
+              aria-label={t('theme.label')}
+              icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
+              onClick={toggleTheme}
+            />
 
             <Select
               aria-label={t('language.label')}

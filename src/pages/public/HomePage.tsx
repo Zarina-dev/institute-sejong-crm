@@ -144,8 +144,8 @@ export function HomePage() {
               {notices.map((post) => (
                 <li key={post.id}>
                   <Link to={`/notices/${post.id}`}>
-                    <span className="notice-board__title">
-                      {post.title}
+                    <span className="notice-board__title" title={post.title}>
+                      <span className="notice-board__text">{post.title}</span>
                       {isNew(post.publishedAt ?? post.createdAt) ? <em className="badge-new">NEW</em> : null}
                     </span>
                     <time>{formatDate(post.publishedAt ?? post.createdAt, language)}</time>
@@ -176,7 +176,13 @@ export function HomePage() {
                       <strong>{item.subject}</strong>
                       {item.teacher ? <Text type="secondary">{item.teacher}</Text> : null}
                     </span>
-                    <span className="class-board__room">{item.classroom ?? '-'}</span>
+                    {item.classroom?.trim() ? (
+                      <span className="class-board__room" title={item.classroom.trim()}>
+                        {item.classroom.trim()}
+                      </span>
+                    ) : (
+                      <span className="class-board__room is-unset">{t('schedule.roomUnset')}</span>
+                    )}
                   </li>
                 ))}
               </ul>
