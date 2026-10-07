@@ -1,22 +1,29 @@
 import DOMPurify from 'dompurify'
 
-import { assetUrl } from '../api/client'
+import { assetUrl, storedMediaPath } from '../api/client'
 
 /**
  * Rich text is stored with *site-relative* image paths (`/uploads/images/…`)
  * so the content survives a change of API host. The browser needs absolute
  * URLs, so paths are expanded at render time and collapsed again on save.
  */
-const ASSET_ORIGIN = assetUrl('/').replace(/\/$/, '')
 const RELATIVE_SRC = /(<img\b[^>]*\bsrc=")(\/uploads\/[^"]+)(")/g
-const ABSOLUTE_SRC = new RegExp(`(<img\\b[^>]*\\bsrc=")${ASSET_ORIGIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\/uploads\\/[^"]+)(")`, 'g')
+const ANY_SRC = /(<img\b[^>]*\bsrc=")([^"]+)(")/g
 
 export function expandAssetUrls(html: string) {
   return html.replace(RELATIVE_SRC, (_, before: string, path: string, after: string) => `${before}${assetUrl(path)}${after}`)
 }
 
+/**
+ * Back to the stored path, whichever address the image was shown from —
+ * the API server or R2 (assetUrl picks R2 when it is configured). Images
+ * from anywhere else are left as they are.
+ */
 export function collapseAssetUrls(html: string) {
-  return html.replace(ABSOLUTE_SRC, '$1$2$3')
+  return html.replace(ANY_SRC, (whole: string, before: string, src: string, after: string) => {
+    const stored = storedMediaPath(src)
+    return stored ? `${before}${stored}${after}` : whole
+  })
 }
 
 const HAS_MARKUP = /<[a-z][\s\S]*>/i

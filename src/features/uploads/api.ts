@@ -17,6 +17,19 @@ export function uploadImage(file: File) {
   return apiPost<UploadedImage>('/uploads/images', formData)
 }
 
+export type UploadedVideo = UploadedImage
+
+export const VIDEO_ACCEPT = 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v'
+/** Kept in step with the API (MAX_VIDEO_SIZE). */
+export const MAX_VIDEO_SIZE = 300 * 1024 * 1024
+
+/** `POST /uploads/videos` — stored in R2 when the API is configured for it. */
+export function uploadVideo(file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return apiPost<UploadedVideo>('/uploads/videos', formData)
+}
+
 export type UploadedDocument = {
   /** Site-relative path (`/uploads/documents/…`). */
   url: string

@@ -30,11 +30,40 @@ export function authedUrl(endpoint: string) {
 const ASSET_ORIGIN = API_BASE_URL.replace(/\/api$/, '')
 
 /**
+ * Where images and videos are read from when they live in Cloudflare R2
+ * (`VITE_MEDIA_BASE_URL`, the bucket's public address — same as the API's
+ * R2_PUBLIC_URL). Unset, they come from the API server as before.
+ */
+export const MEDIA_BASE_URL = (import.meta.env.VITE_MEDIA_BASE_URL || '').replace(/\/+$/, '')
+
+/** `/uploads/images/x.png` → `images/x.png`; null for anything not in R2 (documents stay on the API). */
+const MEDIA_PATH = /^\/uploads\/((?:images|videos)\/[^/?#]+)$/
+
+/**
  * Absolute URL for a site-relative asset path stored by the API
- * (`/uploads/images/…`). Absolute URLs pass through untouched.
+ * (`/uploads/images/…`). Images and videos go straight to R2 when it is
+ * configured — records keep the same path either way. Absolute URLs pass
+ * through untouched.
  */
 export function assetUrl(path: string) {
-  return /^https?:\/\//.test(path) ? path : `${ASSET_ORIGIN}${path.startsWith('/') ? '' : '/'}${path}`
+  if (/^https?:\/\//.test(path)) {
+    return path
+  }
+
+  const media = MEDIA_BASE_URL ? MEDIA_PATH.exec(path) : null
+  return media ? `${MEDIA_BASE_URL}/${media[1]}` : `${ASSET_ORIGIN}${path.startsWith('/') ? '' : '/'}${path}`
+}
+
+/** The reverse of assetUrl for images and videos — what a record stores. */
+export function storedMediaPath(url: string) {
+  for (const base of [MEDIA_BASE_URL, ASSET_ORIGIN].filter(Boolean)) {
+    const prefix = base === MEDIA_BASE_URL ? `${base}/` : `${base}/uploads/`
+    if (url.startsWith(prefix)) {
+      const rest = url.slice(prefix.length)
+      if (/^(images|videos)\/[^/?#]+$/.test(rest)) return `/uploads/${rest}`
+    }
+  }
+  return null
 }
 
 function buildQueryString(params: QueryParams) {
