@@ -26,7 +26,8 @@ export type MaterialItem = {
   fileType?: string | null
   fileSize?: number | null
   originalFileName?: string | null
-  storageKey?: string | null
+  /** Whether there is a file to download (where it is stored stays on the server). */
+  hasFile?: boolean
   thumbnailUrl?: string | null
   isPublished: boolean
   createdAt: string

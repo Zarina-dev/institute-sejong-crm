@@ -39,8 +39,8 @@ export const MaterialCard = memo(function MaterialCard({ item }: { item: Materia
           type="primary"
           size="small"
           icon={<DownloadOutlined />}
-          disabled={!item.storageKey}
-          href={item.storageKey ? apiUrl(`/materials/${item.id}/download`) : undefined}
+          disabled={!item.hasFile}
+          href={item.hasFile ? apiUrl(`/materials/${item.id}/download`) : undefined}
           target="_blank"
           rel="noopener noreferrer"
         >
