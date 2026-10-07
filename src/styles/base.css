@@ -111,3 +111,13 @@ video {
     scroll-behavior: auto !important;
   }
 }
+
+/* The blinking text cursor is set, not left to the browser: left alone it
+   takes the text colour the browser picks, which could come out white on a
+   white field. The brand blue is visible on every field and editor. */
+input,
+textarea,
+[contenteditable='true'],
+.ant-select-selection-search-input {
+  caret-color: var(--color-caret);
+}

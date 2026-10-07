@@ -93,6 +93,9 @@
   --color-primary-soft: var(--brand-50);
   --color-primary-soft-hover: var(--brand-100);
   --color-primary-text: var(--brand-600);
+  /* The text cursor: the brand blue that reads on the surface behind it
+     (deep on white, light on the dark surfaces — it follows primary-text). */
+  --color-caret: var(--color-primary-text);
   --color-on-primary: var(--neutral-0);
 
   --color-success: var(--emerald-500);
