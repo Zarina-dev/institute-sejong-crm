@@ -743,6 +743,36 @@
   min-width: 0;
 }
 
+/* 작업 기록: the record's type, name and changed fields read top to bottom. */
+.audit-when,
+.audit-record {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.audit-stacked {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.audit-stacked__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.audit-record .ant-typography {
+  overflow-wrap: anywhere;
+}
+
+.audit-when__ip,
+.audit-record__changes {
+  font-size: var(--text-sm);
+}
+
 /* --- Editable catalog picker (과목 / 과정) --- */
 
 .catalog-option {

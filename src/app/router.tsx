@@ -39,6 +39,7 @@ const MeetingsAdminPage = lazy(() => import('../pages/admin/MeetingsAdminPage').
 const TermsAdminPage = lazy(() => import('../pages/admin/TermsAdminPage').then((m) => ({ default: m.TermsAdminPage })))
 const ChronologyAdminPage = lazy(() => import('../pages/admin/ChronologyAdminPage').then((m) => ({ default: m.ChronologyAdminPage })))
 const EventsAdminPage = lazy(() => import('../pages/admin/EventsAdminPage').then((m) => ({ default: m.EventsAdminPage })))
+const AuditAdminPage = lazy(() => import('../pages/admin/AuditAdminPage').then((m) => ({ default: m.AuditAdminPage })))
 const TrashAdminPage = lazy(() => import('../pages/admin/TrashAdminPage').then((m) => ({ default: m.TrashAdminPage })))
 
 function RouteFallback() {
@@ -119,6 +120,7 @@ export function AppRouter() {
           <Route path="studies" element={<StudiesAdminPage />} />
           <Route path="meetings" element={<MeetingsAdminPage />} />
           <Route path="trash" element={<TrashAdminPage />} />
+          <Route path="audit" element={<AuditAdminPage />} />
         </Route>
       </Routes>
     </Suspense>

@@ -4,6 +4,7 @@ import {
   BookOutlined,
   DashboardOutlined,
   DownOutlined,
+  HistoryOutlined,
   HomeOutlined,
   IdcardOutlined,
   LogoutOutlined,
@@ -24,7 +25,7 @@ import { clearSession } from '../auth/session'
 import { useSession, useSessionResolving } from '../auth/useSession'
 import { BrandMark } from '../shared/BrandMark'
 import { useScrollReset } from '../shared/useScrollReset'
-import { adminDashboard, adminNavigation, adminTrash, type AdminNavGroup } from './adminNavigation'
+import { adminAudit, adminDashboard, adminNavigation, adminTrash, type AdminNavGroup } from './adminNavigation'
 
 const { Content, Header, Sider } = Layout
 const { Title } = Typography
@@ -110,7 +111,6 @@ export function AdminLayout() {
     navigate('/login', { replace: true })
   }
 
-
   return (
     <Layout className="admin-shell" hasSider>
       <a className="skip-link" href="#main-content">
@@ -119,15 +119,7 @@ export function AdminLayout() {
 
       {narrow && !collapsed ? <div className="admin-backdrop" role="presentation" onClick={() => setCollapsed(true)} /> : null}
 
-      <Sider
-        className="admin-sider"
-        width={260}
-        collapsedWidth={0}
-        collapsed={collapsed}
-        breakpoint="lg"
-        onBreakpoint={setCollapsed}
-        trigger={null}
-      >
+      <Sider className="admin-sider" width={260} collapsedWidth={0} collapsed={collapsed} breakpoint="lg" onBreakpoint={setCollapsed} trigger={null}>
         <div className="rail">
           <Link to="/" className="rail-brand">
             <BrandMark size={32} />
@@ -150,16 +142,8 @@ export function AdminLayout() {
               const current = group === currentSection
 
               return (
-                <div
-                  className={`rail-group${expanded ? ' is-open' : ''}${current ? ' is-current' : ''}`}
-                  key={group.labelKey}
-                >
-                  <button
-                    type="button"
-                    className="rail-group__toggle"
-                    aria-expanded={expanded}
-                    onClick={() => toggle(group.labelKey)}
-                  >
+                <div className={`rail-group${expanded ? ' is-open' : ''}${current ? ' is-current' : ''}`} key={group.labelKey}>
+                  <button type="button" className="rail-group__toggle" aria-expanded={expanded} onClick={() => toggle(group.labelKey)}>
                     {SECTION_ICON[group.labelKey]}
                     <span className="rail-group__title">{t(group.labelKey)}</span>
                     <DownOutlined className="rail-group__chevron" />
@@ -177,17 +161,17 @@ export function AdminLayout() {
                             </span>
                           </Tooltip>
                         ) : (
-                        <NavLink
-                          key={item.to}
-                          to={item.to}
-                          // NavLink matches on the path alone and several
-                          // entries share a page, so the full URL — query
-                          // included — decides which one is active. The
-                          // callback form also suppresses NavLink's own class.
-                          className={() => (item.to === url ? 'rail-sublink active' : 'rail-sublink')}
-                        >
-                          {t(item.labelKey)}
-                        </NavLink>
+                          <NavLink
+                            key={item.to}
+                            to={item.to}
+                            // NavLink matches on the path alone and several
+                            // entries share a page, so the full URL — query
+                            // included — decides which one is active. The
+                            // callback form also suppresses NavLink's own class.
+                            className={() => (item.to === url ? 'rail-sublink active' : 'rail-sublink')}
+                          >
+                            {t(item.labelKey)}
+                          </NavLink>
                         ),
                       )}
                     </div>
@@ -199,6 +183,10 @@ export function AdminLayout() {
             <NavLink className="rail-link rail-link--trash" to={adminTrash.to}>
               <RestOutlined />
               <span>{t(adminTrash.labelKey)}</span>
+            </NavLink>
+            <NavLink className="rail-link" to={adminAudit.to}>
+              <HistoryOutlined />
+              <span>{t(adminAudit.labelKey)}</span>
             </NavLink>
           </nav>
 

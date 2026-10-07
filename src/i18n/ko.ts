@@ -30,6 +30,7 @@ const ko: LocaleDictionary = {
     signedInAs: '로그인 계정',
   },
   adminNav: {
+    audit: '작업 기록',
     trash: '최근 삭제된 항목',
     meetingsSection: '회의',
     meetingsItem: '회의록',
@@ -114,6 +115,40 @@ const ko: LocaleDictionary = {
       meetings: '회의록',
       chronology: '연혁',
       terms: '학기',
+    },
+  },
+  audit: {
+    title: '작업 기록',
+    subtitle: '관리자 페이지에서 누가, 언제, 무엇을 바꾸었는지 확인합니다.',
+    policy: '모든 변경 사항은 로그인을 포함해 자동으로 기록됩니다. 기록은 1년 동안 보관됩니다.',
+    searchPlaceholder: '이름 또는 사용자로 검색',
+    count: '{{count}}건',
+    resetFilters: '필터 초기화',
+    empty: '아직 기록된 작업이 없습니다.',
+    noMatches: '조건에 맞는 기록이 없습니다.',
+    loadFailed: '작업 기록을 불러오지 못했습니다.',
+    system: '시스템 (자동 정리)',
+    changedFields: '변경 항목: {{fields}}',
+    table: {
+      at: '일시 · 사용자',
+      action: '작업',
+      record: '대상',
+    },
+    actions: {
+      create: '추가',
+      update: '수정',
+      publish: '공개',
+      unpublish: '비공개',
+      reorder: '순서 변경',
+      delete: '삭제',
+      restore: '복원',
+      purge: '영구 삭제',
+      login: '로그인',
+      login_failed: '로그인 실패',
+    },
+    types: {
+      content: '사이트 콘텐츠',
+      gallery: '사진 앨범',
     },
   },
   preview: {
@@ -340,7 +375,7 @@ const ko: LocaleDictionary = {
     adminSubtitle: '공지를 작성하고 초안을 보관하며 사이트에 보여줄 내용을 선택합니다.',
     empty: '등록된 공지가 없습니다.',
     count_other: '공지 {{count}}건',
-    category: { academic: '학사', events: '행사', campus: '캠퍼스', admissions: '입학' , press: '보도' },
+    category: { academic: '학사', events: '행사', campus: '캠퍼스', admissions: '입학', press: '보도' },
     add: '공지 작성',
     addTitle: '공지 작성',
     editTitle: '공지 수정',
@@ -545,7 +580,8 @@ const ko: LocaleDictionary = {
     ksi: {
       kicker: '세종학당',
       title: '세종학당이란?',
-      intro: '세종학당은 대한민국 문화체육관광부와 세종학당재단이 전 세계에 운영하는 공식 한국어·한국문화 교육 기관입니다. 모든 학당은 표준 교재 「세종한국어」로 같은 교육과정을 운영합니다.',
+      intro:
+        '세종학당은 대한민국 문화체육관광부와 세종학당재단이 전 세계에 운영하는 공식 한국어·한국문화 교육 기관입니다. 모든 학당은 표준 교재 「세종한국어」로 같은 교육과정을 운영합니다.',
       stat1Value: '2007년',
       stat1Label: '첫 학당 개원',
       stat2Value: '89개국 273개소',
@@ -557,8 +593,10 @@ const ko: LocaleDictionary = {
     osh: {
       kicker: '오시 1',
       title: '오시 1 세종학당',
-      intro: '오시 1 세종학당은 2011년 키르기스스탄 오시에 문을 연 세종학당으로, 오시국립대학교와 함께 운영되고 있습니다. 한국어를 처음 배우는 분부터 한국 유학과 취업을 준비하는 분까지, 지역 학습자들이 한국어와 한국 문화를 만나는 곳입니다.',
-      detail: 'Isanova 81에 자리한 학당에는 강의실과 학습 자료실을 갖추고 있으며, 한국어 교원과 운영진이 상주합니다. 수업은 학기제로 운영되고 수강료는 없으며, 교재비만 부담하시면 됩니다. 학기별 개설 반과 수업 시간은 교육과정 페이지에서 확인하실 수 있습니다.',
+      intro:
+        '오시 1 세종학당은 2011년 키르기스스탄 오시에 문을 연 세종학당으로, 오시국립대학교와 함께 운영되고 있습니다. 한국어를 처음 배우는 분부터 한국 유학과 취업을 준비하는 분까지, 지역 학습자들이 한국어와 한국 문화를 만나는 곳입니다.',
+      detail:
+        'Isanova 81에 자리한 학당에는 강의실과 학습 자료실을 갖추고 있으며, 한국어 교원과 운영진이 상주합니다. 수업은 학기제로 운영되고 수강료는 없으며, 교재비만 부담하시면 됩니다. 학기별 개설 반과 수업 시간은 교육과정 페이지에서 확인하실 수 있습니다.',
       item1Title: '한국어 수업',
       item1Text: '세종한국어 1~6단계를 소규모 반으로 운영하며, 한국어능력시험(TOPIK)을 준비하는 학습자를 위한 대비반을 별도로 개설합니다.',
       item2Title: '문화 프로그램',
