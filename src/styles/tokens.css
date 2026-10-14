@@ -121,9 +121,13 @@
   --color-focus-ring: rgb(36 107 253 / 0.32);
   --color-overlay: rgb(15 23 42 / 0.45);
 
+  /* 꿈의 동산: a green garden with the morning sun in its corner — warm, and
+     the colours of the institute's 10th-anniversary book. */
   --gradient-hero:
-    radial-gradient(circle at 88% 10%, var(--brand-400) 0, transparent 31%),
-    linear-gradient(124deg, var(--brand-900) 0%, #16449b 55%, var(--brand-500) 100%);
+    radial-gradient(circle at 90% 6%, rgb(255 226 160 / 0.7) 0, rgb(255 190 110 / 0.32) 12%, rgb(255 170 90 / 0.1) 26%, transparent 42%),
+    linear-gradient(124deg, #12382a 0%, #1c573c 48%, #3f7d47 100%);
+  --hero-text-soft: #eef6e8;
+  --hero-action-text: #1e5b3d;
   --gradient-about: linear-gradient(125deg, #12264e, #215cc2);
   --gradient-progress: linear-gradient(90deg, var(--brand-500), var(--brand-300));
 
@@ -281,8 +285,10 @@
   --shadow-primary: 0 6px 14px rgb(0 0 0 / 0.35);
 
   --gradient-hero:
-    radial-gradient(circle at 88% 10%, #2f66c9 0, transparent 31%),
-    linear-gradient(124deg, #0a1731 0%, #10306f 55%, #1b52c4 100%);
+    radial-gradient(circle at 90% 6%, rgb(255 210 140 / 0.38) 0, rgb(255 180 100 / 0.16) 12%, rgb(255 160 80 / 0.05) 26%, transparent 42%),
+    linear-gradient(124deg, #0b2219 0%, #143f2b 50%, #2f5f30 100%);
+  --hero-text-soft: #dfeedd;
+  --hero-action-text: #143f2b;
   --gradient-about: linear-gradient(125deg, #0d1c38, #1a4483);
   --gradient-progress: linear-gradient(90deg, var(--brand-400), var(--brand-200));
 }

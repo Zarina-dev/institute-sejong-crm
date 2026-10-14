@@ -5,6 +5,7 @@ import {
   EnvironmentOutlined,
   FolderOpenOutlined,
   NotificationOutlined,
+  PhoneOutlined,
   PictureOutlined,
   PlusOutlined,
   ReadOutlined,
@@ -26,6 +27,7 @@ import { useTerms } from '../../features/terms/queries'
 import type { AcademicTerm } from '../../features/terms/types'
 import { termInProgress } from '../../features/terms/current'
 import { academicYear } from '../../shared/academicYear'
+import { CallButton } from '../../shared/CallButton'
 import { formatDate } from '../../shared/format'
 
 const { Title, Paragraph, Text } = Typography
@@ -112,11 +114,9 @@ export function HomePage() {
                 {t('home.explore')}
               </Button>
             </Link>
-            <a href={phoneHref}>
-              <Button className="hero-secondary" size="large" icon={<TeamOutlined />}>
-                {t('home.enquire')}
-              </Button>
-            </a>
+            <CallButton className="hero-secondary" icon={<PhoneOutlined />}>
+              {t('home.enquire')}
+            </CallButton>
           </div>
         </div>
       </section>
