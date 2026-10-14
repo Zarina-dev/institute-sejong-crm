@@ -501,7 +501,7 @@ export const en = {
     linksFallback: 'Links to the Nuri-Sejong Institute and the official TOPIK site will be published here.',
     historyTitle: 'Our story',
     historySubtitle:
-      'The institute’s events and competitions since 2011, a year at a time — the results of each competition beside the photos of the day.',
+      'The institute’s events and competitions since 2013, a year at a time — the results of each competition beside the photos of the day.',
     historyKind: 'Show',
     openMap: 'Open in Google Maps',
     address: 'Address',
@@ -616,7 +616,7 @@ export const en = {
       kicker: 'Osh 1',
       title: 'King Sejong Institute Osh 1',
       intro:
-        'King Sejong Institute Osh 1 opened in Osh, Kyrgyzstan in 2011 and is run together with Osh State University. It is where learners of this region meet Korean — from a first alphabet class to preparation for study and work in Korea.',
+        'King Sejong Institute Osh 1 opened in Osh, Kyrgyzstan in 2013 and is run together with Osh Technological University. It is where learners of this region meet Korean — from a first alphabet class to preparation for study and work in Korea.',
       detail:
         'The institute at Isanova 81 has its own classrooms and a materials room, with Korean teachers and administrative staff on site. Classes run by semester and tuition is free; learners pay only for their textbooks. Which classes are open this semester, and when they meet, is on the Programmes page.',
       item1Title: 'Korean classes',
