@@ -1,4 +1,13 @@
-import { BookOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, LinkOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
+import {
+  BookOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  LinkOutlined,
+  MoreOutlined,
+  PlusOutlined,
+} from '@ant-design/icons'
 import type { TableProps } from 'antd'
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
@@ -17,10 +26,13 @@ import { PageHeader } from '../../shared/PageHeader'
 import { DragHandle, SortableRow } from '../../shared/SortableRow'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
+import { TranslationFields } from '../../shared/TranslationFields'
+import type { Translations } from '../../shared/translations'
 
 const { Text } = Typography
 
 type TextbookFormValues = {
+  translations?: Translations
   title: string
   description?: string
   coverImage: string | null
@@ -91,6 +103,7 @@ export function TextbooksAdminPage() {
         purchasePlace: textbook.purchasePlace,
         purchaseUrl: textbook.purchaseUrl ?? '',
         isPublished: textbook.isPublished,
+        translations: textbook.translations ?? {},
       })
       setModalOpen(true)
     },
@@ -288,7 +301,11 @@ export function TextbooksAdminPage() {
           <Form.Item name="coverImage" label={t('textbooks.form.cover')}>
             <ImageUploadField shape="wide" hint={t('textbooks.form.coverHint')} />
           </Form.Item>
-          <Form.Item name="title" label={t('textbooks.form.title')} rules={[{ required: true, whitespace: true, message: t('textbooks.form.titleRequired') }]}>
+          <Form.Item
+            name="title"
+            label={t('textbooks.form.title')}
+            rules={[{ required: true, whitespace: true, message: t('textbooks.form.titleRequired') }]}
+          >
             <Input maxLength={255} />
           </Form.Item>
           <Form.Item name="description" label={t('textbooks.form.description')} extra={t('textbooks.form.descriptionHint')}>
@@ -300,6 +317,13 @@ export function TextbooksAdminPage() {
           <Form.Item name="purchaseUrl" label={t('textbooks.form.purchaseUrl')}>
             <Input placeholder="https://" maxLength={500} />
           </Form.Item>
+          <TranslationFields
+            fields={[
+              { name: 'title', label: 'textbooks.form.title', maxLength: 255 },
+              { name: 'description', label: 'textbooks.form.description', kind: 'textarea', maxLength: 4000 },
+              { name: 'purchasePlace', label: 'textbooks.form.purchasePlace', maxLength: 255 },
+            ]}
+          />
           <Form.Item name="isPublished" label={t('textbooks.form.published')} valuePropName="checked">
             <Switch />
           </Form.Item>

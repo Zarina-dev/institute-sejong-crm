@@ -42,9 +42,7 @@ export const SessionsEditor = memo(function SessionsEditor({ disabled }: { disab
                     ({ getFieldValue }) => ({
                       validator: (_, value?: string) => {
                         const start = getFieldValue(['sessions', field.name, 'startTime'])
-                        return !value || !start || value > start
-                          ? Promise.resolve()
-                          : Promise.reject(new Error(t('courses.sessions.endAfterStart')))
+                        return !value || !start || value > start ? Promise.resolve() : Promise.reject(new Error(t('courses.sessions.endAfterStart')))
                       },
                     }),
                   ]}

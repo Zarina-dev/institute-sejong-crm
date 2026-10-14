@@ -4,7 +4,22 @@
  * with a message, instead of after a full upload.
  */
 export const ALLOWED_MATERIAL_EXTENSIONS = [
-  'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'hwp', 'hwpx', 'txt', 'zip', 'jpg', 'jpeg', 'png', 'mp4', 'webm',
+  'pdf',
+  'doc',
+  'docx',
+  'ppt',
+  'pptx',
+  'xls',
+  'xlsx',
+  'hwp',
+  'hwpx',
+  'txt',
+  'zip',
+  'jpg',
+  'jpeg',
+  'png',
+  'mp4',
+  'webm',
 ] as const
 
 export const MAX_MATERIAL_FILE_SIZE = 10 * 1024 * 1024

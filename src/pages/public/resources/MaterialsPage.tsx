@@ -63,12 +63,7 @@ export function MaterialsPage() {
             </div>
           ) : (
             <Tooltip title={t('common.search')}>
-              <Button
-                className="icon-button"
-                icon={<SearchOutlined />}
-                aria-label={t('common.search')}
-                onClick={() => setSearchOpen(true)}
-              />
+              <Button className="icon-button" icon={<SearchOutlined />} aria-label={t('common.search')} onClick={() => setSearchOpen(true)} />
             </Tooltip>
           )
         }

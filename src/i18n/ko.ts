@@ -194,7 +194,8 @@ const ko: LocaleDictionary = {
     programmesTitle: '개설 과정',
     heroTag: '2026 / 2027 학년도',
     heroTitle: '꿈의 동산 – 오시 1세종학당',
-    heroCopy: '초급부터 TOPIK까지의 과정, 주간 시간표, 학습 자료, 학당 소식을 한곳에서 확인하세요.',
+    heroCopy:
+      '꿈이 있으면 길도 생깁니다. 2013년부터 오시에서 한국어와 한국 문화를 가르치며, 한국 유학과 저마다의 꿈을 향해 나아가는 학생들과 함께하고 있습니다.',
     explore: '과정 둘러보기',
     calendar: '학사 일정',
     weekTitle: '이번 주 일정',
@@ -552,6 +553,11 @@ const ko: LocaleDictionary = {
       camp: '한국 대학생들과 캠프',
       ska: 'SKA 시험',
       topik: '토픽 시험',
+      culture: '한국 문화 행사',
+      kpop: 'K-POP·노래 대회',
+      quiz: '퀴즈 대회',
+      olympiad: '한국학 올림피아드',
+      awards: '대외 대회 수상',
       other: '기타',
     },
   },
@@ -1021,7 +1027,8 @@ const ko: LocaleDictionary = {
     title: '한국 유학 현황',
     subtitle: '학당이 한국으로 보낸 유학생들의 기록입니다. 최근에 유학 간 학생부터 보여 드리며, 번호는 첫 유학생부터 매긴 순서입니다.',
     adminTitle: '한국 유학 현황 관리',
-    adminSubtitle: '학당 발자취 › 한국 유학 현황에 표시되는 명단입니다. 최근 연도부터 나오며, 번호는 첫 유학생부터 매긴 순서라 따로 매기지 않아도 됩니다.',
+    adminSubtitle:
+      '학당 발자취 › 한국 유학 현황에 표시되는 명단입니다. 최근 연도부터 나오며, 번호는 첫 유학생부터 매긴 순서라 따로 매기지 않아도 됩니다.',
     empty: '등록된 유학생이 없습니다.',
     add: '유학생 추가',
     addTitle: '유학생 추가',
@@ -1064,7 +1071,8 @@ const ko: LocaleDictionary = {
     title: '졸업생 현황',
     subtitle: '세종한국어 8책까지 모두 마치고 졸업한 학생들입니다. 최근에 졸업한 학기부터 보여 드립니다.',
     adminTitle: '졸업생 현황 관리',
-    adminSubtitle: '학당 발자취 › 졸업생 현황에 표시되는 명단입니다. 최근 학기부터 나오며, 졸업생 번호는 첫 졸업생부터 매긴 순서라 따로 매기지 않아도 됩니다.',
+    adminSubtitle:
+      '학당 발자취 › 졸업생 현황에 표시되는 명단입니다. 최근 학기부터 나오며, 졸업생 번호는 첫 졸업생부터 매긴 순서라 따로 매기지 않아도 됩니다.',
     searchPlaceholder: '이름·비고로 검색',
     count_other: '{{count}}명',
     found: '전체 {{total}}명 중 {{count}}명',
@@ -1090,6 +1098,11 @@ const ko: LocaleDictionary = {
       note: '비고',
       noteHint: '졸업 후 진로를 적으세요: 장학생 선발, 대학 진학, 취업 등.',
     },
+  },
+  translations: {
+    title: '다른 언어',
+    none: '아직 번역 없음',
+    hint: '영어·러시아어·키르기스어 내용입니다. 비워 둔 칸은 사이트에 한국어로 표시됩니다.',
   },
 }
 

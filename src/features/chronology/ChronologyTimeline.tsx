@@ -2,6 +2,8 @@ import { Typography } from 'antd'
 import { useMemo } from 'react'
 
 import type { ChronologyEntry } from './types'
+import { usePreferences } from '../../app/preferences'
+import { translated } from '../../shared/translations'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -22,6 +24,7 @@ const monthLabel = (entry: ChronologyEntry) => (entry.month ? String(entry.month
  * history feel like the timeline unrolling rather than a list appearing.
  */
 export function ChronologyTimeline({ entries, compact = false }: ChronologyTimelineProps) {
+  const { language } = usePreferences()
   // The API sorts; this only cuts the list into blocks so a year is announced once.
   const years = useMemo(() => {
     const byYear = new Map<number, ChronologyEntry[]>()
@@ -50,18 +53,14 @@ export function ChronologyTimeline({ entries, compact = false }: ChronologyTimel
               const delay = `${Math.min(position++, 14) * 45}ms`
 
               return (
-                <li
-                  className={`chronology__entry${entry.isMilestone ? ' is-milestone' : ''}`}
-                  key={entry.id}
-                  style={{ animationDelay: delay }}
-                >
+                <li className={`chronology__entry${entry.isMilestone ? ' is-milestone' : ''}`} key={entry.id} style={{ animationDelay: delay }}>
                   <span className="chronology__month">{monthLabel(entry)}</span>
 
                   <div className="chronology__body">
-                    <Text className="chronology__title">{entry.title}</Text>
+                    <Text className="chronology__title">{translated(entry, 'title', language)}</Text>
                     {entry.description && !compact ? (
                       <Paragraph type="secondary" className="chronology__description">
-                        {entry.description}
+                        {translated(entry, 'description', language)}
                       </Paragraph>
                     ) : null}
                   </div>

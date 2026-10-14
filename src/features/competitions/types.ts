@@ -16,6 +16,12 @@ export const BUILTIN_COMPETITION_KINDS = [
   'camp',
   'ska',
   'topik',
+  // Kinds the institute's 10th-anniversary book needed.
+  'culture',
+  'kpop',
+  'quiz',
+  'olympiad',
+  'awards',
   'other',
 ] as const
 export type CompetitionKind = string
@@ -25,6 +31,8 @@ export type CompetitionWinner = {
   rank: number
   name: string
   note?: string | null
+  /** The name (in Cyrillic or Latin) and note in the other languages. */
+  translations?: Translations<'name' | 'note'>
 }
 
 export type Competition = {
@@ -43,6 +51,8 @@ export type Competition = {
   images: string[]
   albumUrl: string | null
   isPublished: boolean
+  /** Title, venue and summary (HTML) in English, Russian and Kyrgyz. */
+  translations?: Translations<'title' | 'venue' | 'summary'>
   createdAt: string
   updatedAt: string
 }
@@ -60,4 +70,7 @@ export type CompetitionInput = {
   images?: string[]
   albumUrl?: string | null
   isPublished?: boolean
+  translations?: Translations<'title' | 'venue' | 'summary'>
 }
+
+import type { Translations } from '../../shared/translations'

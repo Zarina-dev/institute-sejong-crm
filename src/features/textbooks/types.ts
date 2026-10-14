@@ -13,6 +13,8 @@ export type Textbook = {
   isPublished: boolean
   createdAt: string
   updatedAt: string
+  /** In English, Russian and Kyrgyz; the Korean stands in for any not written. */
+  translations?: Translations<'title' | 'description' | 'purchasePlace'>
 }
 
 export type TextbookInput = {
@@ -23,4 +25,7 @@ export type TextbookInput = {
   purchaseUrl?: string | null
   sortOrder?: number
   isPublished?: boolean
+  translations?: Translations<'title' | 'description' | 'purchasePlace'>
 }
+
+import type { Translations } from '../../shared/translations'

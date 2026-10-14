@@ -1,13 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import {
-  createMaterial,
-  deleteMaterial,
-  getMaterials,
-  publishMaterial,
-  unpublishMaterial,
-  updateMaterial,
-} from './api'
+import { createMaterial, deleteMaterial, getMaterials, publishMaterial, unpublishMaterial, updateMaterial } from './api'
 import type { MaterialsFilters } from './types'
 
 /**
@@ -56,8 +49,7 @@ export function useUpdateMaterial() {
   const invalidate = useInvalidateMaterials()
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: Record<string, unknown> }) =>
-      updateMaterial(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: Record<string, unknown> }) => updateMaterial(id, payload),
     onSuccess: invalidate,
   })
 }
@@ -75,8 +67,7 @@ export function useSetMaterialPublished() {
   const invalidate = useInvalidateMaterials()
 
   return useMutation({
-    mutationFn: ({ id, published }: { id: string; published: boolean }) =>
-      published ? publishMaterial(id) : unpublishMaterial(id),
+    mutationFn: ({ id, published }: { id: string; published: boolean }) => (published ? publishMaterial(id) : unpublishMaterial(id)),
     onSuccess: invalidate,
   })
 }

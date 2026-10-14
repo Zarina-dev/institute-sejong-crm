@@ -11,6 +11,7 @@ import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { formatDate } from '../../../shared/format'
 import { HeaderSearch, matchesQuery } from '../../../shared/HeaderSearch'
 import { PageHeader } from '../../../shared/PageHeader'
+import { translated } from '../../../shared/translations'
 
 const { Title, Paragraph, Text } = Typography
 
@@ -40,8 +41,8 @@ function StaffCard({ member, status }: { member: StaffMember; status: StaffStatu
       <div className="staff-card__head">
         <Avatar size={72} src={member.photoUrl ? assetUrl(member.photoUrl) : undefined} icon={<UserOutlined />} alt="" />
         <div>
-          <Title level={3}>{member.name}</Title>
-          <Text className="staff-card__position">{member.position}</Text>
+          <Title level={3}>{translated(member, 'name', language)}</Title>
+          <Text className="staff-card__position">{translated(member, 'position', language)}</Text>
         </div>
       </div>
       {period ? (
@@ -49,7 +50,7 @@ function StaffCard({ member, status }: { member: StaffMember; status: StaffStatu
           <CalendarOutlined /> {period}
         </Text>
       ) : null}
-      {member.bio ? <Paragraph className="staff-card__bio">{member.bio}</Paragraph> : null}
+      {member.bio ? <Paragraph className="staff-card__bio">{translated(member, 'bio', language)}</Paragraph> : null}
       {/* A former colleague's address is no longer how to reach the institute. */}
       {member.email && status !== 'former' ? (
         <a className="staff-card__email" href={`mailto:${member.email}`}>
@@ -80,7 +81,7 @@ function StaffGrid({ members }: { members: Array<{ member: StaffMember; status: 
  * Each status is read off the member's dates, so it turns over by itself.
  */
 export function StaffPage() {
-  const { t } = usePreferences()
+  const { t, language } = usePreferences()
   const staff = usePublishedStaff()
   const members = staff.data ?? NO_STAFF
   const [search, setSearch] = useState('')
@@ -89,9 +90,19 @@ export function StaffPage() {
   const withStatus = useMemo(
     () =>
       members
-        .filter((member) => matchesQuery(search, [member.name, member.position, member.bio, member.email]))
+        .filter((member) =>
+          matchesQuery(search, [
+            member.name,
+            member.position,
+            member.bio,
+            member.email,
+            translated(member, 'name', language),
+            translated(member, 'position', language),
+            translated(member, 'bio', language),
+          ]),
+        )
         .map((member) => ({ member, status: staffStatus(member) })),
-    [members, search],
+    [language, members, search],
   )
   const searching = search.trim().length > 0
   const current = useMemo(() => withStatus.filter((entry) => entry.status !== 'former'), [withStatus])

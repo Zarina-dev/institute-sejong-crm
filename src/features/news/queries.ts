@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { dashboardKeys } from '../dashboard/queries'
 import { createNews, deleteNews, getAllNews, getNewsPost, getPublishedNews, setNewsPublished, updateNews } from './api'
 import type { NewsInput } from './types'
+import { usePreferences } from '../../app/preferences'
+import { localizePost } from '../../shared/localize'
 
 export const newsKeys = {
   all: ['news'] as const,
@@ -12,11 +14,22 @@ export const newsKeys = {
 }
 
 export function usePublishedNews(limit?: number) {
-  return useQuery({ queryKey: newsKeys.published(limit), queryFn: () => getPublishedNews(limit) })
+  const { language } = usePreferences()
+  return useQuery({
+    queryKey: newsKeys.published(limit),
+    queryFn: () => getPublishedNews(limit),
+    select: (posts) => posts.map((post) => localizePost(post, language)),
+  })
 }
 
 export function useNewsPost(id: string | undefined) {
-  return useQuery({ queryKey: newsKeys.detail(id ?? ''), queryFn: () => getNewsPost(id!), enabled: Boolean(id) })
+  const { language } = usePreferences()
+  return useQuery({
+    queryKey: newsKeys.detail(id ?? ''),
+    queryFn: () => getNewsPost(id!),
+    enabled: Boolean(id),
+    select: (post) => localizePost(post, language),
+  })
 }
 
 export function useAllNews() {

@@ -13,6 +13,8 @@ export type ChronologyEntry = {
   /** Founding, accreditation, a new building — drawn larger on the timeline. */
   isMilestone: boolean
   isPublished: boolean
+  /** Title and description in English, Russian and Kyrgyz; the Korean stands in for any not written. */
+  translations?: Translations<'title' | 'description'>
   createdAt: string
   updatedAt: string
 }
@@ -25,4 +27,7 @@ export type ChronologyEntryInput = {
   description?: string
   isMilestone?: boolean
   isPublished?: boolean
+  translations?: Translations<'title' | 'description'>
 }
+
+import type { Translations } from '../../shared/translations'

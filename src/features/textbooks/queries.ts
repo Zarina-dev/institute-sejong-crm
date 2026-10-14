@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { createTextbook, deleteTextbook, getAllTextbooks, getPublishedTextbooks, reorderTextbooks, updateTextbook } from './api'
 import type { Textbook, TextbookInput } from './types'
+import { usePreferences } from '../../app/preferences'
+import { localizeTextbook } from '../../shared/localize'
 
 export const textbookKeys = {
   all: ['textbooks'] as const,
@@ -10,7 +12,13 @@ export const textbookKeys = {
 }
 
 export function usePublishedTextbooks() {
-  return useQuery({ queryKey: textbookKeys.published(), queryFn: getPublishedTextbooks, staleTime: 5 * 60_000 })
+  const { language } = usePreferences()
+  return useQuery({
+    queryKey: textbookKeys.published(),
+    queryFn: getPublishedTextbooks,
+    staleTime: 5 * 60_000,
+    select: (textbooks) => textbooks.map((textbook) => localizeTextbook(textbook, language)),
+  })
 }
 
 export function useAllTextbooks() {

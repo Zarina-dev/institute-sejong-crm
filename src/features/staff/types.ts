@@ -12,6 +12,8 @@
   startDate: string | null
   /** 퇴직일 (ISO) — only for someone who has left or is leaving. */
   endDate: string | null
+  /** Name, position and bio in English, Russian and Kyrgyz. */
+  translations?: Translations<'name' | 'position' | 'bio'>
   createdAt: string
   updatedAt: string
 }
@@ -26,4 +28,7 @@ export type StaffInput = {
   isPublished?: boolean
   startDate?: string | null
   endDate?: string | null
+  translations?: Translations<'name' | 'position' | 'bio'>
 }
+
+import type { Translations } from '../../shared/translations'

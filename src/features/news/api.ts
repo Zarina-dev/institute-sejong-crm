@@ -12,5 +12,4 @@ export const getNewsPost = (id: string) => apiGet<NewsPost>(`/news/${id}`)
 export const createNews = (payload: NewsInput) => apiPost<NewsPost>('/news', payload)
 export const updateNews = (id: string, payload: Partial<NewsInput>) => apiPatch<NewsPost>(`/news/${id}`, payload)
 export const deleteNews = (id: string) => apiDelete<{ success: boolean }>(`/news/${id}`)
-export const setNewsPublished = (id: string, published: boolean) =>
-  apiPost<NewsPost>(`/news/${id}/${published ? 'publish' : 'unpublish'}`)
+export const setNewsPublished = (id: string, published: boolean) => apiPost<NewsPost>(`/news/${id}/${published ? 'publish' : 'unpublish'}`)

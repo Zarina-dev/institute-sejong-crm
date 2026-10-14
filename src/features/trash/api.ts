@@ -30,6 +30,5 @@ export type TrashItem = {
 }
 
 export const getTrash = () => apiGet<TrashItem[]>('/trash')
-export const restoreTrashItem = (item: Pick<TrashItem, 'type' | 'id'>) =>
-  apiPost<{ success: boolean }>(`/trash/${item.type}/${item.id}/restore`)
+export const restoreTrashItem = (item: Pick<TrashItem, 'type' | 'id'>) => apiPost<{ success: boolean }>(`/trash/${item.type}/${item.id}/restore`)
 export const purgeTrashItem = (item: Pick<TrashItem, 'type' | 'id'>) => apiDelete<{ success: boolean }>(`/trash/${item.type}/${item.id}`)

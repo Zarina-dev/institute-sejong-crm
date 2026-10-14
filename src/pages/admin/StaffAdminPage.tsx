@@ -18,10 +18,13 @@ import { PageHeader } from '../../shared/PageHeader'
 import { DragHandle, SortableRow } from '../../shared/SortableRow'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
+import { TranslationFields } from '../../shared/TranslationFields'
+import type { Translations } from '../../shared/translations'
 
 const { Text } = Typography
 
 type StaffFormValues = {
+  translations?: Translations
   name: string
   position: string
   bio?: string
@@ -105,6 +108,7 @@ export function StaffAdminPage() {
         isPublished: member.isPublished,
         startDate: member.startDate ?? undefined,
         endDate: member.endDate ?? undefined,
+        translations: member.translations ?? {},
       })
       setModalOpen(true)
     },
@@ -311,12 +315,23 @@ export function StaffAdminPage() {
           <Form.Item name="name" label={t('staff.form.name')} rules={[{ required: true, whitespace: true, message: t('staff.form.nameRequired') }]}>
             <Input maxLength={120} />
           </Form.Item>
-          <Form.Item name="position" label={t('staff.form.position')} rules={[{ required: true, whitespace: true, message: t('staff.form.positionRequired') }]}>
+          <Form.Item
+            name="position"
+            label={t('staff.form.position')}
+            rules={[{ required: true, whitespace: true, message: t('staff.form.positionRequired') }]}
+          >
             <Input maxLength={160} />
           </Form.Item>
           <Form.Item name="bio" label={t('staff.form.bio')}>
             <Input.TextArea rows={4} maxLength={4000} showCount />
           </Form.Item>
+          <TranslationFields
+            fields={[
+              { name: 'name', label: 'staff.form.name', maxLength: 120 },
+              { name: 'position', label: 'staff.form.position', maxLength: 160 },
+              { name: 'bio', label: 'staff.form.bio', kind: 'textarea', maxLength: 4000 },
+            ]}
+          />
           <Form.Item name="email" label={t('staff.form.email')} rules={[{ type: 'email', message: t('staff.form.emailInvalid') }]}>
             <Input type="email" maxLength={255} />
           </Form.Item>

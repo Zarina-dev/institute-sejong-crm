@@ -80,7 +80,7 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
         width: 90,
         align: 'center',
         onCell: (row) => spanning(row, 3),
-        render: (_, row) => (row.kind === 'course' ? row.course.expectedStudents ?? dash : null),
+        render: (_, row) => (row.kind === 'course' ? (row.course.expectedStudents ?? dash) : null),
       },
       {
         title: t('courses.form.actualStudents'),
@@ -88,7 +88,7 @@ export function SemesterTable({ courses, loading, emptyText }: SemesterTableProp
         width: 90,
         align: 'center',
         onCell: (row) => spanning(row, 4),
-        render: (_, row) => (row.kind === 'course' ? row.course.actualStudents ?? dash : null),
+        render: (_, row) => (row.kind === 'course' ? (row.course.actualStudents ?? dash) : null),
       },
       {
         title: t('courses.table.days'),

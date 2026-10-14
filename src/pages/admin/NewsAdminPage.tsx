@@ -18,10 +18,13 @@ import { PageHeader } from '../../shared/PageHeader'
 import { RichTextEditor } from '../../shared/RichTextEditor'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
+import { TranslationFields } from '../../shared/TranslationFields'
+import type { Translations } from '../../shared/translations'
 
 const { Text } = Typography
 
 type NewsFormValues = {
+  translations?: Translations
   title: string
   body: string
   coverImage: string | null
@@ -69,10 +72,7 @@ export function NewsAdminPage() {
     [news.data, view],
   )
 
-  const categoryOptions = useMemo(
-    () => NEWS_CATEGORIES.map((value) => ({ value, label: t(`news.category.${value}`) })),
-    [t],
-  )
+  const categoryOptions = useMemo(() => NEWS_CATEGORIES.map((value) => ({ value, label: t(`news.category.${value}`) })), [t])
 
   const openCreateModal = useCallback(() => {
     setEditingId(null)
@@ -98,13 +98,17 @@ export function NewsAdminPage() {
         category: post.category,
         isPublished: post.isPublished,
         isFeatured: post.isFeatured,
+        translations: post.translations ?? {},
       })
       setModalOpen(true)
       setLoadingPost(true)
 
       queryClient
         .fetchQuery({ queryKey: newsKeys.detail(post.id), queryFn: () => getNewsPost(post.id) })
-        .then((full) => form.setFieldValue('body', full.body))
+        .then((full) => {
+          form.setFieldValue('body', full.body)
+          form.setFieldValue('translations', full.translations ?? {})
+        })
         .catch((err) => {
           message.error(getErrorMessage(err, t('news.loadFailed')))
           setModalOpen(false)
@@ -274,17 +278,34 @@ export function NewsAdminPage() {
         width={920}
         className="editor-modal"
       >
-        <Form form={form} layout="vertical" disabled={saving || loadingPost} initialValues={{ category: 'campus', isPublished: false, isFeatured: false, coverImage: null }}>
+        <Form
+          form={form}
+          layout="vertical"
+          disabled={saving || loadingPost}
+          initialValues={{ category: 'campus', isPublished: false, isFeatured: false, coverImage: null }}
+        >
           <Form.Item name="title" label={t('news.form.title')} rules={[{ required: true, message: t('news.form.titleRequired') }]}>
             <Input maxLength={255} />
           </Form.Item>
           <Form.Item name="coverImage" label={t('news.form.cover')}>
             <ImageUploadField shape="wide" hint={t('news.form.coverHint')} />
           </Form.Item>
-          {/* The editor is a controlled Form.Item child: it emits '' when empty so equired works. */}
-          <Form.Item name="body" label={t('news.form.body')} extra={t('news.form.bodyHelp')} rules={[{ required: true, message: t('news.form.bodyRequired') }]}>
+          {/* The editor is a controlled Form.Item child: it emits '' when empty so 
+equired works. */}
+          <Form.Item
+            name="body"
+            label={t('news.form.body')}
+            extra={t('news.form.bodyHelp')}
+            rules={[{ required: true, message: t('news.form.bodyRequired') }]}
+          >
             <RichTextEditor />
           </Form.Item>
+          <TranslationFields
+            fields={[
+              { name: 'title', label: 'news.form.title', maxLength: 255 },
+              { name: 'body', label: 'news.form.body', kind: 'rich' },
+            ]}
+          />
           <Form.Item name="category" label={t('news.form.category')}>
             <Select options={categoryOptions} />
           </Form.Item>

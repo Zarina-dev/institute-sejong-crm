@@ -18,6 +18,11 @@ const BUILTIN_LABEL = {
   camp: 'gallery.tags.camp',
   ska: 'gallery.tags.ska',
   topik: 'gallery.tags.topik',
+  culture: 'gallery.tags.culture',
+  kpop: 'gallery.tags.kpop',
+  quiz: 'gallery.tags.quiz',
+  olympiad: 'gallery.tags.olympiad',
+  awards: 'gallery.tags.awards',
   other: 'gallery.tags.other',
 } as const
 
@@ -30,6 +35,11 @@ const BUILTIN_COLOUR: Record<string, string> = {
   historyTour: 'cyan',
   topik: 'geekblue',
   ska: 'geekblue',
+  culture: 'magenta',
+  kpop: 'volcano',
+  quiz: 'orange',
+  olympiad: 'purple',
+  awards: 'gold',
 }
 const PALETTE = ['magenta', 'volcano', 'geekblue', 'cyan', 'green', 'orange'] as const
 

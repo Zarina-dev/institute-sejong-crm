@@ -9,14 +9,25 @@ import { PhotoCarousel } from '../../shared/PhotoCarousel'
 import { RichContent } from '../../shared/RichContent'
 import { competitionKindColour, competitionKindLabel } from './kinds'
 import type { Competition, CompetitionWinner } from './types'
+import { translated } from '../../shared/translations'
 
 const { Title, Text } = Typography
 
 /** 1·2·3위 get a colour; the rest stay neutral. */
 const RANK_COLOUR = ['gold', 'silver', '#cd7f32'] as const
 
-function Winners({ winners }: { winners: CompetitionWinner[] }) {
-  const { t } = usePreferences()
+function Winners({ winners: source }: { winners: CompetitionWinner[] }) {
+  const { t, language } = usePreferences()
+  // Each name and note in the reader's language — a Kyrgyz name in Cyrillic, for instance.
+  const winners = useMemo(
+    () =>
+      source.map((winner) => ({
+        ...winner,
+        name: translated(winner, 'name', language),
+        note: winner.note ? translated(winner, 'note', language) : winner.note,
+      })),
+    [language, source],
+  )
   // On a phone three columns do not fit: 소속·상품 goes under the name
   // instead of being dropped — it is half of what the table says.
   const wide = Grid.useBreakpoint().sm ?? true
@@ -83,19 +94,20 @@ function Winners({ winners }: { winners: CompetitionWinner[] }) {
 export function CompetitionCard({ record }: { record: Competition }) {
   const { t, language } = usePreferences()
   const photos = [record.coverImage, ...(record.images ?? [])].filter((image): image is string => Boolean(image))
+  const title = translated(record, 'title', language)
 
   return (
     <Card className="surface-card competition-card">
       <div className="competition-card__head">
         {/* One frame whatever the photos are: they slide, the layout does not. */}
-        <PhotoCarousel images={photos} label={record.title} />
+        <PhotoCarousel images={photos} label={title} />
 
         <div>
           <span className="competition-card__tags">
             <Tag className="competition-card__year">{record.year}</Tag>
             <Tag color={competitionKindColour(record.kind)}>{competitionKindLabel(record.kind, t)}</Tag>
           </span>
-          <Title level={3}>{record.title}</Title>
+          <Title level={3}>{title}</Title>
 
           <ul className="competition-card__facts">
             {record.heldOn ? (
@@ -105,7 +117,7 @@ export function CompetitionCard({ record }: { record: Competition }) {
             ) : null}
             {record.venue ? (
               <li>
-                <EnvironmentOutlined /> {record.venue}
+                <EnvironmentOutlined /> {translated(record, 'venue', language)}
               </li>
             ) : null}
             {record.participants != null ? (
@@ -125,7 +137,7 @@ export function CompetitionCard({ record }: { record: Competition }) {
         </div>
       </div>
 
-      {record.summary ? <RichContent className="competition-card__summary" html={record.summary} /> : null}
+      {record.summary ? <RichContent className="competition-card__summary" html={translated(record, 'summary', language)} /> : null}
 
       {/* Results only where there are some: most events are not contests. */}
       {record.winners.length > 0 ? (

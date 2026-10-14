@@ -6,12 +6,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { usePreferences } from '../../app/preferences'
 import { CompetitionKindFilter, CompetitionKindSelect } from '../../features/competitions/KindSelect'
 import { ALL_KINDS, competitionKindColour, competitionKindLabel, competitionKindOptions } from '../../features/competitions/kinds'
-import {
-  useAllCompetitions,
-  useCreateCompetition,
-  useDeleteCompetition,
-  useUpdateCompetition,
-} from '../../features/competitions/queries'
+import { useAllCompetitions, useCreateCompetition, useDeleteCompetition, useUpdateCompetition } from '../../features/competitions/queries'
 import type { Competition, CompetitionKind, CompetitionWinner } from '../../features/competitions/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
@@ -23,10 +18,13 @@ import { RichTextEditor } from '../../shared/RichTextEditor'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
 import { ALL_YEARS, YearSelect } from '../../shared/YearSelect'
+import { TranslationFields } from '../../shared/TranslationFields'
+import type { TranslationLanguage, Translations } from '../../shared/translations'
 
 const { Text } = Typography
 
 type CompetitionFormValues = {
+  translations?: Translations
   kind: CompetitionKind
   title: string
   year: number
@@ -42,6 +40,41 @@ type CompetitionFormValues = {
 }
 
 const NO_RECORDS: Competition[] = []
+
+/**
+ * The winners' names and notes in one language, beside their Korean — inside
+ * that language's tab of the translations. Bound to the same winners list,
+ * so adding or removing a winner above moves their translation with them.
+ */
+function WinnerTranslations({ language }: { language: TranslationLanguage }) {
+  const { t } = usePreferences()
+  const winners = Form.useWatch<CompetitionWinner[] | undefined>('winners', { preserve: true }) ?? []
+  const named = winners.map((winner, index) => ({ winner, index })).filter(({ winner }) => winner?.name?.trim())
+
+  if (named.length === 0) {
+    return null
+  }
+
+  return (
+    <Form.Item label={t('competitions.form.winners')} style={{ marginBottom: 0 }}>
+      <div className="winner-rows">
+        {named.map(({ winner, index }) => (
+          <div className="winner-row winner-row--translation" key={index}>
+            <Text type="secondary" className="winner-row__source">
+              {t('competitions.rankLabel', { rank: winner.rank })} · {winner.name}
+            </Text>
+            <Form.Item name={['winners', index, 'translations', language, 'name']} noStyle>
+              <Input placeholder={t('competitions.form.winnerName')} maxLength={150} />
+            </Form.Item>
+            <Form.Item name={['winners', index, 'translations', language, 'note']} noStyle>
+              <Input placeholder={t('competitions.form.winnerNote')} maxLength={255} />
+            </Form.Item>
+          </div>
+        ))}
+      </div>
+    </Form.Item>
+  )
+}
 
 /**
  * 대회 기록 — every competition the institute runs, managed in one place.
@@ -72,7 +105,7 @@ export function CompetitionsAdminPage() {
   const kindOptions = useMemo(() => competitionKindOptions(competitions.data ?? NO_RECORDS, t), [competitions.data, t])
   const [kind, setKind] = useState<CompetitionKind>(ALL_KINDS)
   const ofKind = useMemo(
-    () => (kind === ALL_KINDS ? competitions.data ?? NO_RECORDS : (competitions.data ?? NO_RECORDS).filter((record) => record.kind === kind)),
+    () => (kind === ALL_KINDS ? (competitions.data ?? NO_RECORDS) : (competitions.data ?? NO_RECORDS).filter((record) => record.kind === kind)),
     [competitions.data, kind],
   )
 
@@ -107,6 +140,7 @@ export function CompetitionsAdminPage() {
         images: record.images ?? [],
         albumUrl: record.albumUrl ?? '',
         isPublished: record.isPublished,
+        translations: record.translations ?? {},
       })
       setResultsOpen(record.participants != null || record.winners.length > 0)
       setModalOpen(true)
@@ -252,12 +286,7 @@ export function CompetitionsAdminPage() {
           <CompetitionKindFilter value={kind} onChange={setKind} options={kindOptions} />
           <Space wrap>
             {years.length > 1 ? (
-              <YearSelect
-                years={years}
-                value={activeYear}
-                onChange={(value) => setYear(value === ALL_YEARS ? null : Number(value))}
-                allowAll
-              />
+              <YearSelect years={years} value={activeYear} onChange={(value) => setYear(value === ALL_YEARS ? null : Number(value))} allowAll />
             ) : null}
             <Text>{t('competitions.count', { count: rows.length })}</Text>
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
@@ -380,7 +409,12 @@ export function CompetitionsAdminPage() {
                                 <Form.Item name={[field.name, 'note']} noStyle>
                                   <Input placeholder={t('competitions.form.winnerNote')} maxLength={255} />
                                 </Form.Item>
-                                <Button type="text" icon={<MinusCircleOutlined />} aria-label={t('common.remove')} onClick={() => remove(field.name)} />
+                                <Button
+                                  type="text"
+                                  icon={<MinusCircleOutlined />}
+                                  aria-label={t('common.remove')}
+                                  onClick={() => remove(field.name)}
+                                />
                               </div>
                             ))}
                             <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({ rank: fields.length + 1, name: '', note: '' })} block>
@@ -394,6 +428,15 @@ export function CompetitionsAdminPage() {
                 ),
               },
             ]}
+          />
+
+          <TranslationFields
+            fields={[
+              { name: 'title', label: 'competitions.form.title', maxLength: 255 },
+              { name: 'venue', label: 'competitions.form.venue', maxLength: 255 },
+              { name: 'summary', label: 'competitions.form.summary', kind: 'rich' },
+            ]}
+            extra={(language) => <WinnerTranslations language={language} />}
           />
 
           <Form.Item name="isPublished" label={t('competitions.form.visibility')} valuePropName="checked">

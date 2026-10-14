@@ -1,6 +1,38 @@
-import { CopyOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FileExcelOutlined, MoreOutlined, PlusOutlined, PrinterOutlined, SwapOutlined } from '@ant-design/icons'
+import {
+  CopyOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  FileExcelOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  PrinterOutlined,
+  SwapOutlined,
+} from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { Alert, App, AutoComplete, Button, Card, Col, Dropdown, Empty, Form, Input, InputNumber, Modal, Row, Segmented, Select, Skeleton, Space, Table, Tag, Typography } from 'antd'
+import {
+  Alert,
+  App,
+  AutoComplete,
+  Button,
+  Card,
+  Col,
+  Dropdown,
+  Empty,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Row,
+  Segmented,
+  Select,
+  Skeleton,
+  Space,
+  Table,
+  Tag,
+  Typography,
+} from 'antd'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -26,6 +58,8 @@ import { formatDate } from '../../shared/format'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
+import { TranslationFields } from '../../shared/TranslationFields'
+import type { Translations } from '../../shared/translations'
 
 const { Title, Text } = Typography
 
@@ -59,6 +93,7 @@ const inView = (record: CourseRecord, view: CourseView) =>
   view === 'schedule' ? true : view === 'culture' ? record.category === 'culture' : record.category !== 'culture'
 
 type CourseFormValues = {
+  translations?: Translations
   category: 'language' | 'culture'
   title: string
   description?: string
@@ -103,8 +138,7 @@ export function CoursesAdminPage() {
   // menu land on the reading of this table they manage.
   const [params, setParams] = useSearchParams()
   const requested = params.get('view') as CourseView | null
-  const view: CourseView =
-    requested && requested in COURSE_VIEWS && !DISABLED_VIEWS.includes(requested) ? requested : 'language'
+  const view: CourseView = requested && requested in COURSE_VIEWS && !DISABLED_VIEWS.includes(requested) ? requested : 'language'
 
   /**
    * One semester of one list, as on the site: the table, its counts and the
@@ -112,11 +146,7 @@ export function CoursesAdminPage() {
    * Opens on the semester in progress.
    */
   const { active: activeTerm, select: selectTerm } = useTermChoice(terms.data ?? NO_TERMS, { scope: 'admin' })
-  const courses = useCourses(
-    false,
-    { term: activeTerm?.code, category: view === 'culture' ? 'culture' : 'language' },
-    !terms.isPending,
-  )
+  const courses = useCourses(false, { term: activeTerm?.code, category: view === 'culture' ? 'culture' : 'language' }, !terms.isPending)
 
   useEffect(() => {
     if (requested !== view) {
@@ -191,6 +221,7 @@ export function CoursesAdminPage() {
         totalHours: record.totalHours ?? null,
         weeklyHours: record.weeklyHours ?? null,
         isPublished: record.isPublished,
+        translations: record.translations ?? {},
       })
       setModalOpen(true)
     },
@@ -306,10 +337,7 @@ export function CoursesAdminPage() {
 
   // One table per programme, so the head counts add up per programme the
   // way the office reports them (한국어 / 영어 / 기타 …).
-  const programmes = useMemo(
-    () => groupCourses((courses.data ?? []).filter((record) => inView(record, view))),
-    [courses.data, view],
-  )
+  const programmes = useMemo(() => groupCourses((courses.data ?? []).filter((record) => inView(record, view))), [courses.data, view])
   const rows = useMemo(() => programmes.flatMap((programme) => programme.courses), [programmes])
 
   const titleOptions = useMemo(() => courseTitles(courses.data).map((value) => ({ value })), [courses.data])
@@ -438,9 +466,7 @@ export function CoursesAdminPage() {
         dataIndex: 'isPublished',
         key: 'isPublished',
         width: 110,
-        render: (value: boolean) => (
-          <Tag color={value ? 'green' : 'gold'}>{value ? t('common.published') : t('common.unpublished')}</Tag>
-        ),
+        render: (value: boolean) => <Tag color={value ? 'green' : 'gold'}>{value ? t('common.published') : t('common.unpublished')}</Tag>,
       },
       {
         // With the semester figures on screen the row is wide, so the three
@@ -484,7 +510,18 @@ export function CoursesAdminPage() {
         ),
       },
     ],
-    [handleDelete, handleMove, handleTogglePublished, language, openDuplicateModal, openEditModal, pinActions, setPublished.isPending, setPublished.variables?.id, t],
+    [
+      handleDelete,
+      handleMove,
+      handleTogglePublished,
+      language,
+      openDuplicateModal,
+      openEditModal,
+      pinActions,
+      setPublished.isPending,
+      setPublished.variables?.id,
+      t,
+    ],
   )
 
   /* ------------------------------- render ----------------------------- */
@@ -498,11 +535,7 @@ export function CoursesAdminPage() {
         </span>
       </div>
 
-      <PageHeader
-        kicker={t('courses.adminTitle')}
-        title={t(COURSE_VIEWS[view])}
-        description={t('courses.adminSubtitle')}
-      />
+      <PageHeader kicker={t('courses.adminTitle')} title={t(COURSE_VIEWS[view])} description={t('courses.adminSubtitle')} />
 
       <Card className="surface-card filter-card no-print">
         <div className="filter-footer">
@@ -590,7 +623,12 @@ export function CoursesAdminPage() {
         forceRender
         width={760}
       >
-        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: false, sessions: [], category: 'language', followsTerm: true }}>
+        <Form
+          form={form}
+          layout="vertical"
+          disabled={saving}
+          initialValues={{ isPublished: false, sessions: [], category: 'language', followsTerm: true }}
+        >
           {copiedFrom ? <Alert type="info" showIcon className="form-notice" message={t('courses.duplicateHint', { title: copiedFrom })} /> : null}
 
           {/* 구분 is not asked for — the page the admin is on decides it —
@@ -604,12 +642,31 @@ export function CoursesAdminPage() {
           <Row gutter={16}>
             <Col span={12}>
               {/* Programme: pick an existing one to add a class under it, or type a new one. */}
-              <Form.Item name="title" label={t('courses.form.title')} extra={t('courses.form.titleHint')} rules={[{ required: true, whitespace: true, message: t('courses.form.titleRequired') }]}>
-                <AutoComplete options={titleOptions} placeholder={t('courses.form.titlePlaceholder')} maxLength={255} filterOption={(input, option) => String(option?.value ?? '').toLowerCase().includes(input.toLowerCase())} />
+              <Form.Item
+                name="title"
+                label={t('courses.form.title')}
+                extra={t('courses.form.titleHint')}
+                rules={[{ required: true, whitespace: true, message: t('courses.form.titleRequired') }]}
+              >
+                <AutoComplete
+                  options={titleOptions}
+                  placeholder={t('courses.form.titlePlaceholder')}
+                  maxLength={255}
+                  filterOption={(input, option) =>
+                    String(option?.value ?? '')
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="subject" label={t('courses.form.subject')} extra={t('courses.form.subjectHint')} rules={[{ required: true, whitespace: true, message: t('courses.form.subjectRequired') }]}>
+              <Form.Item
+                name="subject"
+                label={t('courses.form.subject')}
+                extra={t('courses.form.subjectHint')}
+                rules={[{ required: true, whitespace: true, message: t('courses.form.subjectRequired') }]}
+              >
                 <Input placeholder={t('courses.form.subjectPlaceholder')} maxLength={120} />
               </Form.Item>
             </Col>
@@ -619,7 +676,11 @@ export function CoursesAdminPage() {
           </Form.Item>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="teacherName" label={t('courses.form.teacher')} extra={staffOptions.length === 0 ? t('courses.form.teacherEmpty') : undefined}>
+              <Form.Item
+                name="teacherName"
+                label={t('courses.form.teacher')}
+                extra={staffOptions.length === 0 ? t('courses.form.teacherEmpty') : undefined}
+              >
                 <Select
                   allowClear
                   showSearch
@@ -723,6 +784,14 @@ export function CoursesAdminPage() {
               </Form.Item>
             </Col>
           </Row>
+          <TranslationFields
+            fields={[
+              { name: 'title', label: 'courses.form.title', maxLength: 255 },
+              { name: 'subject', label: 'courses.form.subject', maxLength: 120 },
+              { name: 'description', label: 'courses.form.description', kind: 'textarea', maxLength: 4000 },
+              { name: 'teacherName', label: 'courses.form.teacher', maxLength: 150 },
+            ]}
+          />
           <Form.Item name="isPublished" label={t('courses.form.visibility')}>
             <Select
               options={[

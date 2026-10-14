@@ -18,16 +18,20 @@ export type Graduate = {
 
 export type GraduateInput = Pick<Graduate, 'year' | 'term' | 'name' | 'nameKy' | 'note' | 'noteKy' | 'isPublished'>
 
-/** A Kyrgyz reader sees the Kyrgyz text first; everyone else the Korean. Either falls back to the other. */
+/**
+ * Korean on the Korean site; the Kyrgyz text (Cyrillic) for Kyrgyz, Russian and
+ * English readers, as on 한국 유학 현황 — the graduates are Kyrgyz and their
+ * names are theirs in Cyrillic. Either falls back to the other.
+ */
 export function graduateText(graduate: Graduate, field: 'name' | 'note', language: Language) {
   const korean = graduate[field]
   const kyrgyz = graduate[`${field}Ky`]
 
-  return language === 'ky' ? kyrgyz || korean : korean || kyrgyz
+  return language === 'ko' ? korean || kyrgyz : kyrgyz || korean
 }
 
 /** The name in the other script, shown under the first ("아이다 / Айда"), when both exist. */
 export function otherGraduateName(graduate: Graduate, language: Language) {
   if (!graduate.name || !graduate.nameKy) return null
-  return language === 'ky' ? graduate.name : graduate.nameKy
+  return language === 'ko' ? graduate.nameKy : graduate.name
 }

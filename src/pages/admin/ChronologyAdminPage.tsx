@@ -4,22 +4,20 @@ import { App, Button, Card, Dropdown, Form, Input, InputNumber, Modal, Space, Sw
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
-import {
-  useAllChronology,
-  useCreateChronologyEntry,
-  useDeleteChronologyEntry,
-  useUpdateChronologyEntry,
-} from '../../features/chronology/queries'
+import { useAllChronology, useCreateChronologyEntry, useDeleteChronologyEntry, useUpdateChronologyEntry } from '../../features/chronology/queries'
 import type { ChronologyEntry } from '../../features/chronology/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
+import { TranslationFields } from '../../shared/TranslationFields'
+import type { Translations } from '../../shared/translations'
 
 const { Text } = Typography
 
 type ChronologyFormValues = {
+  translations?: Translations
   year: number
   month?: number | null
   day?: number | null
@@ -72,6 +70,7 @@ export function ChronologyAdminPage() {
         description: entry.description,
         isMilestone: entry.isMilestone,
         isPublished: entry.isPublished,
+        translations: entry.translations ?? {},
       })
       setModalOpen(true)
     },
@@ -256,6 +255,13 @@ export function ChronologyAdminPage() {
           <Form.Item name="description" label={t('chronology.form.description')}>
             <Input.TextArea rows={3} maxLength={2000} showCount />
           </Form.Item>
+
+          <TranslationFields
+            fields={[
+              { name: 'title', label: 'chronology.form.title', maxLength: 255 },
+              { name: 'description', label: 'chronology.form.description', kind: 'textarea', maxLength: 2000 },
+            ]}
+          />
 
           <div className="form-row">
             <Form.Item name="isMilestone" label={t('chronology.milestone')} extra={t('chronology.milestoneHint')} valuePropName="checked">

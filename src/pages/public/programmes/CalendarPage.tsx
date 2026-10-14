@@ -131,7 +131,11 @@ export function CalendarPage() {
               {t('schedule.timetable')}
             </Title>
           </div>
-          {!isToday ? <Button type="link" onClick={backToToday}>{t('schedule.today')}</Button> : null}
+          {!isToday ? (
+            <Button type="link" onClick={backToToday}>
+              {t('schedule.today')}
+            </Button>
+          ) : null}
         </div>
 
         <Card className="surface-card day-picker">

@@ -203,7 +203,7 @@ export const en = {
     heroTag: '2026 / 2027 academic year',
     heroTitle: 'Garden of Dreams – King Sejong Institute Osh 1',
     heroCopy:
-      'Courses from beginner to TOPIK, the weekly timetable, learning materials and institute news — in one place for learners, applicants and staff.',
+      'Where there is a dream, there is a way. Since 2013 we have taught Korean language and culture in Osh, walking beside students on their way to study in Korea and to their own dreams.',
     explore: 'Explore programmes',
     calendar: 'Academic calendar',
     weekTitle: "What's happening this week",
@@ -567,6 +567,11 @@ export const en = {
       camp: 'Camp with Korean students',
       ska: 'SKA exam',
       topik: 'TOPIK exam',
+      culture: 'Korean culture',
+      kpop: 'K-POP & song contest',
+      quiz: 'Quiz',
+      olympiad: 'Korean Studies Olympiad',
+      awards: 'Awards at national contests',
       other: 'Other',
     },
   },
@@ -1044,7 +1049,8 @@ export const en = {
     title: 'Studying in Korea',
     subtitle: 'Everyone the institute has sent to Korea, the most recent first. The number is their place in the record, from the first student.',
     adminTitle: 'Studying in Korea',
-    adminSubtitle: 'The record on 학당 발자취 › Studying in Korea, newest year first. The number is the place in the record from the first student, so nothing is renumbered by hand.',
+    adminSubtitle:
+      'The record on 학당 발자취 › Studying in Korea, newest year first. The number is the place in the record from the first student, so nothing is renumbered by hand.',
     empty: 'No students on the list yet.',
     add: 'Add a student',
     addTitle: 'New student',
@@ -1088,7 +1094,8 @@ export const en = {
     title: 'Graduates',
     subtitle: 'Everyone who completed the full course (Sejong Korean 8) and graduated, term by term, the most recent first.',
     adminTitle: 'Graduates',
-    adminSubtitle: 'The list shown under History › Graduates, newest term first. The graduate number is the place in the list from the first graduate, so nothing is renumbered by hand.',
+    adminSubtitle:
+      'The list shown under History › Graduates, newest term first. The graduate number is the place in the list from the first graduate, so nothing is renumbered by hand.',
     searchPlaceholder: 'Search by name or note',
     count_one: '{{count}} graduate',
     count_other: '{{count}} graduates',
@@ -1115,6 +1122,11 @@ export const en = {
       note: 'Note',
       noteHint: 'What came next: a scholarship, a university, a job.',
     },
+  },
+  translations: {
+    title: 'Other languages',
+    none: 'not translated yet',
+    hint: 'English, Russian and Kyrgyz. Anything left empty shows the Korean on the site.',
   },
 } as const
 

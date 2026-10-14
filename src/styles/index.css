@@ -4868,6 +4868,33 @@ button.attachment-chip:hover {
   border-radius: var(--radius-md);
 }
 
+/* ---- Translations in the admin forms ---- */
+.translation-fields.ant-collapse {
+  margin-bottom: var(--space-5);
+}
+
+.translation-fields__label {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.translation-fields__hint {
+  display: block;
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+/* Korean source on the left, the two inputs beside it. */
+.winner-row--translation {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.winner-row__source {
+  overflow-wrap: anywhere;
+}
+
 /* ---- 졸업생 현황: one numbered list per term ---- */
 .graduate-terms {
   display: grid;

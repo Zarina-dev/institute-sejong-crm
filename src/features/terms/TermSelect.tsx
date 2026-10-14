@@ -25,7 +25,6 @@ export function TermSelect({ value, onChange, terms, disabled }: TermSelectProps
   const { t } = usePreferences()
   const live = termInProgress(terms)
 
-
   const options = terms.map((term) => ({
     value: term.code,
     label: (

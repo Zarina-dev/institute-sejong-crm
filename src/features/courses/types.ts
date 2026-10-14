@@ -43,6 +43,8 @@ export type CourseRecord = {
   isPublished: boolean
   createdAt: string
   updatedAt: string
+  /** Title, subject, description, level and teacher in English, Russian and Kyrgyz. */
+  translations?: Translations<'title' | 'subject' | 'description' | 'level' | 'teacherName'>
 }
 
 /** One generated class on a concrete date — what `GET /schedule` returns. */
@@ -57,6 +59,7 @@ export type TimetableEntry = {
   teacher: string | null
   classroom: string | null
   courseGroup: string
+  translations?: Translations<'title' | 'subject' | 'teacherName'>
 }
 
 export type TimetableFilters = {
@@ -66,5 +69,4 @@ export type TimetableFilters = {
   subject?: string
 }
 
-
-
+import type { Translations } from '../../shared/translations'

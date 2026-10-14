@@ -79,9 +79,7 @@ function interpolate(template: string, params?: TranslateParams) {
     return template
   }
 
-  return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, name: string) =>
-    name in params ? String(params[name]) : `{{${name}}}`,
-  )
+  return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, name: string) => (name in params ? String(params[name]) : `{{${name}}}`))
 }
 
 /**
@@ -89,12 +87,7 @@ function interpolate(template: string, params?: TranslateParams) {
  * lags behind still renders text rather than a blank. With `count`, tries
  * the CLDR plural form for the language first, then `_other`.
  */
-export function translate(
-  language: Language,
-  dictionary: LocaleDictionary,
-  key: TranslationKey,
-  params?: TranslateParams,
-): string {
+export function translate(language: Language, dictionary: LocaleDictionary, key: TranslationKey, params?: TranslateParams): string {
   const candidates: string[] = []
 
   if (params && typeof params.count === 'number') {

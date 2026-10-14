@@ -60,10 +60,7 @@ export function EventsPage() {
   const [wantAll, setWantAll] = useState(false)
   const showAll = wantAll || !activeTerm
 
-  const rows = useMemo(
-    () => (showAll ? all : all.filter((event) => event.termCode === activeTerm?.code)),
-    [activeTerm?.code, all, showAll],
-  )
+  const rows = useMemo(() => (showAll ? all : all.filter((event) => event.termCode === activeTerm?.code)), [activeTerm?.code, all, showAll])
 
   const columns = useMemo<NonNullable<TableProps<ScheduleEvent>['columns']>>(
     () => [
@@ -170,9 +167,7 @@ export function EventsPage() {
         </Card>
       ) : rows.length > 0 ? (
         <Card className="surface-card">
-          <Text className="event-table__caption">
-            {showAll || !activeTerm ? t('events.allTerms') : termDisplayName(activeTerm, t)}
-          </Text>
+          <Text className="event-table__caption">{showAll || !activeTerm ? t('events.allTerms') : termDisplayName(activeTerm, t)}</Text>
 
           <Table
             className="admin-table event-table"

@@ -48,8 +48,7 @@ function uniqueSheetName(title: string, used: Set<string>) {
 const numberCell = (value: number | null | undefined) => (value == null ? null : { value, type: Number as NumberConstructor })
 
 /** One line per slot, so "월·수 / 화" and "09:00–10:30" line up in a cell. */
-const joinParts = (parts: Array<{ days: string; time: string }>, key: 'days' | 'time') =>
-  parts.map((part) => part[key]).join('\n')
+const joinParts = (parts: Array<{ days: string; time: string }>, key: 'days' | 'time') => parts.map((part) => part[key]).join('\n')
 
 const sumOf = (courses: CourseRecord[], field: 'expectedStudents' | 'actualStudents') =>
   courses.reduce((total, course) => total + (course[field] ?? 0), 0)

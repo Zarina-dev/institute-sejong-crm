@@ -13,6 +13,8 @@ import {
   updateCourse,
 } from './api'
 import type { TimetableFilters } from './types'
+import { usePreferences } from '../../app/preferences'
+import { localizeCourse, localizeTimetableEntry } from '../../shared/localize'
 
 export const courseKeys = {
   all: ['courses'] as const,
@@ -35,9 +37,13 @@ export const timetableKeys = {
  * semester it is on, so it does not fetch everything first.
  */
 export function useCourses(publishedOnly: boolean, filters: CourseListFilters = {}, enabled = true) {
+  const { language } = usePreferences()
+
   return useQuery({
     queryKey: courseKeys.list(publishedOnly, filters),
     queryFn: () => getCourses(publishedOnly, filters),
+    // The public site reads the visitor's language; the admin (all courses) the Korean.
+    select: publishedOnly ? (courses) => courses.map((course) => localizeCourse(course, language)) : undefined,
     enabled,
     // Switching semesters keeps the last list on screen instead of a skeleton.
     placeholderData: keepPreviousData,
@@ -54,9 +60,12 @@ export function useCourseTermCounts(publishedOnly: boolean, category?: CourseLis
 }
 
 export function useTimetable(filters: TimetableFilters) {
+  const { language } = usePreferences()
+
   return useQuery({
     queryKey: timetableKeys.list(filters),
     queryFn: () => getTimetable(filters),
+    select: (entries) => entries.map((entry) => localizeTimetableEntry(entry, language)),
   })
 }
 

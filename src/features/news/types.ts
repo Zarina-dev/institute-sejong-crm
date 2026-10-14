@@ -14,6 +14,8 @@ export type NewsPost = {
   publishedAt: string | null
   createdAt: string
   updatedAt: string
+  /** In English, Russian and Kyrgyz; the Korean stands in for any not written. */
+  translations?: Translations<'title' | 'body'>
 }
 
 /**
@@ -29,4 +31,7 @@ export type NewsInput = {
   category?: NewsCategory
   isPublished?: boolean
   isFeatured?: boolean
+  translations?: Translations<'title' | 'body'>
 }
+
+import type { Translations } from '../../shared/translations'

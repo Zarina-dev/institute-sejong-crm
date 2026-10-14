@@ -1,11 +1,7 @@
 import { apiGet, apiRequest } from '../../api/client'
 
 /** Blocks of site copy the admin edits; see backend `CONTENT_SLUGS`. */
-export const CONTENT_SLUGS = [
-  'about.greeting',
-  'notices.faq',
-  'resources.links',
-] as const
+export const CONTENT_SLUGS = ['about.greeting', 'notices.faq', 'resources.links'] as const
 
 export type ContentSlug = (typeof CONTENT_SLUGS)[number]
 
