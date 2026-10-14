@@ -1877,8 +1877,13 @@
   text-decoration: none;
 }
 
-.rail-brand .brand-mark {
+/* On a dark background the symbol sits on a white tile, as the Foundation's
+   CI places it: its Sejong blue would otherwise disappear into the dark. */
+.rail-brand .brand-mark,
+[data-theme='dark'] .brand-mark {
   border-color: transparent;
+  background: var(--neutral-0);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12);
 }
 
 .rail-brand span > strong {

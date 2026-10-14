@@ -11,16 +11,17 @@ import type { ThemeMode } from './preferences'
  * sat next to a hand-styled element in a visibly different blue and shape.
  */
 const palette = {
-  brand300: '#8fb4ff',
-  brand400: '#5b90ff',
-  brand500: '#246bfd',
-  brand600: '#1555d6',
-  brand700: '#1243a8',
+  // Sejong blue (#004290), and the lifted tones the dark theme uses.
+  brand300: '#a9c5ee',
+  brand400: '#7aa3dc',
+  brand500: '#004290',
+  brand600: '#003879',
+  brand700: '#002e63',
 
   success: '#22855a',
   warning: '#d9791c',
   danger: '#e05252',
-  info: '#246bfd',
+  info: '#004290',
 
   text: '#172033',
   textMuted: '#55647b',

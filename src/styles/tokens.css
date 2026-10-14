@@ -7,7 +7,7 @@
                         are what component styles consume, and the only ones
                         re-declared in the dark theme.
 
-   The brand ramp is mirrored in src/theme/antdTheme.ts so Ant Design
+   The brand ramp is mirrored in src/app/theme.ts so Ant Design
    components and hand-written CSS resolve to the same colours.
    ========================================================================== */
 
@@ -21,16 +21,18 @@
 
   /* ---------- Layer 1: palette ---------- */
 
-  --brand-50: #eef4ff;
-  --brand-100: #dce8ff;
-  --brand-200: #bcd2ff;
-  --brand-300: #8fb4ff;
-  --brand-400: #5b90ff;
-  --brand-500: #246bfd;
-  --brand-600: #1555d6;
-  --brand-700: #1243a8;
-  --brand-800: #132f6f;
-  --brand-900: #102551;
+  /* Sejong blue — the King Sejong Institute's own colour (the ㅅ of the
+     Foundation's symbol, #004290), so the site reads as the institute's. */
+  --brand-50: #edf3fa;
+  --brand-100: #d6e3f2;
+  --brand-200: #aec7e6;
+  --brand-300: #7ea4d3;
+  --brand-400: #3e74b9;
+  --brand-500: #004290;
+  --brand-600: #003879;
+  --brand-700: #002e63;
+  --brand-800: #00244e;
+  --brand-900: #001a39;
 
   --neutral-0: #ffffff;
   --neutral-25: #fbfcfe;
@@ -58,10 +60,12 @@
   --rose-500: #e05252;
   --rose-600: #c23c3c;
 
-  /* Point colour: Korean institutional sites carry one, used sparingly for
-     NEW badges and accent rules. */
-  --point-500: #d6402f;
-  --point-50: #fdeeec;
+  /* Point colour: the symbol's burgundy (its ㅎ, #901f2f). Korean
+     institutional sites carry one, used sparingly for NEW badges and
+     accent rules. */
+  --point-500: #901f2f;
+  --point-600: #771826;
+  --point-50: #f9ecee;
 
   --violet-50: #f1edff;
   --violet-500: #7952e8;
@@ -104,8 +108,8 @@
   --color-warning-soft: var(--amber-50);
   --color-danger: var(--rose-500);
   --color-danger-soft: var(--rose-50);
-  --color-accent: var(--violet-500);
-  --color-accent-soft: var(--violet-50);
+  --color-accent: var(--point-500);
+  --color-accent-soft: var(--point-50);
 
   /* Dark navigation rails (admin / student shells). Declared as semantic
      tokens because they must also work when the whole app is dark. */
@@ -118,17 +122,17 @@
   --color-rail-active: var(--neutral-0);
   --color-rail-active-text: var(--neutral-950);
 
-  --color-focus-ring: rgb(36 107 253 / 0.32);
+  --color-focus-ring: rgb(0 66 144 / 0.3);
   --color-overlay: rgb(15 23 42 / 0.45);
 
-  /* 꿈의 동산: a green garden with the morning sun in its corner — warm, and
-     the colours of the institute's 10th-anniversary book. */
+  /* The symbol's two colours: Sejong navy, warmed by its burgundy glowing
+     in the corner — official, and not cold. */
   --gradient-hero:
-    radial-gradient(circle at 90% 6%, rgb(255 226 160 / 0.7) 0, rgb(255 190 110 / 0.32) 12%, rgb(255 170 90 / 0.1) 26%, transparent 42%),
-    linear-gradient(124deg, #12382a 0%, #1c573c 48%, #3f7d47 100%);
-  --hero-text-soft: #eef6e8;
-  --hero-action-text: #1e5b3d;
-  --gradient-about: linear-gradient(125deg, #12264e, #215cc2);
+    radial-gradient(circle at 92% 6%, rgb(196 72 88 / 0.62) 0, rgb(144 31 47 / 0.3) 16%, transparent 40%),
+    linear-gradient(124deg, var(--brand-900) 0%, #00306a 50%, var(--brand-500) 100%);
+  --hero-text-soft: #e3ebf6;
+  --hero-action-text: var(--brand-500);
+  --gradient-about: linear-gradient(125deg, var(--brand-900), var(--brand-500));
   --gradient-progress: linear-gradient(90deg, var(--brand-500), var(--brand-300));
 
   /* ---------- Radii ---------- */
@@ -146,7 +150,7 @@
   --shadow-sm: 0 1px 2px rgb(24 45 82 / 0.05), 0 4px 14px rgb(24 45 82 / 0.05);
   --shadow-md: 0 2px 6px rgb(24 45 82 / 0.06), 0 14px 34px rgb(24 45 82 / 0.1);
   --shadow-lg: 0 4px 10px rgb(19 70 159 / 0.12), 0 26px 56px rgb(19 70 159 / 0.22);
-  --shadow-primary: 0 6px 16px rgb(36 107 253 / 0.28);
+  --shadow-primary: 0 6px 16px rgb(0 66 144 / 0.26);
 
   /* ---------- Spacing (4px scale) ---------- */
   --space-1: 4px;
@@ -249,13 +253,14 @@
   --color-text-faint: #6f7f99;
   --color-text-inverse: var(--neutral-950);
 
-  --color-primary: var(--brand-400);
-  --color-primary-hover: var(--brand-300);
-  --color-primary-active: var(--brand-200);
-  --color-primary-soft: #1b376c;
-  --color-primary-soft-hover: #224380;
-  --color-primary-text: #9fc1ff;
-  --color-on-primary: #06132c;
+  /* The same Sejong blue, lifted so it reads on dark surfaces. */
+  --color-primary: #7aa3dc;
+  --color-primary-hover: #93b6e5;
+  --color-primary-active: #b3cdef;
+  --color-primary-soft: #102a4d;
+  --color-primary-soft-hover: #15355f;
+  --color-primary-text: #a9c5ee;
+  --color-on-primary: #031327;
 
   --color-success: #4cc38a;
   --color-success-soft: #173f32;
@@ -263,8 +268,8 @@
   --color-warning-soft: #402c14;
   --color-danger: #f2696c;
   --color-danger-soft: #401f24;
-  --color-accent: #a186f5;
-  --color-accent-soft: #372667;
+  --color-accent: #d97482;
+  --color-accent-soft: #3d1a21;
 
   --color-rail: #0b111c;
   --color-rail-surface: rgb(255 255 255 / 0.05);
@@ -275,7 +280,7 @@
   --color-rail-active: var(--color-primary-soft);
   --color-rail-active-text: #dbe8ff;
 
-  --color-focus-ring: rgb(91 144 255 / 0.4);
+  --color-focus-ring: rgb(122 163 220 / 0.4);
   --color-overlay: rgb(0 0 0 / 0.6);
 
   --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
@@ -285,10 +290,10 @@
   --shadow-primary: 0 6px 14px rgb(0 0 0 / 0.35);
 
   --gradient-hero:
-    radial-gradient(circle at 90% 6%, rgb(255 210 140 / 0.38) 0, rgb(255 180 100 / 0.16) 12%, rgb(255 160 80 / 0.05) 26%, transparent 42%),
-    linear-gradient(124deg, #0b2219 0%, #143f2b 50%, #2f5f30 100%);
-  --hero-text-soft: #dfeedd;
-  --hero-action-text: #143f2b;
-  --gradient-about: linear-gradient(125deg, #0d1c38, #1a4483);
-  --gradient-progress: linear-gradient(90deg, var(--brand-400), var(--brand-200));
+    radial-gradient(circle at 92% 6%, rgb(176 56 72 / 0.42) 0, rgb(144 31 47 / 0.18) 16%, transparent 40%),
+    linear-gradient(124deg, #000f22 0%, #00234d 50%, #003574 100%);
+  --hero-text-soft: #d6e2f2;
+  --hero-action-text: var(--brand-600);
+  --gradient-about: linear-gradient(125deg, #000f22, #003574);
+  --gradient-progress: linear-gradient(90deg, #7aa3dc, #b3cdef);
 }
