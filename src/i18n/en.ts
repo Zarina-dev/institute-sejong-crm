@@ -138,9 +138,12 @@ export const en = {
     system: 'System (auto-cleanup)',
     changedFields: 'Fields: {{fields}}',
     table: {
-      at: 'Time · user',
+      at: 'Time',
+      actor: 'User',
       action: 'Action',
       record: 'Record',
+      ip: 'IP · location',
+      device: 'Device',
     },
     actions: {
       create: 'Created',
@@ -153,6 +156,10 @@ export const en = {
       purge: 'Deleted permanently',
       login: 'Signed in',
       login_failed: 'Failed sign-in',
+    },
+    location: {
+      thisComputer: 'This computer',
+      localNetwork: 'Local network',
     },
     types: {
       content: 'Site content',

@@ -35,6 +35,11 @@ export type AuditEntry = {
   /** Fields an update sent. */
   changes: string[]
   ip: string | null
+  /** ISO country code and city looked up from the IP when it was recorded. */
+  country: string | null
+  city: string | null
+  /** "Edge 141 · Windows" */
+  device: string | null
 }
 
 export type AuditFilters = { page: number; action?: AuditAction; type?: AuditType; q?: string }

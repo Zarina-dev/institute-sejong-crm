@@ -1,7 +1,7 @@
 import { SearchOutlined } from '@ant-design/icons'
-import { Alert, Button, Card, Col, Grid, Input, Row, Select, Table, Tag, Typography } from 'antd'
+import { Alert, Button, Card, Col, Input, Row, Select, Table, Tag, Tooltip, Typography } from 'antd'
 import type { TableProps } from 'antd'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 
 import { usePreferences, type TranslationKey } from '../../app/preferences'
 import { AUDIT_ACTIONS, AUDIT_PAGE_SIZE, AUDIT_TYPES, type AuditAction, type AuditEntry, type AuditType } from '../../features/audit/api'
@@ -37,18 +37,58 @@ const typeKey = (type: string) =>
   ((TRASH_TYPES as readonly string[]).includes(type) ? `trash.types.${type}` : `audit.types.${type}`) as TranslationKey
 const isKnownType = (type: string | null): type is AuditType => !!type && (AUDIT_TYPES as readonly string[]).includes(type)
 
-const timeFormatters = new Map<Language, Intl.DateTimeFormat>()
+const timeFormatters = new Map<string, Intl.DateTimeFormat>()
 
-/** "2026. 10. 7. 오후 12:14" — the journal needs the time, not only the day. */
+/**
+ * "10. 14. 18:34", 24-hour and numeric — short enough for the row's one
+ * line. The year is shown ("25. 10. 14. 18:34") only for an earlier year.
+ */
 function formatDateTime(value: string, language: Language) {
-  let formatter = timeFormatters.get(language)
+  const date = new Date(value)
+  const thisYear = date.getFullYear() === new Date().getFullYear()
+  const key = `${language}:${thisYear}`
+  let formatter = timeFormatters.get(key)
 
   if (!formatter) {
-    formatter = new Intl.DateTimeFormat(language, { dateStyle: 'medium', timeStyle: 'short' })
-    timeFormatters.set(language, formatter)
+    formatter = new Intl.DateTimeFormat(language, {
+      ...(thisYear ? {} : { year: '2-digit' as const }),
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    })
+    timeFormatters.set(key, formatter)
   }
 
-  return formatter.format(new Date(value))
+  return formatter.format(date)
+}
+
+const regionNames = new Map<Language, Intl.DisplayNames | null>()
+
+/** "Kyrgyzstan" / "Кыргызстан" / "키르기스스탄" — the code itself where the browser has no name for it. */
+function countryName(code: string, language: Language) {
+  if (!regionNames.has(language)) {
+    try {
+      regionNames.set(language, new Intl.DisplayNames([language, 'en'], { type: 'region' }))
+    } catch {
+      regionNames.set(language, null)
+    }
+  }
+
+  return regionNames.get(language)?.of(code) ?? code
+}
+
+const isLoopback = (ip: string) => ip === '::1' || ip.startsWith('127.')
+const isPrivate = (ip: string) => /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|f[cd]|fe[89ab])/i.test(ip)
+
+/** One line per entry: every cell is cut with "…" and shows its whole text on hover. */
+function Line({ text, children, className }: { text: string; children?: ReactNode; className?: string }) {
+  return (
+    <Tooltip title={text} placement="topLeft" mouseEnterDelay={0.4}>
+      <span className={`audit-line${className ? ` ${className}` : ''}`}>{children ?? text}</span>
+    </Tooltip>
+  )
 }
 
 /**
@@ -58,8 +98,6 @@ function formatDateTime(value: string, language: Language) {
  */
 export function AuditAdminPage() {
   const { language, t } = usePreferences()
-  // A phone has no room for columns side by side: each entry reads top to bottom instead.
-  const stacked = !Grid.useBreakpoint().md
   const [page, setPage] = useState(1)
   const [action, setAction] = useState<AuditAction>()
   const [type, setType] = useState<AuditType>()
@@ -90,68 +128,81 @@ export function AuditAdminPage() {
   }
 
   const columns = useMemo<NonNullable<TableProps<AuditEntry>['columns']>>(() => {
-    const when = (entry: AuditEntry) => (
-      <div className="audit-when">
-        <Text>{formatDateTime(entry.at, language)}</Text>
-        {entry.actor === 'system' ? <Text type="secondary">{t('audit.system')}</Text> : <Text strong>{entry.actor}</Text>}
-        {entry.ip ? <Text type="secondary" className="audit-when__ip">{`IP ${entry.ip.replace(/^::ffff:/, '')}`}</Text> : null}
-      </div>
-    )
-    const action = (entry: AuditEntry) => <Tag color={ACTION_COLOR[entry.action]}>{t(actionKey(entry.action))}</Tag>
-    const record = (entry: AuditEntry) => (
-      <div className="audit-record">
-        {isKnownType(entry.entityType) ? <Text type="secondary">{t(typeKey(entry.entityType))}</Text> : null}
-        {entry.label ? <Text>{entry.label}</Text> : null}
-        {entry.changes.length > 0 ? (
-          <Text type="secondary" className="audit-record__changes">
-            {t('audit.changedFields', { fields: entry.changes.join(', ') })}
-          </Text>
-        ) : null}
-      </div>
-    )
-
-    if (stacked) {
-      return [
-        {
-          title: t('audit.title'),
-          key: 'entry',
-          render: (_, entry) => (
-            <div className="audit-stacked">
-              <div className="audit-stacked__head">
-                {action(entry)}
-                <Text type="secondary">{formatDateTime(entry.at, language)}</Text>
-              </div>
-              {record(entry)}
-              <Text type="secondary" className="audit-when__ip">
-                {[entry.actor === 'system' ? t('audit.system') : entry.actor, entry.ip?.replace(/^::ffff:/, '')].filter(Boolean).join(' · ')}
-              </Text>
-            </div>
-          ),
-        },
-      ]
+    /** Where the request came from: a place for a public address, a plain word for a local one. */
+    const place = (entry: AuditEntry) => {
+      if (!entry.ip) return ''
+      if (isLoopback(entry.ip)) return t('audit.location.thisComputer')
+      if (isPrivate(entry.ip)) return t('audit.location.localNetwork')
+      return [entry.city, entry.country ? countryName(entry.country, language) : null].filter(Boolean).join(', ')
     }
 
     return [
       {
-        // When, who and from where share a cell: together they say whose change it was.
         title: t('audit.table.at'),
         key: 'at',
-        width: 200,
-        render: (_, entry) => when(entry),
+        width: 150,
+        render: (_, entry) => <Line text={formatDateTime(entry.at, language)} className="audit-line--muted" />,
+      },
+      {
+        title: t('audit.table.actor'),
+        key: 'actor',
+        width: 135,
+        render: (_, entry) =>
+          entry.actor === 'system' ? (
+            <Line text={t('audit.system')} className="audit-line--muted" />
+          ) : (
+            <Line text={entry.actor} className="audit-line--strong" />
+          ),
       },
       {
         title: t('audit.table.action'),
         key: 'action',
-        width: 140,
-        render: (_, entry) => action(entry),
+        width: 135,
+        render: (_, entry) => <Tag color={ACTION_COLOR[entry.action]}>{t(actionKey(entry.action))}</Tag>,
       },
       {
         title: t('audit.table.record'),
         key: 'record',
-        render: (_, entry) => record(entry),
+        render: (_, entry) => {
+          const kind = isKnownType(entry.entityType) ? t(typeKey(entry.entityType)) : ''
+          const changes = entry.changes.length > 0 ? t('audit.changedFields', { fields: entry.changes.join(', ') }) : ''
+          const text = [kind, entry.label, changes].filter(Boolean).join(' · ')
+
+          return text ? (
+            <Line text={text}>
+              {kind ? <span className="audit-line__kind">{kind}</span> : null}
+              {entry.label}
+              {changes ? <span className="audit-line__muted"> · {changes}</span> : null}
+            </Line>
+          ) : (
+            <Text type="secondary">—</Text>
+          )
+        },
+      },
+      {
+        title: t('audit.table.ip'),
+        key: 'ip',
+        width: 225,
+        render: (_, entry) => {
+          if (!entry.ip) return <Text type="secondary">—</Text>
+          const where = place(entry)
+
+          return (
+            <Line text={[entry.ip, where].filter(Boolean).join(' · ')}>
+              <span className="audit-line__ip">{entry.ip}</span>
+              {where ? <span className="audit-line__muted"> · {where}</span> : null}
+            </Line>
+          )
+        },
+      },
+      {
+        title: t('audit.table.device'),
+        key: 'device',
+        width: 175,
+        render: (_, entry) => (entry.device ? <Line text={entry.device} className="audit-line--muted" /> : <Text type="secondary">—</Text>),
       },
     ]
-  }, [language, stacked, t])
+  }, [language, t])
 
   return (
     <div className="page-layout">
@@ -213,7 +264,7 @@ export function AuditAdminPage() {
 
       <Card className="surface-card">
         <Table
-          className="admin-table"
+          className="admin-table audit-table"
           columns={columns}
           dataSource={audit.data?.items}
           rowKey="id"
@@ -226,7 +277,8 @@ export function AuditAdminPage() {
             hideOnSinglePage: true,
             onChange: setPage,
           }}
-          scroll={stacked ? undefined : { x: 720 }}
+          tableLayout="fixed"
+          scroll={{ x: 1060 }}
           locale={{ emptyText: filtersActive ? t('audit.noMatches') : t('audit.empty') }}
         />
       </Card>

@@ -131,9 +131,12 @@ const ru: LocaleDictionary = {
     system: 'Система (автоочистка)',
     changedFields: 'Поля: {{fields}}',
     table: {
-      at: 'Время · пользователь',
+      at: 'Время',
+      actor: 'Пользователь',
       action: 'Действие',
       record: 'Запись',
+      ip: 'IP · местоположение',
+      device: 'Устройство',
     },
     actions: {
       create: 'Создано',
@@ -146,6 +149,10 @@ const ru: LocaleDictionary = {
       purge: 'Удалено навсегда',
       login: 'Вход',
       login_failed: 'Неудачный вход',
+    },
+    location: {
+      thisComputer: 'Этот компьютер',
+      localNetwork: 'Локальная сеть',
     },
     types: {
       content: 'Содержимое сайта',

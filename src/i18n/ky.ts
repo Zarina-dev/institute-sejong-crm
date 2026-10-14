@@ -130,9 +130,12 @@ const ky: LocaleDictionary = {
     system: 'Система (авто тазалоо)',
     changedFields: 'Талаалар: {{fields}}',
     table: {
-      at: 'Убакыт · колдонуучу',
+      at: 'Убакыт',
+      actor: 'Колдонуучу',
       action: 'Аракет',
       record: 'Жазуу',
+      ip: 'IP · жайгашкан жери',
+      device: 'Түзмөк',
     },
     actions: {
       create: 'Түзүлдү',
@@ -145,6 +148,10 @@ const ky: LocaleDictionary = {
       purge: 'Биротоло өчүрүлдү',
       login: 'Кирүү',
       login_failed: 'Ийгиликсиз кирүү',
+    },
+    location: {
+      thisComputer: 'Ушул компьютер',
+      localNetwork: 'Жергиликтүү тармак',
     },
     types: {
       content: 'Сайттын мазмуну',

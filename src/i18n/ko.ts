@@ -130,9 +130,12 @@ const ko: LocaleDictionary = {
     system: '시스템 (자동 정리)',
     changedFields: '변경 항목: {{fields}}',
     table: {
-      at: '일시 · 사용자',
+      at: '일시',
+      actor: '사용자',
       action: '작업',
       record: '대상',
+      ip: 'IP · 위치',
+      device: '기기',
     },
     actions: {
       create: '추가',
@@ -145,6 +148,10 @@ const ko: LocaleDictionary = {
       purge: '영구 삭제',
       login: '로그인',
       login_failed: '로그인 실패',
+    },
+    location: {
+      thisComputer: '이 컴퓨터',
+      localNetwork: '내부 네트워크',
     },
     types: {
       content: '사이트 콘텐츠',
