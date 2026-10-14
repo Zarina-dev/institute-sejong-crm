@@ -88,6 +88,7 @@ export const adminNavigation: AdminNavGroup[] = [
       // One record for every event, contests included — as on the site.
       { to: '/admin/competitions', labelKey: 'siteNav.historyRecords' },
       { to: '/admin/studies', labelKey: 'siteNav.historyStudies' },
+      { to: '/admin/graduates', labelKey: 'siteNav.historyGraduates' },
     ],
   },
   /* Internal: nothing under this section appears on the public site. */

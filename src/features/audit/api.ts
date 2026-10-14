@@ -12,6 +12,7 @@ export const AUDIT_TYPES = [
   'events',
   'competitions',
   'studies',
+  'graduates',
   'staff',
   'chronology',
   'textbooks',

@@ -7,6 +7,7 @@ import { GreetingPage } from '../pages/public/about/GreetingPage'
 import { LocationPage } from '../pages/public/about/LocationPage'
 import { StaffPage } from '../pages/public/about/StaffPage'
 import { StudiesPage } from '../pages/public/history/StudiesPage'
+import { GraduatesPage } from '../pages/public/history/GraduatesPage'
 import { HistoryPage } from '../pages/public/HistoryPage'
 import { HomePage } from '../pages/public/HomePage'
 import { LoginPage } from '../pages/public/LoginPage'
@@ -34,6 +35,7 @@ const StaffAdminPage = lazy(() => import('../pages/admin/StaffAdminPage').then((
 const ContentAdminPage = lazy(() => import('../pages/admin/ContentAdminPage').then((m) => ({ default: m.ContentAdminPage })))
 const TextbooksAdminPage = lazy(() => import('../pages/admin/TextbooksAdminPage').then((m) => ({ default: m.TextbooksAdminPage })))
 const CompetitionsAdminPage = lazy(() => import('../pages/admin/CompetitionsAdminPage').then((m) => ({ default: m.CompetitionsAdminPage })))
+const GraduatesAdminPage = lazy(() => import('../pages/admin/GraduatesAdminPage').then((m) => ({ default: m.GraduatesAdminPage })))
 const StudiesAdminPage = lazy(() => import('../pages/admin/StudiesAdminPage').then((m) => ({ default: m.StudiesAdminPage })))
 const MeetingsAdminPage = lazy(() => import('../pages/admin/MeetingsAdminPage').then((m) => ({ default: m.MeetingsAdminPage })))
 const TermsAdminPage = lazy(() => import('../pages/admin/TermsAdminPage').then((m) => ({ default: m.TermsAdminPage })))
@@ -84,6 +86,7 @@ export function AppRouter() {
           {/* 행사·대회: events and competitions together, a year at a time. */}
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/history/studies" element={<StudiesPage />} />
+          <Route path="/history/graduates" element={<GraduatesPage />} />
           {/* Competitions used to have pages of their own; old links still land. */}
           <Route path="/history/competitions" element={<Navigate to="/history" replace />} />
           <Route path="/history/speech" element={<Navigate to="/history" replace />} />
@@ -118,6 +121,7 @@ export function AppRouter() {
           <Route path="events" element={<EventsAdminPage />} />
           <Route path="competitions" element={<CompetitionsAdminPage />} />
           <Route path="studies" element={<StudiesAdminPage />} />
+          <Route path="graduates" element={<GraduatesAdminPage />} />
           <Route path="meetings" element={<MeetingsAdminPage />} />
           <Route path="trash" element={<TrashAdminPage />} />
           <Route path="audit" element={<AuditAdminPage />} />

@@ -1,5 +1,5 @@
-import { LeftOutlined, RightOutlined } from '@ant-design/icons'
-import { Button } from 'antd'
+import { ExpandOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons'
+import { Button, Image } from 'antd'
 import { useEffect, useState } from 'react'
 
 import { assetUrl } from '../api/client'
@@ -16,12 +16,17 @@ type PhotoCarouselProps = {
  * Several photos in one fixed frame: the frame never changes size — a tall
  * portrait and a wide group shot leave the page alone — and the photos slide
  * in from the left or the right. Arrows, dots and the arrow keys all move it.
+ *
+ * The frame crops to fill itself; a click opens the photo whole, as it was
+ * taken — its own proportions, never cut — with the others a swipe away.
  */
 export function PhotoCarousel({ images, label }: PhotoCarouselProps) {
   const { t } = usePreferences()
   const [index, setIndex] = useState(0)
   /** Which way the incoming photo should enter from. */
   const [direction, setDirection] = useState<'next' | 'prev'>('next')
+  /** The full-size viewer: open on the photo that was clicked. */
+  const [viewing, setViewing] = useState(false)
 
   // A shorter list (an edit, another record) must not leave us out of bounds.
   useEffect(() => {
@@ -65,8 +70,18 @@ export function PhotoCarousel({ images, label }: PhotoCarouselProps) {
             alt=""
             loading={position === 0 ? 'eager' : 'lazy'}
             aria-hidden={position !== index}
+            onClick={() => setViewing(true)}
           />
         ))}
+
+        <Button
+          className="photo-carousel__expand"
+          shape="circle"
+          icon={<ExpandOutlined />}
+          aria-label={t('gallery.viewFullSize')}
+          title={t('gallery.viewFullSize')}
+          onClick={() => setViewing(true)}
+        />
 
         {!single ? (
           <>
@@ -109,6 +124,21 @@ export function PhotoCarousel({ images, label }: PhotoCarouselProps) {
           ))}
         </div>
       ) : null}
+
+      {/* The viewer: each photo at its own size, 1:1 — dragged when it is bigger than the screen. */}
+      <Image.PreviewGroup
+        items={images.map((image) => assetUrl(image))}
+        preview={{
+          visible: viewing,
+          current: index,
+          rootClassName: 'photo-viewer',
+          onVisibleChange: (open) => setViewing(open),
+          onChange: (current) => {
+            setDirection(current > index ? 'next' : 'prev')
+            setIndex(current)
+          },
+        }}
+      />
     </div>
   )
 }

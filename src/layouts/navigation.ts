@@ -60,6 +60,7 @@ export const navigation: NavSection[] = [
       // Events and competitions are one record of the institute's years.
       { to: '/history', labelKey: 'siteNav.historyRecords' },
       { to: '/history/studies', labelKey: 'siteNav.historyStudies' },
+      { to: '/history/graduates', labelKey: 'siteNav.historyGraduates' },
     ],
   },
 ]

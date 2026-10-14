@@ -13,6 +13,7 @@ export const TRASH_TYPES = [
   'meetings',
   'chronology',
   'terms',
+  'graduates',
 ] as const
 export type TrashType = (typeof TRASH_TYPES)[number]
 

@@ -7,6 +7,7 @@ import { usePreferences } from '../../../app/preferences'
 import { useStudies } from '../../../features/studies/queries'
 import { otherName, studyText } from '../../../features/studies/text'
 import type { StudyAbroad } from '../../../features/studies/types'
+import { BackToTop } from '../../../shared/BackToTop'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { HeaderSearch, matchesQuery } from '../../../shared/HeaderSearch'
 import { PageHeader } from '../../../shared/PageHeader'
@@ -168,6 +169,8 @@ export function StudiesPage() {
           <Empty description={t('studies.empty')} />
         </Card>
       )}
+
+      <BackToTop />
     </div>
   )
 }

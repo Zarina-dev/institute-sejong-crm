@@ -4868,6 +4868,105 @@ button.attachment-chip:hover {
   border-radius: var(--radius-md);
 }
 
+/* ---- 졸업생 현황: one numbered list per term ---- */
+.graduate-terms {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.graduate-term__label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--color-primary);
+  font-size: var(--text-xl);
+}
+
+.graduate-term__count {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+}
+
+.graduate-list.ant-card .ant-card-body {
+  padding: var(--space-2) var(--space-5);
+}
+
+.graduate-list__rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Number | name | note on one line; on a phone the note drops under the name. */
+.graduate-row {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) minmax(0, 1.3fr);
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.graduate-row:last-child {
+  border-bottom: 0;
+}
+
+.graduate-row__number {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.graduate-row__name {
+  display: grid;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.graduate-row__alias {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.graduate-row__note {
+  min-width: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .graduate-row {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+  }
+
+  .graduate-row__note {
+    grid-column: 2;
+  }
+}
+
+/* "^" back to the top of a long page. */
+.back-to-top.ant-float-btn {
+  inset-inline-end: var(--space-6);
+  inset-block-end: var(--space-6);
+}
+
+/* Out of the way while a photo is open full size (a closed viewer keeps its wrap, hidden). */
+body:has(.photo-viewer .ant-image-preview-wrap:not([style*='display: none'])) .back-to-top {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .back-to-top.ant-float-btn {
+    inset-inline-end: var(--space-4);
+    inset-block-end: var(--space-4);
+  }
+}
+
 /* The frame is fixed: a portrait and a wide group shot leave the page alone. */
 .photo-carousel__frame {
   position: relative;
@@ -4886,6 +4985,38 @@ button.attachment-chip:hover {
   object-fit: cover;
   opacity: 0;
   pointer-events: none;
+}
+
+/* The photo opens full size on click; the corner button says so. */
+.photo-carousel__photo.is-current {
+  cursor: zoom-in;
+}
+
+.photo-carousel__expand.ant-btn {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 2;
+  border: 0;
+  background: rgb(0 0 0 / 0.45);
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
+
+.photo-carousel__expand.ant-btn:hover,
+.photo-carousel__expand.ant-btn:focus-visible {
+  background: rgb(0 0 0 / 0.65) !important;
+  color: #fff !important;
+}
+
+/*
+ * The viewer shows the photo as it was taken: its own size, 1:1, nothing
+ * cut and nothing shrunk to fit. A photo bigger than the screen is dragged
+ * to see the rest; the toolbar zooms out when the whole of it is wanted.
+ */
+.photo-viewer .ant-image-preview-img {
+  max-width: none;
+  max-height: none;
 }
 
 /* Only the current photo is painted; it slides in from the side it came from. */

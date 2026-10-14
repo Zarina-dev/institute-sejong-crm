@@ -7,6 +7,7 @@ import { CompetitionKindFilter } from '../../features/competitions/KindSelect'
 import { ALL_KINDS, competitionKindsInUse } from '../../features/competitions/kinds'
 import { usePublishedCompetitions } from '../../features/competitions/queries'
 import type { Competition, CompetitionKind } from '../../features/competitions/types'
+import { BackToTop } from '../../shared/BackToTop'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { PageHeader } from '../../shared/PageHeader'
 import { ALL_YEARS, YearSelect } from '../../shared/YearSelect'
@@ -112,6 +113,8 @@ export function HistoryPage() {
           )}
         </>
       )}
+
+      <BackToTop />
     </div>
   )
 }
