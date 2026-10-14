@@ -1,11 +1,12 @@
 import { ArrowRightOutlined, SearchOutlined } from '@ant-design/icons'
-import { Alert, Button, Card, Col, Input, Row, Select, Table, Tag, Tooltip, Typography } from 'antd'
+import { Alert, Button, Card, Col, Input, Popover, Row, Select, Table, Tag, Tooltip, Typography } from 'antd'
 import type { TableProps } from 'antd'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { usePreferences, type TranslationKey } from '../../app/preferences'
 import { AUDIT_ACTIONS, AUDIT_PAGE_SIZE, AUDIT_TYPES, type AuditAction, type AuditEntry, type AuditType } from '../../features/audit/api'
+import { changeHeadline, describeChange, entryChanges } from '../../features/audit/changes'
 import { useAudit } from '../../features/audit/queries'
 import { TRASH_TYPES } from '../../features/trash/api'
 import type { Language } from '../../i18n'
@@ -125,6 +126,47 @@ function Line({ text, children, className }: { text: string; children?: ReactNod
   )
 }
 
+/** The hover card of an entry: the record, then each change as "field: before → after". */
+function ChangeCard({ entry, kind }: { entry: AuditEntry; kind: string }) {
+  const { t } = usePreferences()
+  const changes = entryChanges(entry)
+
+  return (
+    <div className="audit-card">
+      <div className="audit-card__head">
+        <Tag color={ACTION_COLOR[entry.action]}>{t(actionKey(entry.action))}</Tag>
+        <span className="audit-card__record">
+          {kind ? <span className="audit-card__kind">{kind}</span> : null}
+          {entry.label || '—'}
+        </span>
+      </div>
+      {changes.length > 0 ? (
+        <ul className="audit-card__changes">
+          {changes.map((change, index) => {
+            const line = describeChange(change, t)
+            return (
+              <li key={`${change.field}-${index}`}>
+                <span className="audit-card__field">{line.label}</span>
+                {line.note ? (
+                  <span className="audit-card__note">{line.note}</span>
+                ) : (
+                  <span className="audit-card__values">
+                    <span className="audit-card__from">{line.from}</span>
+                    <span className="audit-card__arrow" aria-hidden="true">
+                      →
+                    </span>
+                    <span className="audit-card__to">{line.to}</span>
+                  </span>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      ) : null}
+    </div>
+  )
+}
+
 /**
  * 작업 기록 — who changed what in the admin panel, and when. Written by the
  * server for every change, sign-ins included; read-only here. Entries are
@@ -200,16 +242,19 @@ export function AuditAdminPage() {
         key: 'record',
         render: (_, entry) => {
           const kind = isKnownType(entry.entityType) ? t(typeKey(entry.entityType)) : ''
-          const changes = entry.changes.length > 0 ? t('audit.changedFields', { fields: entry.changes.join(', ') }) : ''
+          const changes = changeHeadline(entry, t)
           const text = [kind, entry.label, changes].filter(Boolean).join(' · ')
 
           if (!text) return <Text type="secondary">—</Text>
+          // One line in the table; the whole story (before → after) on hover.
           const line = (
-            <Line text={text}>
-              {kind ? <span className="audit-line__kind">{kind}</span> : null}
-              {entry.label}
-              {changes ? <span className="audit-line__muted"> · {changes}</span> : null}
-            </Line>
+            <Popover content={<ChangeCard entry={entry} kind={kind} />} placement="bottomLeft" mouseEnterDelay={0.3} rootClassName="audit-popover">
+              <span className="audit-line">
+                {kind ? <span className="audit-line__kind">{kind}</span> : null}
+                {entry.label}
+                {changes ? <span className="audit-line__muted"> · {changes}</span> : null}
+              </span>
+            </Popover>
           )
           const href = entryLink(entry)
 

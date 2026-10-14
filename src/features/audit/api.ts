@@ -23,6 +23,14 @@ export const AUDIT_TYPES = [
 ] as const
 export type AuditType = (typeof AUDIT_TYPES)[number]
 
+/** One changed field, before → after, as the server shortened it (see backend audit/diff.ts). */
+export type AuditChange = {
+  field: string
+  kind: 'text' | 'count' | 'bool' | 'translations' | 'changed'
+  from?: string | null
+  to?: string | null
+}
+
 export type AuditEntry = {
   id: string
   at: string
@@ -34,7 +42,8 @@ export type AuditEntry = {
   /** The record's name when it happened — it may since have been renamed or removed. */
   label: string
   /** Fields an update sent. */
-  changes: string[]
+  /** What an edit changed (older entries: field names only). */
+  changes: Array<AuditChange | string>
   ip: string | null
   /** ISO country code and city looked up from the IP when it was recorded. */
   country: string | null

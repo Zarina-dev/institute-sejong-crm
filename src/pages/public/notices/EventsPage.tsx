@@ -17,20 +17,32 @@ const { Text } = Typography
 
 const NO_EVENTS: ScheduleEvent[] = []
 const NO_TERMS: AcademicTerm[] = []
-/** Weekday names in both scripts, the way the printed table carries them. */
+/** The Korean weekday, as the printed table carries it. */
 const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토']
-const WEEKDAY_KY = ['Жекшем', 'Дүй', 'Шейш', 'Шарш', 'Бейш', 'Жума', 'Ишем']
+
+const weekdayFormats = new Map<string, Intl.DateTimeFormat>()
+/** The same weekday in the reader's language, short: "Mon", "пн", "дш". */
+const weekdayIn = (date: Date, language: string) => {
+  let format = weekdayFormats.get(language)
+  if (!format) {
+    format = new Intl.DateTimeFormat(language, { weekday: 'short' })
+    weekdayFormats.set(language, format)
+  }
+  return format.format(date)
+}
 
 const dayOf = (date: string) => new Date(`${date}T00:00:00`)
 
 /**
  * 행사 일정 — the semester's events as the institute prints them: 월 · 날짜 ·
- * 요일 · 행사명, with the Kyrgyz name beside the Korean one. The month, the
- * day span and the weekday are read off the dates, so "9–13" and "월–금"
- * cannot drift apart from them.
+ * 요일 · 행사명, with the Kyrgyz name beside the Korean one. Under each
+ * Korean heading and weekday, the reader's own language (none on the Korean
+ * site); English and Russian readers also see the event's name in theirs.
+ * The month, the day span and the weekday are read off the dates, so "9–13"
+ * and "월–금" cannot drift apart from them.
  */
 export function EventsPage() {
-  const { t } = usePreferences()
+  const { t, language } = usePreferences()
   const events = useEvents()
   const terms = useTerms()
 
@@ -68,7 +80,7 @@ export function EventsPage() {
         title: (
           <span className="event-table__head">
             <strong>월</strong>
-            <small>Ай</small>
+            {language !== 'ko' ? <small>{t('events.columns.month')}</small> : null}
           </span>
         ),
         key: 'month',
@@ -80,7 +92,7 @@ export function EventsPage() {
         title: (
           <span className="event-table__head">
             <strong>날짜</strong>
-            <small>Күнү</small>
+            {language !== 'ko' ? <small>{t('events.columns.day')}</small> : null}
           </span>
         ),
         key: 'day',
@@ -97,7 +109,7 @@ export function EventsPage() {
         title: (
           <span className="event-table__head">
             <strong>요일</strong>
-            <small>Жуманын күнү</small>
+            {language !== 'ko' ? <small>{t('events.columns.weekday')}</small> : null}
           </span>
         ),
         key: 'weekday',
@@ -111,7 +123,13 @@ export function EventsPage() {
           return (
             <span className="event-table__weekday">
               <strong>{span ? `${WEEKDAY_KO[from]}–${WEEKDAY_KO[to]}` : WEEKDAY_KO[from]}</strong>
-              <small>{span ? `${WEEKDAY_KY[from]}–${WEEKDAY_KY[to]}` : WEEKDAY_KY[from]}</small>
+              {language !== 'ko' ? (
+                <small>
+                  {span
+                    ? `${weekdayIn(dayOf(event.startDate), language)}–${weekdayIn(dayOf(event.endDate!), language)}`
+                    : weekdayIn(dayOf(event.startDate), language)}
+                </small>
+              ) : null}
             </span>
           )
         },
@@ -122,6 +140,9 @@ export function EventsPage() {
         render: (_, event) => (
           <span className="event-table__name">
             <strong>{event.title}</strong>
+            {/* The name in the reader's language, where it has been written (Kyrgyz has its own column). */}
+            {language === 'ru' && event.titleRu ? <span className="event-table__translation">{event.titleRu}</span> : null}
+            {language === 'en' && event.titleEn ? <span className="event-table__translation">{event.titleEn}</span> : null}
             {event.note ? <Text type="secondary">{event.note}</Text> : null}
           </span>
         ),
@@ -132,7 +153,7 @@ export function EventsPage() {
         render: (_, event) => event.titleKy || <Text type="secondary">—</Text>,
       },
     ],
-    [],
+    [language, t],
   )
 
   return (

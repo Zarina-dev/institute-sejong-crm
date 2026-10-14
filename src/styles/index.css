@@ -815,6 +815,94 @@
   color: var(--color-text-muted);
 }
 
+/* 행사 일정: the event's name in the reader's language, under the Korean. */
+.event-table__translation {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* The hover card: what an entry changed, a line per field. */
+.audit-popover .ant-popover-inner {
+  max-width: min(520px, calc(100vw - 32px));
+}
+
+.audit-card {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.audit-card__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.audit-card__record {
+  min-width: 0;
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.audit-card__kind {
+  margin-right: var(--space-2);
+  color: var(--color-text-muted);
+  font-weight: var(--weight-regular);
+}
+
+.audit-card__changes {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Field on the left, before → after on the right; they stack on a phone. */
+.audit-card__changes li {
+  display: grid;
+  grid-template-columns: minmax(84px, max-content) minmax(0, 1fr);
+  gap: var(--space-1) var(--space-3);
+  align-items: baseline;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--text-sm);
+}
+
+.audit-card__field {
+  color: var(--color-text-muted);
+}
+
+.audit-card__values {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.audit-card__from {
+  color: var(--color-text-subtle);
+  text-decoration: line-through;
+}
+
+.audit-card__arrow {
+  margin-inline: var(--space-2);
+  color: var(--color-text-faint);
+}
+
+.audit-card__to {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+}
+
+.audit-card__note {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .audit-card__changes li {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* An entry that leads to its record: the whole row is clickable. */
 .audit-table .ant-table-tbody > tr.is-linked {
   cursor: pointer;
