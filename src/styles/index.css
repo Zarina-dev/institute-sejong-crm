@@ -4868,6 +4868,43 @@ button.attachment-chip:hover {
   border-radius: var(--radius-md);
 }
 
+/*
+ * A choice of several options in a form or dialog (학기 종류: 1학기 … 겨울방학)
+ * wraps onto a second line when the words are long — Kyrgyz and Russian
+ * labels are — instead of running out of the dialog.
+ */
+.ant-form .ant-segmented,
+.ant-modal .ant-segmented,
+.filter-card .ant-card-body > .ant-segmented {
+  max-width: 100%;
+}
+
+.ant-form .ant-segmented-group,
+.ant-modal .ant-segmented-group,
+.filter-card .ant-card-body > .ant-segmented .ant-segmented-group {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+
+/* In a dialog an option's words wrap rather than end in "…" (Түп нусканы жүктөө). */
+.ant-modal .ant-segmented-item-label {
+  min-height: 32px;
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
+  line-height: 1.35;
+  padding-block: 6px;
+}
+
+/*
+ * A text area's character count hangs below the box; a hint under the same
+ * field starts below the count instead of underneath it.
+ */
+.ant-form-item-control-input:has(.ant-input-textarea-show-count) + div .ant-form-item-extra,
+.ant-form-item-control-input:has(.ant-input-textarea-show-count) + .ant-form-item-extra {
+  padding-top: 22px;
+}
+
 /* ---- Translations in the admin forms ---- */
 .translation-fields.ant-collapse {
   margin-bottom: var(--space-5);

@@ -25,6 +25,7 @@ import { usePublishedNews } from '../../features/news/queries'
 import { useTerms } from '../../features/terms/queries'
 import type { AcademicTerm } from '../../features/terms/types'
 import { termInProgress } from '../../features/terms/current'
+import { academicYear } from '../../shared/academicYear'
 import { formatDate } from '../../shared/format'
 
 const { Title, Paragraph, Text } = Typography
@@ -100,7 +101,7 @@ export function HomePage() {
       {/* ---- Key visual ---- */}
       <section className="hero-panel">
         <div className="hero-panel__copy">
-          <Tag className="hero-tag">{t('home.heroTag')}</Tag>
+          <Tag className="hero-tag">{t('home.heroTag', academicYear())}</Tag>
           <Title level={1} className="hero-title">
             {t('home.heroTitle')}
           </Title>

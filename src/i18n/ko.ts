@@ -192,7 +192,7 @@ const ko: LocaleDictionary = {
     tuitionText: '수업은 무료이며, 교재비만 부담하시면 됩니다.',
     enquireTitle: '문의 전화',
     programmesTitle: '개설 과정',
-    heroTag: '2026 / 2027 학년도',
+    heroTag: '{{from}} / {{to}} 학년도',
     heroTitle: '꿈의 동산 – 오시 1세종학당',
     heroCopy:
       '꿈이 있으면 길도 생깁니다. 2013년부터 오시에서 한국어와 한국 문화를 가르치며, 한국 유학과 저마다의 꿈을 향해 나아가는 학생들과 함께하고 있습니다.',
