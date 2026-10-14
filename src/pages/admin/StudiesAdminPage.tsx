@@ -15,6 +15,7 @@ import { ImageUploadField } from '../../shared/ImageUploadField'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
+import { useEditLink } from '../../shared/useEditLink'
 
 const { Text } = Typography
 
@@ -124,6 +125,9 @@ export function StudiesAdminPage() {
     },
     [form],
   )
+
+  // 작업 기록 links here with ?edit=<id>: open that record.
+  useEditLink(studies.data, openEditModal, '/studies')
 
   const submitForm = async () => {
     const values = await form.validateFields().catch(() => null)

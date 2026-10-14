@@ -20,6 +20,7 @@ import { useTableLayout } from '../../shared/useTableLayout'
 import { ALL_YEARS, YearSelect } from '../../shared/YearSelect'
 import { TranslationFields } from '../../shared/TranslationFields'
 import type { TranslationLanguage, Translations } from '../../shared/translations'
+import { useEditLink } from '../../shared/useEditLink'
 
 const { Text } = Typography
 
@@ -147,6 +148,9 @@ export function CompetitionsAdminPage() {
     },
     [form],
   )
+
+  // 작업 기록 links here with ?edit=<id>: open that record.
+  useEditLink(competitions.data, openEditModal, '/competitions')
 
   const submitForm = async () => {
     const values = await form.validateFields().catch(() => null)

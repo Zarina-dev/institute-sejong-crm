@@ -13,6 +13,7 @@ import { getErrorMessage } from '../../shared/errors'
 import { formatDate } from '../../shared/format'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
+import { useEditLink } from '../../shared/useEditLink'
 
 const { Text } = Typography
 
@@ -112,6 +113,9 @@ export function TermsAdminPage() {
     },
     [form],
   )
+
+  // 작업 기록 links here with ?edit=<id>: open that record.
+  useEditLink(terms.data, openEditModal, '/terms')
 
   const submitForm = async () => {
     const values = await form.validateFields().catch(() => null)

@@ -17,6 +17,7 @@ import { formatDate } from '../../shared/format'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
+import { useEditLink } from '../../shared/useEditLink'
 
 const { Text } = Typography
 
@@ -89,10 +90,7 @@ export function EventsAdminPage() {
   }, [all, termList])
 
   const nameOf = useCallback((term: AcademicTerm) => termDisplayName(term, t), [t])
-  const periodOf = useCallback(
-    (term: AcademicTerm) => `${formatDate(term.startDate, language)} ~ ${formatDate(term.endDate, language)}`,
-    [language],
-  )
+  const periodOf = useCallback((term: AcademicTerm) => `${formatDate(term.startDate, language)} ~ ${formatDate(term.endDate, language)}`, [language])
 
   const openCreateModal = useCallback(() => {
     setEditingId(null)
@@ -129,6 +127,9 @@ export function EventsAdminPage() {
     },
     [form, termList],
   )
+
+  // 작업 기록 links here with ?edit=<id>: open that record.
+  useEditLink(events.data, openEditModal, '/events')
 
   const submitForm = async () => {
     const values = await form.validateFields().catch(() => null)
@@ -375,7 +376,11 @@ export function EventsAdminPage() {
             </Form.Item>
           </div>
 
-          <Form.Item name="title" label={t('events.form.title')} rules={[{ required: true, whitespace: true, message: t('events.form.titleRequired') }]}>
+          <Form.Item
+            name="title"
+            label={t('events.form.title')}
+            rules={[{ required: true, whitespace: true, message: t('events.form.titleRequired') }]}
+          >
             <Input maxLength={255} placeholder="2학기 개강식" />
           </Form.Item>
 

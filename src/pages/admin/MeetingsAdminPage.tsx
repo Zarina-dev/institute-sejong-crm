@@ -58,6 +58,7 @@ import { PageHeader } from '../../shared/PageHeader'
 import { RichTextEditor } from '../../shared/RichTextEditor'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { YearSelect } from '../../shared/YearSelect'
+import { useEditLink } from '../../shared/useEditLink'
 
 const { Text } = Typography
 
@@ -275,6 +276,9 @@ export function MeetingsAdminPage() {
     setOpenId(null)
     openEditModal(meeting)
   }
+
+  // 작업 기록 links here with ?edit=<id>: open that record.
+  useEditLink(meetings.data, openEditModal, '/meetings')
 
   const submitForm = async () => {
     const values = await form.validateFields().catch(() => null)

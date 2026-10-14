@@ -9,49 +9,21 @@ import {
   UploadOutlined,
 } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import {
-  App,
-  Button,
-  Card,
-  Col,
-  Empty,
-  Form,
-  Input,
-  Modal,
-  Pagination,
-  Row,
-  Select,
-  Space,
-  Table,
-  Tag,
-  Tooltip,
-  Typography,
-  Upload,
-} from 'antd'
+import { App, Button, Card, Col, Empty, Form, Input, Modal, Pagination, Row, Select, Space, Table, Tag, Tooltip, Typography, Upload } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import { filterCourseOption, useCourseOptions } from '../../features/courses/useCourseOptions'
-import {
-  useCreateMaterial,
-  useDeleteMaterial,
-  useMaterials,
-  useSetMaterialPublished,
-  useUpdateMaterial,
-} from '../../features/materials/queries'
+import { useCreateMaterial, useDeleteMaterial, useMaterials, useSetMaterialPublished, useUpdateMaterial } from '../../features/materials/queries'
 import type { MaterialItem, MaterialsFilters } from '../../features/materials/types'
-import {
-  ALLOWED_MATERIAL_EXTENSIONS,
-  MATERIAL_ACCEPT,
-  MAX_MATERIAL_FILE_SIZE,
-  validateMaterialFile,
-} from '../../features/materials/upload'
+import { ALLOWED_MATERIAL_EXTENSIONS, MATERIAL_ACCEPT, MAX_MATERIAL_FILE_SIZE, validateMaterialFile } from '../../features/materials/upload'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { formatFileSize } from '../../shared/format'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
+import { useEditLink } from '../../shared/useEditLink'
 
 const { Text } = Typography
 
@@ -160,6 +132,9 @@ export function MaterialsAdminPage() {
     [message, t],
   )
 
+  // 작업 기록 links here with ?edit=<id>: open that record.
+  useEditLink(materials.data?.items, openEditModal, '/materials')
+
   const submitForm = async () => {
     const values = await form.validateFields().catch(() => null)
 
@@ -234,7 +209,9 @@ export function MaterialsAdminPage() {
         width: 180,
         // Rows from before the course link whose label matched no course: edit to attach one.
         render: (value: string, record) =>
-          record.courseId ? value : (
+          record.courseId ? (
+            value
+          ) : (
             <Tooltip title={t('materials.unlinkedHint')}>
               <Tag color="warning">{value || t('materials.unlinked')}</Tag>
             </Tooltip>
@@ -245,9 +222,7 @@ export function MaterialsAdminPage() {
         dataIndex: 'isPublished',
         key: 'isPublished',
         width: 120,
-        render: (value: boolean) => (
-          <Tag color={value ? 'green' : 'gold'}>{value ? t('common.published') : t('common.unpublished')}</Tag>
-        ),
+        render: (value: boolean) => <Tag color={value ? 'green' : 'gold'}>{value ? t('common.published') : t('common.unpublished')}</Tag>,
       },
       {
         title: t('common.actions'),
@@ -298,11 +273,27 @@ export function MaterialsAdminPage() {
           </Col>
           <Col xs={24} sm={12} lg={6}>
             <Text>{t('materials.subject')}</Text>
-            <Select allowClear placeholder={t('materials.subject')} value={filters.subject} onChange={setSubject} options={subjectOptions} style={{ width: '100%' }} />
+            <Select
+              allowClear
+              placeholder={t('materials.subject')}
+              value={filters.subject}
+              onChange={setSubject}
+              options={subjectOptions}
+              style={{ width: '100%' }}
+            />
           </Col>
           <Col xs={24} sm={12} lg={6}>
             <Text>{t('materials.course')}</Text>
-            <Select allowClear showSearch filterOption={filterCourseOption} placeholder={t('materials.course')} value={filters.courseId} onChange={setCourse} options={courseOptions} style={{ width: '100%' }} />
+            <Select
+              allowClear
+              showSearch
+              filterOption={filterCourseOption}
+              placeholder={t('materials.course')}
+              value={filters.courseId}
+              onChange={setCourse}
+              options={courseOptions}
+              style={{ width: '100%' }}
+            />
           </Col>
         </Row>
 
@@ -336,7 +327,13 @@ export function MaterialsAdminPage() {
         />
         {data && data.total > data.limit ? (
           <div className="table-pagination">
-            <Pagination current={data.page} pageSize={data.limit} total={data.total} showSizeChanger={false} onChange={(page) => patchFilters({ page })} />
+            <Pagination
+              current={data.page}
+              pageSize={data.limit}
+              total={data.total}
+              showSizeChanger={false}
+              onChange={(page) => patchFilters({ page })}
+            />
           </div>
         ) : null}
       </Card>

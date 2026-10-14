@@ -815,6 +815,36 @@
   color: var(--color-text-muted);
 }
 
+/* An entry that leads to its record: the whole row is clickable. */
+.audit-table .ant-table-tbody > tr.is-linked {
+  cursor: pointer;
+}
+
+.audit-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  color: inherit;
+}
+
+.audit-link .audit-line {
+  min-width: 0;
+}
+
+.audit-link__arrow {
+  flex: none;
+  margin-left: auto;
+  color: var(--color-primary-text);
+  opacity: 0;
+  transition: opacity var(--duration-fast, 0.15s);
+}
+
+.audit-table .ant-table-tbody > tr.is-linked:hover .audit-link__arrow,
+.audit-link:focus-visible .audit-link__arrow {
+  opacity: 1;
+}
+
 .audit-line__ip {
   font-variant-numeric: tabular-nums;
 }

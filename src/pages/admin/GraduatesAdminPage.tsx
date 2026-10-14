@@ -12,6 +12,7 @@ import { matchesQuery } from '../../shared/HeaderSearch'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
+import { useEditLink } from '../../shared/useEditLink'
 
 const { Text } = Typography
 
@@ -77,6 +78,9 @@ export function GraduatesAdminPage() {
     },
     [form],
   )
+
+  // 작업 기록 links here with ?edit=<id>: open that record.
+  useEditLink(graduates.data, openEditModal, '/graduates')
 
   const submitForm = async () => {
     const values = await form.validateFields().catch(() => null)

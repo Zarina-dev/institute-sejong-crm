@@ -13,6 +13,7 @@ import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
 import { TranslationFields } from '../../shared/TranslationFields'
 import type { Translations } from '../../shared/translations'
+import { useEditLink } from '../../shared/useEditLink'
 
 const { Text } = Typography
 
@@ -76,6 +77,9 @@ export function ChronologyAdminPage() {
     },
     [form],
   )
+
+  // 작업 기록 links here with ?edit=<id>: open that record.
+  useEditLink(chronology.data, openEditModal, '/chronology')
 
   const submitForm = async () => {
     const values = await form.validateFields().catch(() => null)

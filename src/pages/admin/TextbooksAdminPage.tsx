@@ -28,6 +28,7 @@ import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
 import { TranslationFields } from '../../shared/TranslationFields'
 import type { Translations } from '../../shared/translations'
+import { useEditLink } from '../../shared/useEditLink'
 
 const { Text } = Typography
 
@@ -109,6 +110,9 @@ export function TextbooksAdminPage() {
     },
     [form],
   )
+
+  // 작업 기록 links here with ?edit=<id>: open that record.
+  useEditLink(textbooks.data, openEditModal, '/textbooks')
 
   const submitForm = async () => {
     const values = await form.validateFields().catch(() => null)

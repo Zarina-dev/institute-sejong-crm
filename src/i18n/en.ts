@@ -128,6 +128,7 @@ export const en = {
     },
   },
   audit: {
+    recordGone: 'This record is no longer there — it may have been deleted (see Recently deleted).',
     title: 'Activity log',
     subtitle: 'Who changed what in the admin panel, and when.',
     policy: 'Every change is recorded automatically, sign-ins included. Entries are kept for one year.',

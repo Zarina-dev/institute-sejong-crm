@@ -1,7 +1,8 @@
-import { SearchOutlined } from '@ant-design/icons'
+import { ArrowRightOutlined, SearchOutlined } from '@ant-design/icons'
 import { Alert, Button, Card, Col, Input, Row, Select, Table, Tag, Tooltip, Typography } from 'antd'
 import type { TableProps } from 'antd'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { usePreferences, type TranslationKey } from '../../app/preferences'
 import { AUDIT_ACTIONS, AUDIT_PAGE_SIZE, AUDIT_TYPES, type AuditAction, type AuditEntry, type AuditType } from '../../features/audit/api'
@@ -36,6 +37,39 @@ const actionKey = (action: AuditAction) => `audit.actions.${action}` as Translat
 const typeKey = (type: string) =>
   ((TRASH_TYPES as readonly string[]).includes(type) ? `trash.types.${type}` : `audit.types.${type}`) as TranslationKey
 const isKnownType = (type: string | null): type is AuditType => !!type && (AUDIT_TYPES as readonly string[]).includes(type)
+
+/** The admin screen that manages each type of record. */
+const SCREEN: Partial<Record<string, string>> = {
+  courses: '/admin/courses',
+  terms: '/admin/terms',
+  news: '/admin/news',
+  events: '/admin/events',
+  competitions: '/admin/competitions',
+  studies: '/admin/studies',
+  graduates: '/admin/graduates',
+  staff: '/admin/staff',
+  textbooks: '/admin/textbooks',
+  materials: '/admin/materials',
+  meetings: '/admin/meetings',
+  chronology: '/admin/chronology',
+}
+
+/**
+ * Where an entry leads: the record's edit dialog (`?edit=<id>`, which the
+ * screen opens); a deleted record waits in 최근 삭제된 항목; a reordering
+ * leads to the list. A sign-in or a record removed for good has nowhere to go.
+ */
+function entryLink(entry: AuditEntry): string | null {
+  if (entry.action === 'login' || entry.action === 'login_failed' || entry.action === 'purge' || !entry.entityType) return null
+  if (entry.action === 'delete') return '/admin/trash'
+  if (entry.entityType === 'content') {
+    const slug = entry.entityId?.split('/')[0]
+    return slug ? `/admin/content?block=${encodeURIComponent(slug)}` : null
+  }
+  const screen = SCREEN[entry.entityType]
+  if (!screen) return null
+  return entry.entityId ? `${screen}?edit=${encodeURIComponent(entry.entityId)}` : screen
+}
 
 const timeFormatters = new Map<string, Intl.DateTimeFormat>()
 
@@ -98,6 +132,7 @@ function Line({ text, children, className }: { text: string; children?: ReactNod
  */
 export function AuditAdminPage() {
   const { language, t } = usePreferences()
+  const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const [action, setAction] = useState<AuditAction>()
   const [type, setType] = useState<AuditType>()
@@ -168,14 +203,24 @@ export function AuditAdminPage() {
           const changes = entry.changes.length > 0 ? t('audit.changedFields', { fields: entry.changes.join(', ') }) : ''
           const text = [kind, entry.label, changes].filter(Boolean).join(' · ')
 
-          return text ? (
+          if (!text) return <Text type="secondary">—</Text>
+          const line = (
             <Line text={text}>
               {kind ? <span className="audit-line__kind">{kind}</span> : null}
               {entry.label}
               {changes ? <span className="audit-line__muted"> · {changes}</span> : null}
             </Line>
+          )
+          const href = entryLink(entry)
+
+          // The record itself is the link (keyboard and screen readers); the row is clickable too.
+          return href ? (
+            <Link to={href} className="audit-link" onClick={(event) => event.stopPropagation()}>
+              {line}
+              <ArrowRightOutlined className="audit-link__arrow" aria-hidden="true" />
+            </Link>
           ) : (
-            <Text type="secondary">—</Text>
+            line
           )
         },
       },
@@ -265,6 +310,11 @@ export function AuditAdminPage() {
       <Card className="surface-card">
         <Table
           className="admin-table audit-table"
+          rowClassName={(entry) => (entryLink(entry) ? 'is-linked' : '')}
+          onRow={(entry) => {
+            const href = entryLink(entry)
+            return href ? { onClick: () => navigate(href) } : {}
+          }}
           columns={columns}
           dataSource={audit.data?.items}
           rowKey="id"
