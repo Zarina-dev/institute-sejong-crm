@@ -69,10 +69,10 @@ function StudentCard({ student, number }: { student: StudyAbroad; number: number
 }
 
 /**
- * 한국 유학 현황 — everyone the institute has sent to Korea, read the way it
- * keeps the list: from the first student onwards, year by year, so someone
- * registered today joins the end rather than displacing the record. The
- * number on each card is the position in that list.
+ * 한국 유학 현황 — everyone the institute has sent to Korea, the most recent
+ * year first. The number on each card is the position in the institute's
+ * record, counted from the first student, so a student registered today
+ * gets the next number and nobody else's changes.
  */
 export function StudiesPage() {
   const { t } = usePreferences()
@@ -112,7 +112,8 @@ export function StudiesPage() {
       byYear.set(student.year, entries)
     })
 
-    return [...byYear.entries()]
+    // The most recent year first; within a year, the order they were entered in.
+    return [...byYear.entries()].reverse()
   }, [search, students])
 
   const found = years.reduce((total, [, entries]) => total + entries.length, 0)

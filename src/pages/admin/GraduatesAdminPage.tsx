@@ -21,9 +21,9 @@ const NO_GRADUATES: Graduate[] = []
 const currentTerm = () => (new Date().getMonth() < 7 ? 1 : 2)
 
 /**
- * 졸업생 현황 — the list of everyone who finished 세종한국어 8책. Read in the
- * order it is published (oldest term first); the 졸업생 번호 is the position,
- * so adding a graduate renumbers nothing by hand.
+ * 졸업생 현황 — the list of everyone who finished 세종한국어 8책, the most
+ * recent term first as on the site. The 졸업생 번호 is the position counted
+ * from the first graduate, so adding one renumbers nothing by hand.
  */
 export function GraduatesAdminPage() {
   const { t } = usePreferences()
@@ -48,6 +48,8 @@ export function GraduatesAdminPage() {
     () =>
       all
         .map((graduate, index) => ({ ...graduate, number: index + 1 }))
+        // The most recent term first, as on the site; within a term, number order.
+        .sort((a, b) => b.year - a.year || b.term - a.term || a.number - b.number)
         .filter((graduate) => matchesQuery(search, [graduate.name, graduate.nameKy, graduate.note, graduate.noteKy, graduate.year])),
     [all, search],
   )

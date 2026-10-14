@@ -17,9 +17,9 @@ type Entry = { graduate: Graduate; number: number }
 
 /**
  * 졸업생 현황 — everyone who finished 세종한국어 8책, by the term they
- * graduated in, the way the institute keeps the list: oldest term first.
- * The 졸업생 번호 is the position in the whole list, so a search keeps each
- * graduate's own number.
+ * graduated in, the most recent term first. The 졸업생 번호 is the position
+ * in the whole list counted from the first graduate, so neither the order
+ * nor a search changes anyone's number.
  */
 export function GraduatesPage() {
   const { t, language } = usePreferences()
@@ -38,7 +38,8 @@ export function GraduatesPage() {
       byTerm.set(key, group)
     })
 
-    return [...byTerm.values()]
+    // The most recent term first; within a term, the graduates in number order.
+    return [...byTerm.values()].reverse()
   }, [all, search])
 
   const found = terms.reduce((total, group) => total + group.entries.length, 0)

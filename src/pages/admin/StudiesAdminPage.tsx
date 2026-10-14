@@ -49,13 +49,16 @@ const ROWS: Array<{ field: BilingualField; label: TranslationKey; placeholder: {
   { field: 'note', label: 'studies.form.note', placeholder: { ko: '', ky: '' } },
 ]
 
-const matches = (input: string, option?: { value?: unknown }) => String(option?.value ?? '').toLowerCase().includes(input.toLowerCase())
+const matches = (input: string, option?: { value?: unknown }) =>
+  String(option?.value ?? '')
+    .toLowerCase()
+    .includes(input.toLowerCase())
 
 /**
  * 한국 유학 현황 — the record of everyone the institute has sent to Korea.
- * The table is read in the order it is published: earliest year first, a new
- * student at the end. The number is the position, so there is nothing to
- * renumber when a student is added.
+ * The table is read as the site shows it: the most recent year first. The
+ * number is the position in the record counted from the first student, so
+ * there is nothing to renumber when a student is added.
  *
  * Every text is entered in Korean and in Kyrgyz. The form lays them out as a
  * translation table — one row per item, the two languages side by side — so
@@ -79,6 +82,11 @@ export function StudiesAdminPage() {
   const saving = createStudy.isPending || updateStudy.isPending
 
   const rows = studies.data ?? NO_STUDENTS
+  // Numbered in the order of the record, shown newest year first (as on the site).
+  const shown = useMemo(
+    () => rows.map((student, index) => ({ ...student, number: index + 1 })).sort((a, b) => b.year - a.year || a.number - b.number),
+    [rows],
+  )
 
   // What the institute has already written, offered before the defaults — per language.
   const optionsFor = useCallback(
@@ -102,7 +110,12 @@ export function StudiesAdminPage() {
     (student: StudyAbroad) => {
       setEditingId(student.id)
       form.setFieldsValue({
-        ...Object.fromEntries(BILINGUAL_FIELDS.flatMap((field) => [[field, student[field]], [`${field}Ky`, student[`${field}Ky`]]])),
+        ...Object.fromEntries(
+          BILINGUAL_FIELDS.flatMap((field) => [
+            [field, student[field]],
+            [`${field}Ky`, student[`${field}Ky`]],
+          ]),
+        ),
         year: student.year,
         photo: student.photo,
         isPublished: student.isPublished,
@@ -159,14 +172,15 @@ export function StudiesAdminPage() {
     [confirmDelete, deleteStudy, message, t],
   )
 
-  const columns = useMemo<NonNullable<TableProps<StudyAbroad>['columns']>>(
+  const columns = useMemo<NonNullable<TableProps<StudyAbroad & { number: number }>['columns']>>(
     () => [
       {
         title: t('studies.columns.number'),
         key: 'number',
         width: 64,
         align: 'center',
-        render: (_, __, index) => <Text type="secondary">{index + 1}</Text>,
+        dataIndex: 'number',
+        render: (number: number) => <Text type="secondary">{number}</Text>,
       },
       {
         title: t('studies.form.photo'),
@@ -329,7 +343,7 @@ export function StudiesAdminPage() {
         <Table
           className="admin-table"
           columns={columns}
-          dataSource={rows}
+          dataSource={shown}
           rowKey="id"
           loading={studies.isPending}
           pagination={false}
@@ -380,7 +394,12 @@ export function StudiesAdminPage() {
               <Fragment key={row.field}>
                 <span className="bilingual-grid__label">
                   {t(row.label)}
-                  {row.field === 'name' ? <span className="bilingual-grid__required" aria-hidden="true"> *</span> : null}
+                  {row.field === 'name' ? (
+                    <span className="bilingual-grid__required" aria-hidden="true">
+                      {' '}
+                      *
+                    </span>
+                  ) : null}
                 </span>
                 {cell(row.field, 'ko', row.placeholder.ko)}
                 {cell(row.field, 'ky', row.placeholder.ky)}
