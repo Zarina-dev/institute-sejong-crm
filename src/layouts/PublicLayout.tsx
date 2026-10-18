@@ -19,6 +19,7 @@ import { useSession } from '../auth/useSession'
 import { BrandMark } from '../shared/BrandMark'
 import { useScrollReset } from '../shared/useScrollReset'
 import { navigation } from './navigation'
+import { PageSuspense } from '../shared/PageSuspense'
 
 const { Header, Content, Footer } = Layout
 const { Text } = Typography
@@ -186,7 +187,9 @@ export function PublicLayout() {
       </Drawer>
 
       <Content className="site-content" id="main-content" tabIndex={-1}>
-        <Outlet />
+        <PageSuspense>
+          <Outlet />
+        </PageSuspense>
       </Content>
 
       <Footer className="site-footer">

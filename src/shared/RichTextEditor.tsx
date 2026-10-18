@@ -352,7 +352,15 @@ function Toolbar({ editor, disabled, uploading, onPickImage }: ToolbarProps) {
         </Popover>
         {state.link ? tool(t('editor.unlink'), <DisconnectOutlined />, false, () => chain().unsetLink().run()) : null}
         <Tooltip title={t('editor.image')}>
-          <Button size="small" type="text" icon={<PictureOutlined />} aria-label={t('editor.image')} loading={uploading} disabled={disabled} onClick={onPickImage} />
+          <Button
+            size="small"
+            type="text"
+            icon={<PictureOutlined />}
+            aria-label={t('editor.image')}
+            loading={uploading}
+            disabled={disabled}
+            onClick={onPickImage}
+          />
         </Tooltip>
       </div>
 

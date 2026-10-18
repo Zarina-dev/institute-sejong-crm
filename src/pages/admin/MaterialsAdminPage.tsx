@@ -86,6 +86,7 @@ export function MaterialsAdminPage() {
   const openEditModal = useCallback(
     (record: MaterialItem) => {
       setEditingId(record.id)
+      form.resetFields()
       form.setFieldsValue({
         title: record.title,
         description: record.description ?? undefined,

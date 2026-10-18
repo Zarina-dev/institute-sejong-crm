@@ -20,7 +20,7 @@ export const ROLE_LABEL: Record<AttendeeRole, string> = {
  * current director's title wins; a former one ("(전임) 학당장") attends as
  * the teacher they now are.
  */
-export function roleFromPosition(position: string): AttendeeRole {
+function roleFromPosition(position: string): AttendeeRole {
   const parts = position.split('|').map((part) => part.trim())
   const has = (word: string) => parts.some((part) => part.includes(word))
 

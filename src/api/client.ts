@@ -34,7 +34,7 @@ const ASSET_ORIGIN = API_BASE_URL.replace(/\/api$/, '')
  * (`VITE_MEDIA_BASE_URL`, the bucket's public address — same as the API's
  * R2_PUBLIC_URL). Unset, they come from the API server as before.
  */
-export const MEDIA_BASE_URL = (import.meta.env.VITE_MEDIA_BASE_URL || '').replace(/\/+$/, '')
+const MEDIA_BASE_URL = (import.meta.env.VITE_MEDIA_BASE_URL || '').replace(/\/+$/, '')
 
 /** `/uploads/images/x.png` → `images/x.png`; null for anything not in R2 (documents stay on the API). */
 const MEDIA_PATH = /^\/uploads\/((?:images|videos)\/[^/?#]+)$/

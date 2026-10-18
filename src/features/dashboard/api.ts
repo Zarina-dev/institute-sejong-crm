@@ -2,7 +2,7 @@ import { apiGet } from '../../api/client'
 import type { NewsCategory } from '../news/types'
 
 /** Counted on the server — the dashboard used to download every row to count them. */
-export type DashboardSummary = {
+type DashboardSummary = {
   courses: { total: number; drafts: number; programmes: number }
   news: { total: number; drafts: number }
   /** The newest few of each, for the activity feed. */

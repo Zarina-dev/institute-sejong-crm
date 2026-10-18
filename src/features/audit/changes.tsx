@@ -5,7 +5,7 @@ import type { AuditChange, AuditEntry } from './api'
 const LANGUAGE_NAME: Record<string, string> = { en: 'English', ru: 'Русский', ky: 'Кыргызча', ko: '한국어' }
 
 /** A field as the admin's own forms name it: 제목, 장소, 수상자 … — the raw name only for one not listed. */
-export function fieldLabel(field: string, t: TranslateFn): string {
+function fieldLabel(field: string, t: TranslateFn): string {
   const label = (name: string) => {
     const key = `audit.fields.${name}` as TranslationKey
     const text = t(key)

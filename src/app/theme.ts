@@ -97,5 +97,3 @@ export function getAntdTheme(mode: ThemeMode): ThemeConfig {
     },
   }
 }
-
-export { palette as themePalette }

@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createTerm, deleteTerm, getTermUsage, getTerms, updateTerm } from './api'
 import type { AcademicTermInput } from './types'
 
-export const termKeys = { all: ['terms'] as const, usage: ['terms', 'usage'] as const }
+const termKeys = { all: ['terms'] as const, usage: ['terms', 'usage'] as const }
 
 export function useTerms() {
   return useQuery({ queryKey: termKeys.all, queryFn: getTerms, staleTime: 5 * 60_000 })

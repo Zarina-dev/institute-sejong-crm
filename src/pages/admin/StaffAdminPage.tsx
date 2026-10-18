@@ -99,6 +99,7 @@ export function StaffAdminPage() {
   const openEditModal = useCallback(
     (member: StaffMember) => {
       setEditingId(member.id)
+      form.resetFields()
       form.setFieldsValue({
         name: member.name,
         position: member.position,

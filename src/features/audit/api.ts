@@ -54,7 +54,7 @@ export type AuditEntry = {
 
 export type AuditFilters = { page: number; action?: AuditAction; type?: AuditType; q?: string }
 
-export type AuditPage = { items: AuditEntry[]; total: number; page: number; limit: number }
+type AuditPage = { items: AuditEntry[]; total: number; page: number; limit: number }
 
 export const AUDIT_PAGE_SIZE = 50
 

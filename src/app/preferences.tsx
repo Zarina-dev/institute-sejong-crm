@@ -1,12 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
 import { setApiLanguage } from '../api/client'
 import {
@@ -21,6 +13,7 @@ import {
   type TranslateParams,
   type TranslationKey,
 } from '../i18n'
+import { readStorage, writeStorage } from '../shared/storage'
 
 export type { Language, TranslationKey }
 export { languages }
@@ -30,7 +23,7 @@ const LANGUAGE_STORAGE_KEY = 'institut-language'
 const THEME_STORAGE_KEY = 'institut-theme'
 
 function readLanguage(): Language {
-  const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY)
+  const stored = readStorage('local', LANGUAGE_STORAGE_KEY)
 
   if (isLanguage(stored)) {
     return stored
@@ -41,7 +34,7 @@ function readLanguage(): Language {
 }
 
 function readTheme(): ThemeMode {
-  const stored = localStorage.getItem(THEME_STORAGE_KEY)
+  const stored = readStorage('local', THEME_STORAGE_KEY)
 
   if (stored === 'light' || stored === 'dark') {
     return stored
@@ -74,15 +67,11 @@ const PreferencesContext = createContext<Preferences | null>(null)
 export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>(readLanguage)
   const [theme, setTheme] = useState<ThemeMode>(readTheme)
-  const [dictionary, setDictionary] = useState<LocaleDictionary>(
-    () => getLoadedDictionary(readLanguage()) ?? (en as unknown as LocaleDictionary),
-  )
-  const [loadedFor, setLoadedFor] = useState<Language>(() =>
-    getLoadedDictionary(readLanguage()) ? readLanguage() : 'en',
-  )
+  const [dictionary, setDictionary] = useState<LocaleDictionary>(() => getLoadedDictionary(readLanguage()) ?? (en as unknown as LocaleDictionary))
+  const [loadedFor, setLoadedFor] = useState<Language>(() => (getLoadedDictionary(readLanguage()) ? readLanguage() : 'en'))
 
   useEffect(() => {
-    localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
+    writeStorage('local', LANGUAGE_STORAGE_KEY, language)
     document.documentElement.lang = language
     setApiLanguage(language)
 
@@ -101,11 +90,9 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   }, [language])
 
   useEffect(() => {
-    localStorage.setItem(THEME_STORAGE_KEY, theme)
+    writeStorage('local', THEME_STORAGE_KEY, theme)
     document.documentElement.dataset.theme = theme
-    document
-      .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', theme === 'dark' ? '#0d1420' : '#ffffff')
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0d1420' : '#ffffff')
   }, [theme])
 
   const toggleTheme = useCallback(() => {
@@ -114,10 +101,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   const setLanguage = useCallback((value: Language) => setLanguageState(value), [])
 
-  const t = useCallback<TranslateFn>(
-    (key, params) => translate(loadedFor, dictionary, key, params),
-    [dictionary, loadedFor],
-  )
+  const t = useCallback<TranslateFn>((key, params) => translate(loadedFor, dictionary, key, params), [dictionary, loadedFor])
 
   const value = useMemo<Preferences>(
     () => ({ language, languageLoading: loadedFor !== language, theme, setLanguage, toggleTheme, t }),
@@ -138,4 +122,3 @@ export function usePreferences() {
 }
 
 /** Alias for readers who look for the usual name. */
-export const useI18n = usePreferences

@@ -110,6 +110,7 @@ export function StudiesAdminPage() {
   const openEditModal = useCallback(
     (student: StudyAbroad) => {
       setEditingId(student.id)
+      form.resetFields()
       form.setFieldsValue({
         ...Object.fromEntries(
           BILINGUAL_FIELDS.flatMap((field) => [

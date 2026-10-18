@@ -3,10 +3,8 @@ import { Button, Modal, Result, Segmented, Spin } from 'antd'
 import DOMPurify from 'dompurify'
 import { useEffect, useRef, useState } from 'react'
 
-import { assetUrl, authedUrl } from '../api/client'
 import { usePreferences } from '../app/preferences'
-
-export type PreviewFile = { url: string; name: string }
+import { fileDownloadUrl, fileSource, type PreviewFile } from './fileLinks'
 
 type Kind = 'pdf' | 'image' | 'text' | 'csv' | 'hwp' | 'docx' | 'xlsx' | 'none'
 
@@ -27,20 +25,6 @@ const KIND_BY_EXTENSION: Record<string, Kind> = {
 const extensionOf = (name: string) => name.split('.').pop()?.toLowerCase() ?? ''
 
 /**
- * 회의록 attachments are not public files: the API hands them to the admin
- * only, with the token in the query since an iframe or a link sends no
- * header. Anything else stored by the API is a plain asset.
- */
-const sourceOf = (url: string) => (url.startsWith('/uploads/documents/') ? authedUrl(url) : assetUrl(url))
-
-/** The same file as a download under its original name — the API names it, as a cross-origin <a download> cannot. */
-function downloadOf(url: string, name: string) {
-  const link = new URL(sourceOf(url))
-  link.searchParams.set('name', name)
-  return link.toString()
-}
-
-/**
  * Read a file without downloading it: the minutes' attachments are mostly
  * .hwp, and opening each one in 한글 just to see which it is wastes the
  * admin's time. Every format is drawn in the page; the readers for .hwp,
@@ -48,7 +32,7 @@ function downloadOf(url: string, name: string) {
  */
 export function FilePreview({ file, onClose }: { file: PreviewFile | null; onClose: () => void }) {
   const { t } = usePreferences()
-  const href = file ? sourceOf(file.url) : ''
+  const href = file ? fileSource(file.url) : ''
 
   return (
     <Modal
@@ -62,7 +46,7 @@ export function FilePreview({ file, onClose }: { file: PreviewFile | null; onClo
         file ? (
           <>
             <Button onClick={onClose}>{t('preview.close')}</Button>
-            <a href={downloadOf(file.url, file.name)} download={file.name}>
+            <a href={fileDownloadUrl(file)} download={file.name}>
               <Button type="primary" icon={<DownloadOutlined />}>
                 {t('preview.download')}
               </Button>
@@ -80,13 +64,10 @@ export function FilePreview({ file, onClose }: { file: PreviewFile | null; onClo
 export function FileView({ file }: { file: PreviewFile }) {
   return (
     <div className="file-view">
-      <PreviewBody key={file.url} file={file} href={sourceOf(file.url)} />
+      <PreviewBody key={file.url} file={file} href={fileSource(file.url)} />
     </div>
   )
 }
-
-/** A link that downloads the file under its own name. */
-export const fileDownloadUrl = (file: PreviewFile) => downloadOf(file.url, file.name)
 
 function PreviewBody({ file, href }: { file: PreviewFile; href: string }) {
   const { t } = usePreferences()

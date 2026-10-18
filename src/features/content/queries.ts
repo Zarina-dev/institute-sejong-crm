@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { usePreferences } from '../../app/preferences'
 import { getAllContent, getContent, saveContent, type ContentSlug } from './api'
 
-export const contentKeys = {
+const contentKeys = {
   all: ['content'] as const,
   locale: (locale: string) => [...contentKeys.all, locale] as const,
   admin: () => [...contentKeys.all, 'admin'] as const,

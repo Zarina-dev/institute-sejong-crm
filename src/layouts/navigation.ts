@@ -1,8 +1,8 @@
 import type { TranslationKey } from '../app/preferences'
 
-export type NavChild = { to: string; labelKey: TranslationKey }
+type NavChild = { to: string; labelKey: TranslationKey }
 
-export type NavSection = {
+type NavSection = {
   /** Landing route of the section — the parent item links here too. */
   to: string
   labelKey: TranslationKey

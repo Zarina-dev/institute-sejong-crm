@@ -1,4 +1,5 @@
 import type { StaffMember } from './types'
+import { toIsoDate } from '../courses/week'
 
 /**
  * 재직 중 · 입사 예정 · 퇴직 — read off the employment dates, never switched
@@ -8,7 +9,8 @@ import type { StaffMember } from './types'
  */
 export type StaffStatus = 'current' | 'upcoming' | 'former'
 
-const today = () => new Date().toISOString().slice(0, 10)
+// Today on the visitor's own calendar, not UTC (in Osh UTC lags until 06:00).
+const today = () => toIsoDate(new Date())
 
 export function staffStatus(member: Pick<StaffMember, 'startDate' | 'endDate'>, on = today()): StaffStatus {
   if (member.startDate && member.startDate > on) {

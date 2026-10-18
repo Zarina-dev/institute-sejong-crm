@@ -1,4 +1,4 @@
-import { QueryClient } from '@tanstack/react-query'
+import { MutationCache, QueryClient } from '@tanstack/react-query'
 
 import { ApiError } from '../api/client'
 
@@ -11,8 +11,13 @@ import { ApiError } from '../api/client'
  *   network failures and 5xx get one retry.
  * - `refetchOnWindowFocus` off: the admin tables are edited in modals, and a
  *   refetch on every tab switch fights with in-progress edits.
+ * - Any successful change marks the trash stale: deletes land there and
+ *   restores leave it, and it is refetched only when next shown.
  */
-export const queryClient = new QueryClient({
+export const queryClient: QueryClient = new QueryClient({
+  mutationCache: new MutationCache({
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['trash'] }),
+  }),
   defaultOptions: {
     queries: {
       staleTime: 30_000,

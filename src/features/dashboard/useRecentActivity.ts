@@ -7,7 +7,7 @@ import { useDashboard } from './queries'
 
 export type ActivityKind = 'course' | 'material' | 'news' | 'staff'
 
-export type ActivityEntry = {
+type ActivityEntry = {
   id: string
   kind: ActivityKind
   /** Primary label: the record's name/title. */

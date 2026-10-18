@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createChronologyEntry, deleteChronologyEntry, getAllChronology, getChronology, updateChronologyEntry } from './api'
 import type { ChronologyEntryInput } from './types'
 
-export const chronologyKeys = {
+const chronologyKeys = {
   all: ['chronology'] as const,
   published: () => [...chronologyKeys.all, 'published'] as const,
   admin: () => [...chronologyKeys.all, 'admin'] as const,

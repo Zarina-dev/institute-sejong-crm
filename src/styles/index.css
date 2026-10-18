@@ -399,8 +399,7 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(circle at 20% 30%, #000 0, transparent 72%);
 }
@@ -815,6 +814,13 @@
   color: var(--color-text-muted);
 }
 
+/* A page loading for the first time, inside its layout. */
+.page-fallback {
+  display: grid;
+  place-items: center;
+  min-height: 50vh;
+}
+
 /* The timetable's day: 오늘 / 내일 / 다음 수업, then the date. */
 .board-date__when {
   margin-right: var(--space-2);
@@ -963,7 +969,9 @@
   flex: none;
   opacity: 0;
   color: var(--color-text-faint);
-  transition: var(--transition-colors), opacity var(--duration-fast) var(--ease-out);
+  transition:
+    var(--transition-colors),
+    opacity var(--duration-fast) var(--ease-out);
 }
 
 .ant-select-item-option-active .catalog-option .ant-btn,
@@ -2295,7 +2303,7 @@
 /* --- Admin stat cards --- */
 
 @media (max-width: 760px) {
-      }
+}
 
 /* ==========================================================================
    Admin dashboard
@@ -2607,7 +2615,6 @@ a.activity-row:hover b {
   .header-actions .ant-btn-primary {
     padding-inline: var(--space-3);
   }
-
 }
 
 /* ==========================================================================
@@ -2743,7 +2750,9 @@ a.activity-row:hover b {
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   background: var(--color-surface);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .rich-editor:focus-within {
@@ -4511,7 +4520,9 @@ button.attachment-chip:hover {
   border: 2px solid var(--color-surface);
   border-radius: 50%;
   background: var(--color-border-strong);
-  transition: transform var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
 }
 
 .chronology__entry:hover::before {
@@ -4557,7 +4568,9 @@ button.attachment-chip:hover {
   width: 14px;
   height: 14px;
   background: var(--color-primary);
-  box-shadow: 0 0 0 5px var(--color-primary-soft), var(--shadow-primary);
+  box-shadow:
+    0 0 0 5px var(--color-primary-soft),
+    var(--shadow-primary);
 }
 
 .chronology__entry.is-milestone .chronology__body {
@@ -4693,7 +4706,6 @@ button.attachment-chip:hover {
     left: calc(var(--space-5) * -1 - 6px);
   }
 }
-
 
 /* ==========================================================================
    The landing page, in the idiom institute sites are read in here:
@@ -5044,7 +5056,6 @@ button.attachment-chip:hover {
   }
 }
 
-
 /* ---- 홈 › 학당 소개 › 인사말 ---- */
 
 .breadcrumbs {
@@ -5345,7 +5356,9 @@ body:has(.photo-viewer .ant-image-preview-wrap:not([style*='display: none'])) .b
   box-shadow: var(--shadow-sm);
   transform: translateY(-50%);
   opacity: 0;
-  transition: var(--transition-colors), opacity var(--duration-fast) var(--ease-out);
+  transition:
+    var(--transition-colors),
+    opacity var(--duration-fast) var(--ease-out);
 }
 
 .photo-carousel__arrow--prev {
@@ -5394,7 +5407,9 @@ body:has(.photo-viewer .ant-image-preview-wrap:not([style*='display: none'])) .b
   border-radius: 50%;
   background: var(--color-border-strong);
   cursor: pointer;
-  transition: var(--transition-colors), width var(--duration-fast) var(--ease-out);
+  transition:
+    var(--transition-colors),
+    width var(--duration-fast) var(--ease-out);
 }
 
 .photo-carousel__dots button.is-current {
@@ -5826,7 +5841,6 @@ body:has(.photo-viewer .ant-image-preview-wrap:not([style*='display: none'])) .b
     font-size: var(--text-xs);
   }
 }
-
 
 /* ==========================================================================
    학기 선택 — the semester a class runs in. The one in progress carries a

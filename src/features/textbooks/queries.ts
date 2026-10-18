@@ -5,7 +5,7 @@ import type { Textbook, TextbookInput } from './types'
 import { usePreferences } from '../../app/preferences'
 import { localizeTextbook } from '../../shared/localize'
 
-export const textbookKeys = {
+const textbookKeys = {
   all: ['textbooks'] as const,
   published: () => [...textbookKeys.all, 'published'] as const,
   admin: () => [...textbookKeys.all, 'admin'] as const,

@@ -7,12 +7,12 @@ export type DocumentMeeting = Pick<
 >
 
 /** The institute's name as its form prints it. */
-export const INSTITUTE = '오시1 세종학당'
+const INSTITUTE = '오시1 세종학당'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
 /** "2021. 09. 14. (화)" — the date as the form writes it. */
-export function documentDate(iso: string) {
+function documentDate(iso: string) {
   const [year, month, day] = iso.split('-')
   const weekday = WEEKDAYS[new Date(`${iso}T00:00:00Z`).getUTCDay()]
   return `${year}. ${month}. ${day}. (${weekday})`
@@ -56,5 +56,3 @@ export function documentModel(meeting: DocumentMeeting) {
     decisions: meeting.decisions,
   }
 }
-
-export type DocumentModel = ReturnType<typeof documentModel>

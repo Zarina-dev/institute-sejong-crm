@@ -11,7 +11,7 @@ const { Text } = Typography
 /** Each language by its own name, as a reader would look for it. */
 const LANGUAGE_NAME: Record<TranslationLanguage, string> = { en: 'English', ru: 'Русский', ky: 'Кыргызча' }
 
-export type TranslationField = {
+type TranslationField = {
   name: string
   label: TranslationKey
   kind?: 'input' | 'textarea' | 'rich'

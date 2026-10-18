@@ -97,6 +97,7 @@ export function TextbooksAdminPage() {
   const openEditModal = useCallback(
     (textbook: Textbook) => {
       setEditingId(textbook.id)
+      form.resetFields()
       form.setFieldsValue({
         title: textbook.title,
         description: textbook.description,

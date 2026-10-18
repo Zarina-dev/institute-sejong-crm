@@ -1,7 +1,7 @@
 import { DeleteOutlined, LeftOutlined, PictureOutlined, RightOutlined } from '@ant-design/icons'
 import { App, Button, Upload } from 'antd'
 import type { UploadProps } from 'antd'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { assetUrl } from '../api/client'
 import { usePreferences } from '../app/preferences'
@@ -23,7 +23,11 @@ type ImageListFieldProps = {
 export function ImageListField({ value = [], onChange, disabled }: ImageListFieldProps) {
   const { t } = usePreferences()
   const { message } = App.useApp()
-  const [uploading, setUploading] = useState(false)
+  const [pending, setPending] = useState(0)
+  // Picking several photos starts several uploads from one render; each one
+  // appends to the list as it is by then, not as it was when it started.
+  const latest = useRef(value)
+  latest.current = value
 
   const move = (index: number, step: 1 | -1) => {
     const next = [...value]
@@ -43,15 +47,16 @@ export function ImageListField({ value = [], onChange, disabled }: ImageListFiel
       return Upload.LIST_IGNORE
     }
 
-    setUploading(true)
+    setPending((count) => count + 1)
 
     try {
       const uploaded = await uploadImage(file)
-      onChange?.([...value, uploaded.url])
+      latest.current = [...latest.current, uploaded.url]
+      onChange?.(latest.current)
     } catch (err) {
       message.error(getErrorMessage(err, t('upload.failed')))
     } finally {
-      setUploading(false)
+      setPending((count) => count - 1)
     }
 
     return Upload.LIST_IGNORE
@@ -95,7 +100,7 @@ export function ImageListField({ value = [], onChange, disabled }: ImageListFiel
       ) : null}
 
       <Upload accept={IMAGE_ACCEPT} beforeUpload={beforeUpload} showUploadList={false} multiple disabled={disabled}>
-        <Button icon={<PictureOutlined />} loading={uploading} disabled={disabled}>
+        <Button icon={<PictureOutlined />} loading={pending > 0} disabled={disabled}>
           {t('upload.addPhotos')}
         </Button>
       </Upload>

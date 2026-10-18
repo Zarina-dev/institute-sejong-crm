@@ -26,6 +26,7 @@ import { useSession, useSessionResolving } from '../auth/useSession'
 import { BrandMark } from '../shared/BrandMark'
 import { useScrollReset } from '../shared/useScrollReset'
 import { adminAudit, adminDashboard, adminNavigation, adminTrash, type AdminNavGroup } from './adminNavigation'
+import { PageSuspense } from '../shared/PageSuspense'
 
 const { Content, Header, Sider } = Layout
 const { Title } = Typography
@@ -244,7 +245,9 @@ export function AdminLayout() {
         </Header>
 
         <Content className="admin-content" id="main-content">
-          <Outlet />
+          <PageSuspense>
+            <Outlet />
+          </PageSuspense>
         </Content>
       </Layout>
     </Layout>

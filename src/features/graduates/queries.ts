@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createGraduate, deleteGraduate, getAllGraduates, getGraduates, updateGraduate } from './api'
 import type { GraduateInput } from './types'
 
-export const graduateKeys = {
+const graduateKeys = {
   all: ['graduates'] as const,
   published: () => [...graduateKeys.all, 'published'] as const,
   admin: () => [...graduateKeys.all, 'admin'] as const,

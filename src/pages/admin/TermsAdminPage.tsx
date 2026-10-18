@@ -14,6 +14,7 @@ import { formatDate } from '../../shared/format'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useEditLink } from '../../shared/useEditLink'
+import { toIsoDate } from '../../features/courses/week'
 
 const { Text } = Typography
 
@@ -48,7 +49,8 @@ function fromSlot(slot: TermSlot): { kind: TermKind; season: BreakSeason | null 
   return slot.startsWith('break:') ? { kind: 'break', season: slot.slice(6) as BreakSeason } : { kind: slot as TermKind, season: null }
 }
 
-const today = () => new Date().toISOString().slice(0, 10)
+// Today on the visitor's own calendar, not UTC (in Osh UTC lags until 06:00).
+const today = () => toIsoDate(new Date())
 
 /**
  * 학기 관리 — when a semester runs is the institute's decision, so the dates

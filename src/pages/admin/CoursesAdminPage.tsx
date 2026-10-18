@@ -61,6 +61,7 @@ import { useTableLayout } from '../../shared/useTableLayout'
 import { TranslationFields } from '../../shared/TranslationFields'
 import type { Translations } from '../../shared/translations'
 import { useEditLink } from '../../shared/useEditLink'
+import { toIsoDate } from '../../features/courses/week'
 
 const { Title, Text } = Typography
 
@@ -202,6 +203,7 @@ export function CoursesAdminPage() {
     (record: CourseRecord) => {
       // An existing figure is the admin's; keep it until they clear the field.
       weeklyHoursEdited.current = record.weeklyHours != null
+      form.resetFields()
       form.setFieldsValue({
         category: record.category ?? 'language',
         title: record.title,
@@ -351,7 +353,7 @@ export function CoursesAdminPage() {
 
     try {
       const { exportCoursesToExcel } = await import('../../features/courses/exportCourses')
-      await exportCoursesToExcel(rows, t, language, `${t(COURSE_VIEWS[view])}-${activeTerm?.code ?? new Date().toISOString().slice(0, 10)}.xlsx`)
+      await exportCoursesToExcel(rows, t, language, `${t(COURSE_VIEWS[view])}-${activeTerm?.code ?? toIsoDate(new Date())}.xlsx`)
     } catch (err) {
       message.error(getErrorMessage(err, t('courses.export.failed')))
     } finally {

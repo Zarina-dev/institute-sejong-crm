@@ -2,7 +2,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
 import { getAudit, type AuditFilters } from './api'
 
-export const auditKeys = {
+const auditKeys = {
   all: ['audit'] as const,
   list: (filters: AuditFilters) => [...auditKeys.all, filters] as const,
 }

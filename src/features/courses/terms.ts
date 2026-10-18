@@ -8,7 +8,7 @@ type Translate = (key: TranslationKey, params?: Record<string, string | number>)
  * API. A course saved before the field existed has no term stored, so the
  * start date stands in for it and the semester picker still lists it.
  */
-export function termFromDate(date: string | null | undefined): string | null {
+function termFromDate(date: string | null | undefined): string | null {
   if (!date) {
     return null
   }
@@ -28,21 +28,6 @@ export function termFromDate(date: string | null | undefined): string | null {
 
 export const courseTerm = (course: CourseRecord): string | null => course.term ?? termFromDate(course.startDate)
 
-/** Newest first — an academic calendar is read from the current semester back. */
-export function listTerms(courses: readonly CourseRecord[] | undefined): string[] {
-  const terms = new Set<string>()
-
-  for (const course of courses ?? []) {
-    const term = courseTerm(course)
-
-    if (term) {
-      terms.add(term)
-    }
-  }
-
-  return [...terms].sort().reverse()
-}
-
 /**
  * A name from a semester *code* alone — for codes whose term is not at hand
  * (or no longer defined). Same wording as termDisplayName; a break's season
@@ -60,17 +45,4 @@ export function termLabel(term: string | null, t: Translate): string {
   }
 
   return t(suffix === '1' ? 'terms.display.first' : 'terms.display.second', { year })
-}
-
-/** The semester that contains today, or the most recent one on record. */
-export function currentTerm(courses: readonly CourseRecord[] | undefined): string | null {
-  const terms = listTerms(courses)
-
-  if (terms.length === 0) {
-    return null
-  }
-
-  const today = termFromDate(new Date().toISOString().slice(0, 10))
-
-  return today && terms.includes(today) ? today : terms[0]
 }

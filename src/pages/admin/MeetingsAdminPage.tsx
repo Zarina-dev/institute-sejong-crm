@@ -52,13 +52,15 @@ import type { StaffMember } from '../../features/staff/types'
 import { DOCUMENT_ACCEPT, MAX_DOCUMENT_SIZE, uploadDocument } from '../../features/uploads/api'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
-import { FilePreview, fileDownloadUrl, FileView, type PreviewFile } from '../../shared/FilePreview'
+import { fileDownloadUrl, type PreviewFile } from '../../shared/fileLinks'
+import { FilePreview, FileView } from '../../shared/FilePreview'
 import { formatDate, formatFileSize } from '../../shared/format'
 import { PageHeader } from '../../shared/PageHeader'
 import { RichTextEditor } from '../../shared/RichTextEditor'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { YearSelect } from '../../shared/YearSelect'
 import { useEditLink } from '../../shared/useEditLink'
+import { toIsoDate } from '../../features/courses/week'
 
 const { Text } = Typography
 
@@ -103,7 +105,8 @@ const DEFAULT_TITLE = '주간업무회의'
 const METHOD_SUGGESTIONS = ['현장 회의', '화상 회의', '화상 회의 및 현장 토의']
 const PLACE_SUGGESTIONS = ['오시1 세종학당 행정실']
 
-const today = () => new Date().toISOString().slice(0, 10)
+// Today on the visitor's own calendar, not UTC (in Osh UTC lags until 06:00).
+const today = () => toIsoDate(new Date())
 
 /** ISO week number — the minutes are written weekly, so each carries its week. */
 function weekOfYear(date: string): number {
@@ -170,6 +173,7 @@ export function MeetingsAdminPage() {
   const [form] = Form.useForm<MeetingFormValues>()
   const queryClient = useQueryClient()
   const [loadingMeeting, setLoadingMeeting] = useState(false)
+  const loadingId = useRef<string | null>(null)
   const documentRef = useRef<HTMLDivElement>(null)
   const saving = createMeeting.isPending || updateMeeting.isPending
 
@@ -211,6 +215,8 @@ export function MeetingsAdminPage() {
    * answers are offered by the fields' suggestions, never written in.
    */
   const openCreateModal = useCallback(() => {
+    loadingId.current = null
+    setLoadingMeeting(false)
     setEditingId(null)
     setEditingFrom(null)
     form.resetFields()
@@ -258,14 +264,22 @@ export function MeetingsAdminPage() {
       setModalOpen(true)
       setLoadingMeeting(true)
 
+      loadingId.current = meeting.id
       queryClient
         .fetchQuery({ queryKey: meetingKeys.detail(meeting.id), queryFn: () => getMeeting(meeting.id) })
-        .then((detail) => form.setFieldsValue({ body: detail.body, decisions: detail.decisions }))
+        .then((detail) => {
+          if (loadingId.current === meeting.id) form.setFieldsValue({ body: detail.body, decisions: detail.decisions })
+        })
         .catch((err) => {
+          if (loadingId.current !== meeting.id) return
           message.error(getErrorMessage(err, t('meetings.loadFailed')))
           setModalOpen(false)
         })
-        .finally(() => setLoadingMeeting(false))
+        .finally(() => {
+          if (loadingId.current !== meeting.id) return
+          loadingId.current = null
+          setLoadingMeeting(false)
+        })
     },
     [form, message, queryClient, staffList, t],
   )
@@ -587,7 +601,11 @@ export function MeetingsAdminPage() {
         title={editingId ? t('meetings.editTitle') : t('meetings.addTitle')}
         open={modalOpen}
         onOk={submitForm}
-        onCancel={() => setModalOpen(false)}
+        onCancel={() => {
+          loadingId.current = null
+          setLoadingMeeting(false)
+          setModalOpen(false)
+        }}
         okText={editingId ? t('common.save') : t('common.add')}
         cancelText={t('common.cancel')}
         confirmLoading={saving}

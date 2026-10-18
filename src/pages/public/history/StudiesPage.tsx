@@ -9,7 +9,8 @@ import { otherName, studyText } from '../../../features/studies/text'
 import type { StudyAbroad } from '../../../features/studies/types'
 import { BackToTop } from '../../../shared/BackToTop'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
-import { HeaderSearch, matchesQuery } from '../../../shared/HeaderSearch'
+import { HeaderSearch } from '../../../shared/HeaderSearch'
+import { matchesQuery } from '../../../shared/search'
 import { PageHeader } from '../../../shared/PageHeader'
 
 const { Title, Text } = Typography

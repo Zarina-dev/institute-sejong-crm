@@ -27,8 +27,5 @@ export function useBreadcrumbTrail(): BreadcrumbStep[] {
   const child = section.children.find((item) => item.to === pathname)
   const landing = section.children[0]?.to ?? section.to
 
-  return [
-    { to: landing, label: t(section.labelKey) },
-    ...(child ? [{ to: child.to, label: t(child.labelKey) }] : []),
-  ]
+  return [{ to: landing, label: t(section.labelKey) }, ...(child ? [{ to: child.to, label: t(child.labelKey) }] : [])]
 }

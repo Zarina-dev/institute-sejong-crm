@@ -10,6 +10,9 @@ export default defineConfig({
       // matching alias — so any `@/...` import type-checked and then failed
       // to resolve at build time.
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // jspdf ships an optional html2canvas; the minutes export already uses
+      // html2canvas-pro, so the bundle carries one canvas library, not two.
+      html2canvas: 'html2canvas-pro',
     },
   },
   server: {
@@ -33,17 +36,17 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
-    // Ant Design alone is ~950 kB raw / ~300 kB gzipped and is deliberately
-    // isolated in its own long-lived chunk below, so the default 500 kB
-    // warning would fire on every build with nothing to act on.
-    chunkSizeWarningLimit: 1200,
+    // The rich-text editor and the document exporters (docx, jspdf) are each
+    // ~400 kB, loaded only by the admin when used; the warning would fire on
+    // them with nothing to act on.
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
-        // Keep the large, rarely-changing vendor code in its own chunk so a
-        // change to app code does not invalidate it in the browser cache.
+        // React and its routing/data libraries change rarely: one long-cached
+        // chunk. Ant Design is left to Rollup, so a page loads only the
+        // components it uses rather than one ~1 MB bundle of all of them.
         manualChunks: {
           react: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
-          antd: ['antd', '@ant-design/icons'],
         },
       },
     },

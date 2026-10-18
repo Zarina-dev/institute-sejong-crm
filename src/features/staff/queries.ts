@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createStaff, deleteStaff, getAllStaff, getPublishedStaff, reorderStaff, updateStaff } from './api'
 import type { StaffInput, StaffMember } from './types'
 
-export const staffKeys = {
+const staffKeys = {
   all: ['staff'] as const,
   published: () => [...staffKeys.all, 'published'] as const,
   admin: () => [...staffKeys.all, 'admin'] as const,

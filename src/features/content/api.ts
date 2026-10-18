@@ -5,7 +5,7 @@ export const CONTENT_SLUGS = ['about.greeting', 'notices.faq', 'resources.links'
 
 export type ContentSlug = (typeof CONTENT_SLUGS)[number]
 
-export type ContentBlock = {
+type ContentBlock = {
   title: string
   /** Sanitized HTML. */
   body: string
@@ -13,7 +13,7 @@ export type ContentBlock = {
   locale: string
 }
 
-export type ContentRow = { id: string; slug: ContentSlug; locale: string; title: string; body: string; updatedAt: string }
+type ContentRow = { id: string; slug: ContentSlug; locale: string; title: string; body: string; updatedAt: string }
 
 /** Every block for one language, keyed by slug (missing ones fall back server-side). */
 export const getContent = (locale: string) => apiGet<Partial<Record<ContentSlug, ContentBlock>>>('/content', { locale })

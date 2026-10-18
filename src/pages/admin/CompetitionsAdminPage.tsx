@@ -128,6 +128,7 @@ export function CompetitionsAdminPage() {
   const openEditModal = useCallback(
     (record: Competition) => {
       setEditingId(record.id)
+      form.resetFields()
       form.setFieldsValue({
         kind: record.kind,
         title: record.title,

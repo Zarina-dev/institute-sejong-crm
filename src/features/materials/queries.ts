@@ -8,7 +8,7 @@ import type { MaterialsFilters } from './types'
  * `invalidateQueries({ queryKey: materialKeys.all })` refreshes every list,
  * whatever filters it was fetched with.
  */
-export const materialKeys = {
+const materialKeys = {
   all: ['materials'] as const,
   lists: () => [...materialKeys.all, 'list'] as const,
   list: (filters: MaterialsFilters) => [...materialKeys.lists(), filters] as const,

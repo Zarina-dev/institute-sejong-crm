@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createStudy, deleteStudy, getAllStudies, getStudies, updateStudy } from './api'
 import type { StudyAbroadInput } from './types'
 
-export const studyKeys = {
+const studyKeys = {
   all: ['studies'] as const,
   published: () => [...studyKeys.all, 'published'] as const,
   admin: () => [...studyKeys.all, 'admin'] as const,

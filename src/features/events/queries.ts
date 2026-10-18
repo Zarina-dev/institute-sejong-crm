@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createEvent, deleteEvent, getAllEvents, getEvents, updateEvent } from './api'
 import type { ScheduleEventInput } from './types'
 
-export const eventKeys = {
+const eventKeys = {
   all: ['events'] as const,
   published: () => [...eventKeys.all, 'published'] as const,
   admin: () => [...eventKeys.all, 'admin'] as const,

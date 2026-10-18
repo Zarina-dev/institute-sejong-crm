@@ -24,17 +24,3 @@ export function addDays(date: Date, days: number): Date {
 export function weekRange(monday: Date): { from: string; to: string } {
   return { from: toIsoDate(monday), to: toIsoDate(addDays(monday, 6)) }
 }
-
-/** "14 – 20 Sep 2026", localized; the month/year appear once when they match. */
-export function formatWeekLabel(monday: Date, language: string): string {
-  const sunday = addDays(monday, 6)
-  const fmt = new Intl.DateTimeFormat(language, { day: 'numeric', month: 'short', year: 'numeric' })
-  // formatRange is in every current browser but not in the ES2020 lib typings.
-  const withRange = fmt as Intl.DateTimeFormat & { formatRange?: (a: Date, b: Date) => string }
-  return withRange.formatRange ? withRange.formatRange(monday, sunday) : `${fmt.format(monday)} – ${fmt.format(sunday)}`
-}
-
-/** Whole-month range (1st to last day), for the month calendar. */
-export function monthRange(year: number, month: number): { from: string; to: string } {
-  return { from: toIsoDate(new Date(year, month, 1)), to: toIsoDate(new Date(year, month + 1, 0)) }
-}

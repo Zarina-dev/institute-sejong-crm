@@ -18,6 +18,7 @@ import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
 import { useEditLink } from '../../shared/useEditLink'
+import { toIsoDate } from '../../features/courses/week'
 
 const { Text } = Typography
 
@@ -36,7 +37,8 @@ type EventFormValues = {
 const NO_EVENTS: ScheduleEvent[] = []
 const NO_TERMS: AcademicTerm[] = []
 
-const today = () => new Date().toISOString().slice(0, 10)
+// Today on the visitor's own calendar, not UTC (in Osh UTC lags until 06:00).
+const today = () => toIsoDate(new Date())
 const covers = (term: AcademicTerm, date: string) => term.startDate <= date && date <= term.endDate
 
 /**
@@ -129,7 +131,7 @@ export function EventsAdminPage() {
   )
 
   // 작업 기록 links here with ?edit=<id>: open that record.
-  useEditLink(events.data, openEditModal, '/events')
+  useEditLink(terms.data ? events.data : undefined, openEditModal, '/events')
 
   const submitForm = async () => {
     const values = await form.validateFields().catch(() => null)

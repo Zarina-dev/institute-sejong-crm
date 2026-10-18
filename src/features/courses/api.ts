@@ -20,10 +20,6 @@ export async function getCourseTermCounts(publishedOnly: boolean, category?: Cou
   return apiGet<Array<{ term: string; count: number }>>('/courses/terms', { publishedOnly, category })
 }
 
-export async function getCourse(id: string) {
-  return apiGet<CourseRecord>(`/courses/${id}`)
-}
-
 export async function createCourse(payload: Record<string, unknown>) {
   return apiPost<CourseRecord>('/courses', payload)
 }

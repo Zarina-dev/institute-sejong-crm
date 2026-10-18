@@ -1,31 +1,52 @@
 import { Spin } from 'antd'
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { PublicLayout } from '../layouts/PublicLayout'
-import { GreetingPage } from '../pages/public/about/GreetingPage'
-import { LocationPage } from '../pages/public/about/LocationPage'
-import { StaffPage } from '../pages/public/about/StaffPage'
-import { StudiesPage } from '../pages/public/history/StudiesPage'
-import { GraduatesPage } from '../pages/public/history/GraduatesPage'
-import { HistoryPage } from '../pages/public/HistoryPage'
 import { HomePage } from '../pages/public/HomePage'
-import { LoginPage } from '../pages/public/LoginPage'
-import { FaqPage } from '../pages/public/notices/FaqPage'
-import { EventsPage } from '../pages/public/notices/EventsPage'
-import { NoticesPage } from '../pages/public/notices/NoticesPage'
-import { NewsDetailPage } from '../pages/public/NewsDetailPage'
-import { CalendarPage } from '../pages/public/programmes/CalendarPage'
-import { CoursesPage } from '../pages/public/programmes/CoursesPage'
-import { LinksPage } from '../pages/public/resources/LinksPage'
-import { MaterialsPage } from '../pages/public/resources/MaterialsPage'
-import { TextbooksPage } from '../pages/public/resources/TextbooksPage'
 
 /**
- * The admin panel is only reachable after signing in, and its tables pull in
- * a lot of Ant Design. Splitting it out keeps the public bundle — the one
- * every visitor downloads — small.
+ * Only the home page comes with the site. Every other public page is loaded
+ * the first time it is opened — and fetched ahead once the browser is idle
+ * (usePrefetchPublicPages) — and the admin panel, reachable only after
+ * signing in, loads page by page. The bundle every visitor downloads stays
+ * small.
  */
+const publicPages = {
+  GreetingPage: () => import('../pages/public/about/GreetingPage'),
+  LocationPage: () => import('../pages/public/about/LocationPage'),
+  StaffPage: () => import('../pages/public/about/StaffPage'),
+  StudiesPage: () => import('../pages/public/history/StudiesPage'),
+  GraduatesPage: () => import('../pages/public/history/GraduatesPage'),
+  HistoryPage: () => import('../pages/public/HistoryPage'),
+  LoginPage: () => import('../pages/public/LoginPage'),
+  FaqPage: () => import('../pages/public/notices/FaqPage'),
+  EventsPage: () => import('../pages/public/notices/EventsPage'),
+  NoticesPage: () => import('../pages/public/notices/NoticesPage'),
+  NewsDetailPage: () => import('../pages/public/NewsDetailPage'),
+  CalendarPage: () => import('../pages/public/programmes/CalendarPage'),
+  CoursesPage: () => import('../pages/public/programmes/CoursesPage'),
+  LinksPage: () => import('../pages/public/resources/LinksPage'),
+  MaterialsPage: () => import('../pages/public/resources/MaterialsPage'),
+  TextbooksPage: () => import('../pages/public/resources/TextbooksPage'),
+}
+
+const GreetingPage = lazy(() => publicPages.GreetingPage().then((m) => ({ default: m.GreetingPage })))
+const LocationPage = lazy(() => publicPages.LocationPage().then((m) => ({ default: m.LocationPage })))
+const StaffPage = lazy(() => publicPages.StaffPage().then((m) => ({ default: m.StaffPage })))
+const StudiesPage = lazy(() => publicPages.StudiesPage().then((m) => ({ default: m.StudiesPage })))
+const GraduatesPage = lazy(() => publicPages.GraduatesPage().then((m) => ({ default: m.GraduatesPage })))
+const HistoryPage = lazy(() => publicPages.HistoryPage().then((m) => ({ default: m.HistoryPage })))
+const LoginPage = lazy(() => publicPages.LoginPage().then((m) => ({ default: m.LoginPage })))
+const FaqPage = lazy(() => publicPages.FaqPage().then((m) => ({ default: m.FaqPage })))
+const EventsPage = lazy(() => publicPages.EventsPage().then((m) => ({ default: m.EventsPage })))
+const NoticesPage = lazy(() => publicPages.NoticesPage().then((m) => ({ default: m.NoticesPage })))
+const NewsDetailPage = lazy(() => publicPages.NewsDetailPage().then((m) => ({ default: m.NewsDetailPage })))
+const CalendarPage = lazy(() => publicPages.CalendarPage().then((m) => ({ default: m.CalendarPage })))
+const CoursesPage = lazy(() => publicPages.CoursesPage().then((m) => ({ default: m.CoursesPage })))
+const LinksPage = lazy(() => publicPages.LinksPage().then((m) => ({ default: m.LinksPage })))
+const MaterialsPage = lazy(() => publicPages.MaterialsPage().then((m) => ({ default: m.MaterialsPage })))
+const TextbooksPage = lazy(() => publicPages.TextbooksPage().then((m) => ({ default: m.TextbooksPage })))
 const AdminLayout = lazy(() => import('../layouts/AdminLayout').then((m) => ({ default: m.AdminLayout })))
 const DashboardPage = lazy(() => import('../pages/admin/DashboardPage').then((m) => ({ default: m.DashboardPage })))
 const CoursesAdminPage = lazy(() => import('../pages/admin/CoursesAdminPage').then((m) => ({ default: m.CoursesAdminPage })))
@@ -52,7 +73,26 @@ function RouteFallback() {
   )
 }
 
+/**
+ * Once the first page is on screen and the browser has nothing to do, the
+ * other public pages are fetched in the background, so a visitor's next
+ * click opens at once instead of waiting for its code.
+ */
+function usePrefetchPublicPages() {
+  useEffect(() => {
+    const prefetch = () => Object.values(publicPages).forEach((load) => void load().catch(() => {}))
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(prefetch, { timeout: 4000 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const id = setTimeout(prefetch, 2000)
+    return () => clearTimeout(id)
+  }, [])
+}
+
 export function AppRouter() {
+  usePrefetchPublicPages()
+
   return (
     <Suspense fallback={<RouteFallback />}>
       <Routes>
@@ -66,9 +106,9 @@ export function AppRouter() {
           <Route path="/about/location" element={<LocationPage />} />
 
           {/* 교육과정 */}
-          <Route path="/programmes" element={<CoursesPage category="language" />} />
+          <Route path="/programmes" element={<CoursesPage key="language" category="language" />} />
           <Route path="/programmes/calendar" element={<CalendarPage />} />
-          <Route path="/programmes/culture" element={<CoursesPage category="culture" />} />
+          <Route path="/programmes/culture" element={<CoursesPage key="culture" category="culture" />} />
 
           {/* 알림마당 */}
           <Route path="/notices" element={<NoticesPage variant="notice" />} />

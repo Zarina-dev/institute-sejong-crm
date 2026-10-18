@@ -14,7 +14,7 @@ export type CourseGroup = {
 // Numeric-aware so "한국어 2" sorts before "한국어 10".
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
 
-export const compareNatural = (a: string, b: string) => collator.compare(a, b)
+const compareNatural = (a: string, b: string) => collator.compare(a, b)
 
 /**
  * Korean is what the institute exists to teach, so its programme heads every
@@ -24,7 +24,7 @@ const KOREAN_PROGRAMME = /한국어|korean|корей|корей тили/i
 
 const programmeRank = (title: string) => (KOREAN_PROGRAMME.test(title) ? 0 : 1)
 
-export const compareProgrammes = (a: string, b: string) => programmeRank(a) - programmeRank(b) || compareNatural(a, b)
+const compareProgrammes = (a: string, b: string) => programmeRank(a) - programmeRank(b) || compareNatural(a, b)
 
 export function groupCourses(courses: readonly CourseRecord[] | undefined): CourseGroup[] {
   const byTitle = new Map<string, CourseRecord[]>()
@@ -49,9 +49,4 @@ export function groupCourses(courses: readonly CourseRecord[] | undefined): Cour
 /** Distinct programme titles, for the "add course" form and filters. */
 export function courseTitles(courses: readonly CourseRecord[] | undefined): string[] {
   return groupCourses(courses).map((group) => group.title)
-}
-
-/** "한국어 · 한국어 1" — the full name of one class. */
-export function courseLabel(course: Pick<CourseRecord, 'title' | 'subject'>) {
-  return course.subject ? `${course.title} · ${course.subject}` : course.title
 }

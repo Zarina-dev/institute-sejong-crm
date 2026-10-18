@@ -27,7 +27,7 @@ export const MAX_MATERIAL_FILE_SIZE = 10 * 1024 * 1024
 /** Value for `<Upload accept>` / `<input accept>`. */
 export const MATERIAL_ACCEPT = ALLOWED_MATERIAL_EXTENSIONS.map((ext) => `.${ext}`).join(',')
 
-export type UploadRejection = { reason: 'type'; ext: string } | { reason: 'size'; size: number }
+type UploadRejection = { reason: 'type'; ext: string } | { reason: 'size'; size: number }
 
 export function validateMaterialFile(file: File): UploadRejection | null {
   const ext = file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase() : ''

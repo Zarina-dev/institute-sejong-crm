@@ -35,19 +35,14 @@ let cachedSession: AdminSession | null = null
 let resolving = false
 const listeners = new Set<() => void>()
 
-const channel: BroadcastChannel | null =
-  typeof window !== 'undefined' && 'BroadcastChannel' in window ? new BroadcastChannel(CHANNEL_NAME) : null
+const channel: BroadcastChannel | null = typeof window !== 'undefined' && 'BroadcastChannel' in window ? new BroadcastChannel(CHANNEL_NAME) : null
 
 function readRaw(): string | null {
-  return typeof window === 'undefined' ? null : window.sessionStorage.getItem(STORAGE_KEY)
+  return typeof window === 'undefined' ? null : readStorage('session', STORAGE_KEY)
 }
 
 function writeRaw(raw: string | null) {
-  if (raw) {
-    window.sessionStorage.setItem(STORAGE_KEY, raw)
-  } else {
-    window.sessionStorage.removeItem(STORAGE_KEY)
-  }
+  writeStorage('session', STORAGE_KEY, raw || null)
 }
 
 function notify() {
@@ -129,7 +124,7 @@ if (typeof window !== 'undefined') {
   // Sessions and the old localStorage stores (students, 과목/과정 catalog)
   // predate the current design; clear them once.
   for (const key of LEGACY_STORAGE_KEYS) {
-    window.localStorage.removeItem(key)
+    writeStorage('local', key, null)
   }
 
   if (channel) {
@@ -163,3 +158,5 @@ if (typeof window !== 'undefined') {
     }
   }
 }
+
+import { readStorage, writeStorage } from '../shared/storage'

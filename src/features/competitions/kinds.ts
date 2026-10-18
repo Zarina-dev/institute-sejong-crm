@@ -61,7 +61,7 @@ export function competitionKindColour(kind: CompetitionKind) {
  * Every kind there is: the built-ins first, then the ones the institute
  * has added, in the order they were first held.
  */
-export function competitionKinds(records: Competition[]): CompetitionKind[] {
+function competitionKinds(records: Competition[]): CompetitionKind[] {
   const added = records.map((record) => record.kind).filter((kind) => !(BUILTIN_COMPETITION_KINDS as readonly string[]).includes(kind))
 
   return [...BUILTIN_COMPETITION_KINDS, ...new Set(added)]

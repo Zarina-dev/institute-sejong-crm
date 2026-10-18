@@ -63,6 +63,7 @@ export function ChronologyAdminPage() {
   const openEditModal = useCallback(
     (entry: ChronologyEntry) => {
       setEditingId(entry.id)
+      form.resetFields()
       form.setFieldsValue({
         year: entry.year,
         month: entry.month,

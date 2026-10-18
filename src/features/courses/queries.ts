@@ -16,7 +16,7 @@ import type { TimetableFilters } from './types'
 import { usePreferences } from '../../app/preferences'
 import { localizeCourse, localizeTimetableEntry } from '../../shared/localize'
 
-export const courseKeys = {
+const courseKeys = {
   all: ['courses'] as const,
   list: (publishedOnly: boolean, filters: CourseListFilters = {}) => [...courseKeys.all, 'list', { publishedOnly, ...filters }] as const,
   // Under `all`, so any course write refreshes the counts too.
@@ -24,7 +24,7 @@ export const courseKeys = {
     [...courseKeys.all, 'term-counts', { publishedOnly, category }] as const,
 }
 
-export const timetableKeys = {
+const timetableKeys = {
   all: ['timetable'] as const,
   list: (filters: TimetableFilters) => [...timetableKeys.all, filters] as const,
 }

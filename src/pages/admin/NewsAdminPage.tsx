@@ -1,7 +1,7 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, PushpinFilled } from '@ant-design/icons'
 import type { TableProps } from 'antd'
 import { App, Button, Card, Form, Input, Modal, Select, Space, Switch, Table, Tag, Typography } from 'antd'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { usePreferences } from '../../app/preferences'
@@ -54,6 +54,7 @@ export function NewsAdminPage() {
   const [form] = Form.useForm<NewsFormValues>()
   const queryClient = useQueryClient()
   const [loadingPost, setLoadingPost] = useState(false)
+  const loadingId = useRef<string | null>(null)
   const saving = createNews.isPending || updateNews.isPending
 
   // 공지사항 and 보도 자료 are one table split by category, exactly as the
@@ -76,6 +77,8 @@ export function NewsAdminPage() {
   const categoryOptions = useMemo(() => NEWS_CATEGORIES.map((value) => ({ value, label: t(`news.category.${value}`) })), [t])
 
   const openCreateModal = useCallback(() => {
+    loadingId.current = null
+    setLoadingPost(false)
     setEditingId(null)
     form.resetFields()
     // A post written on the 보도 자료 view belongs there.
@@ -92,6 +95,7 @@ export function NewsAdminPage() {
   const openEditModal = useCallback(
     (post: NewsSummary) => {
       setEditingId(post.id)
+      form.resetFields()
       form.setFieldsValue({
         title: post.title,
         body: '',
@@ -104,17 +108,24 @@ export function NewsAdminPage() {
       setModalOpen(true)
       setLoadingPost(true)
 
+      loadingId.current = post.id
       queryClient
         .fetchQuery({ queryKey: newsKeys.detail(post.id), queryFn: () => getNewsPost(post.id) })
         .then((full) => {
+          if (loadingId.current !== post.id) return
           form.setFieldValue('body', full.body)
           form.setFieldValue('translations', full.translations ?? {})
         })
         .catch((err) => {
+          if (loadingId.current !== post.id) return
           message.error(getErrorMessage(err, t('news.loadFailed')))
           setModalOpen(false)
         })
-        .finally(() => setLoadingPost(false))
+        .finally(() => {
+          if (loadingId.current !== post.id) return
+          loadingId.current = null
+          setLoadingPost(false)
+        })
     },
     [form, message, queryClient, t],
   )
@@ -273,7 +284,11 @@ export function NewsAdminPage() {
         title={editingId ? t('news.editTitle') : t('news.addTitle')}
         open={modalOpen}
         onOk={submitForm}
-        onCancel={() => setModalOpen(false)}
+        onCancel={() => {
+          loadingId.current = null
+          setLoadingPost(false)
+          setModalOpen(false)
+        }}
         okText={editingId ? t('common.save') : t('common.add')}
         cancelText={t('common.cancel')}
         confirmLoading={saving}

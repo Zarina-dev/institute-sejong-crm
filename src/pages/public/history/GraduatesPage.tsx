@@ -6,7 +6,8 @@ import { useGraduates } from '../../../features/graduates/queries'
 import { graduateText, otherGraduateName, type Graduate } from '../../../features/graduates/types'
 import { BackToTop } from '../../../shared/BackToTop'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
-import { HeaderSearch, matchesQuery } from '../../../shared/HeaderSearch'
+import { HeaderSearch } from '../../../shared/HeaderSearch'
+import { matchesQuery } from '../../../shared/search'
 import { PageHeader } from '../../../shared/PageHeader'
 
 const { Text } = Typography

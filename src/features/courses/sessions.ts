@@ -10,7 +10,7 @@ function sampleDate(weekday: Weekday) {
 const cache = new Map<string, Map<Weekday, string>>()
 
 /** Localized short weekday names keyed by ISO weekday ("월", "Mon", "пн"). */
-export function weekdayNames(language: string): Map<Weekday, string> {
+function weekdayNames(language: string): Map<Weekday, string> {
   let names = cache.get(language)
 
   if (!names) {

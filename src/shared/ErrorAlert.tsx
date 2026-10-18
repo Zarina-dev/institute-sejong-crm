@@ -20,9 +20,5 @@ export const ErrorAlert = memo(function ErrorAlert({ error, fallback, title }: E
 
   const message = getErrorMessage(error, fallback)
 
-  return title ? (
-    <Alert type="error" showIcon message={title} description={message} />
-  ) : (
-    <Alert type="error" showIcon message={message} />
-  )
+  return title ? <Alert type="error" showIcon message={title} description={message} /> : <Alert type="error" showIcon message={message} />
 })

@@ -8,7 +8,7 @@ import { useAllGraduates, useCreateGraduate, useDeleteGraduate, useUpdateGraduat
 import type { Graduate, GraduateInput } from '../../features/graduates/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
-import { matchesQuery } from '../../shared/HeaderSearch'
+import { matchesQuery } from '../../shared/search'
 import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
@@ -65,6 +65,7 @@ export function GraduatesAdminPage() {
   const openEditModal = useCallback(
     (graduate: Graduate) => {
       setEditingId(graduate.id)
+      form.resetFields()
       form.setFieldsValue({
         year: graduate.year,
         term: graduate.term,

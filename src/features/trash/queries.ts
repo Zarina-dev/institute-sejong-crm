@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { getTrash, purgeTrashItem, restoreTrashItem } from './api'
 
-export const trashKeys = {
+const trashKeys = {
   all: ['trash'] as const,
 }
 
