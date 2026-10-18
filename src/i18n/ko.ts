@@ -568,6 +568,7 @@ const ko: LocaleDictionary = {
     historySubtitle: '2013년 개원 이후 학당의 행사와 대회를 연도별로 모았습니다. 대회 결과와 그날의 사진을 함께 볼 수 있습니다.',
     historyKind: '구분',
     openMap: '구글 지도에서 열기',
+    mapLoading: '지도를 불러오는 중…',
     address: '주소',
     phone: '전화',
     instagram: '인스타그램',

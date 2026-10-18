@@ -3279,6 +3279,8 @@ a.activity-row:hover b {
 }
 
 .location-map .ant-card-body {
+  position: relative;
+  height: 100%;
   padding: 0;
 }
 
@@ -3289,6 +3291,50 @@ a.activity-row:hover b {
   height: 100%;
   border: 0;
   border-radius: var(--radius-xl);
+  opacity: 0;
+  transition: opacity var(--duration-base, 0.25s) ease;
+}
+
+.location-map.is-ready iframe {
+  opacity: 1;
+}
+
+/* While the map loads: a soft pin on the map's own grey, gently pulsing. */
+.location-map__placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-subtle);
+  font-size: var(--text-sm);
+  transition: opacity var(--duration-base, 0.25s) ease;
+}
+
+.location-map__placeholder .anticon {
+  color: var(--color-primary);
+  font-size: 30px;
+  animation: map-pin 1.4s ease-in-out infinite;
+}
+
+.location-map.is-ready .location-map__placeholder {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes map-pin {
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .location-map__placeholder .anticon {
+    animation: none;
+  }
 }
 
 .location-note.ant-typography {

@@ -582,6 +582,7 @@ export const en = {
       'The institute’s events and competitions since 2013, a year at a time — the results of each competition beside the photos of the day.',
     historyKind: 'Show',
     openMap: 'Open in Google Maps',
+    mapLoading: 'Loading the map…',
     address: 'Address',
     phone: 'Phone',
     instagram: 'Instagram',

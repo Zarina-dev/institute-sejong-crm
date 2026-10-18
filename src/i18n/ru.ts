@@ -596,6 +596,7 @@ const ru: LocaleDictionary = {
     historySubtitle: 'Мероприятия и конкурсы института с 2013 года, по годам — итоги каждого конкурса рядом с фотографиями.',
     historyKind: 'Показать',
     openMap: 'Открыть в Google Картах',
+    mapLoading: 'Загружаем карту…',
     address: 'Адрес',
     phone: 'Телефон',
     instagram: 'Instagram',

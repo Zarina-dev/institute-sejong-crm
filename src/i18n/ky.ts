@@ -573,6 +573,7 @@ const ky: LocaleDictionary = {
     historySubtitle: '2013-жылдан бери институттун иш-чаралары жана сынактары, жылдар боюнча — ар бир сынактын жыйынтыгы сүрөттөрү менен.',
     historyKind: 'Көрсөтүү',
     openMap: 'Google Картадан ачуу',
+    mapLoading: 'Карта жүктөлүүдө…',
     address: 'Дарек',
     phone: 'Телефон',
     instagram: 'Instagram',
