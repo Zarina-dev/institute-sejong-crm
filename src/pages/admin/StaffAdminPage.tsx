@@ -6,7 +6,6 @@ import type { TableProps } from 'antd'
 import { App, Avatar, Button, Card, Form, Input, Modal, Space, Switch, Table, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
-import { assetUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
 import { useAllStaff, useCreateStaff, useDeleteStaff, useReorderStaff, useUpdateStaff } from '../../features/staff/queries'
 import { staffStatus } from '../../features/staff/status'
@@ -21,6 +20,7 @@ import { useTableLayout } from '../../shared/useTableLayout'
 import { TranslationFields } from '../../shared/TranslationFields'
 import type { Translations } from '../../shared/translations'
 import { useEditLink } from '../../shared/useEditLink'
+import { thumbnailProps } from '../../shared/thumbnail'
 
 const { Text } = Typography
 
@@ -190,7 +190,11 @@ export function StaffAdminPage() {
         key: 'name',
         render: (value: string, member) => (
           <Space size={10}>
-            <Avatar size={40} src={member.photoUrl ? assetUrl(member.photoUrl) : undefined} icon={<UserOutlined />} />
+            <Avatar
+              size={40}
+              src={member.photoUrl ? <img {...thumbnailProps(member.photoUrl)} alt="" loading="lazy" decoding="async" /> : undefined}
+              icon={<UserOutlined />}
+            />
             <span>
               <strong>{value}</strong>
               {member.email ? (

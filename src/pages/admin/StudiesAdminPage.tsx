@@ -3,7 +3,6 @@ import type { TableProps } from 'antd'
 import { App, AutoComplete, Avatar, Button, Card, Dropdown, Form, Input, InputNumber, Modal, Switch, Tag, Typography } from 'antd'
 import { Fragment, useCallback, useMemo, useState } from 'react'
 
-import { assetUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
 import type { TranslationKey } from '../../app/preferences'
 import { useAllStudies, useCreateStudy, useDeleteStudy, useUpdateStudy } from '../../features/studies/queries'
@@ -18,6 +17,7 @@ import { useTableLayout } from '../../shared/useTableLayout'
 import { useEditLink } from '../../shared/useEditLink'
 import { AdminTable } from '../../shared/AdminTable'
 import { useStableCallback } from '../../shared/useStableCallback'
+import { thumbnailProps } from '../../shared/thumbnail'
 
 const { Text } = Typography
 
@@ -193,7 +193,11 @@ export function StudiesAdminPage() {
         // A lazy <img>: the list is shown whole (~90 rows), and each avatar is
         // an original upload — they now load as the rows scroll into view.
         render: (photo: string | null) => (
-          <Avatar size={44} src={photo ? <img src={assetUrl(photo)} alt="" loading="lazy" decoding="async" /> : undefined} icon={<UserOutlined />} />
+          <Avatar
+            size={44}
+            src={photo ? <img {...thumbnailProps(photo)} alt="" loading="lazy" decoding="async" /> : undefined}
+            icon={<UserOutlined />}
+          />
         ),
       },
       { title: t('studies.form.year'), dataIndex: 'year', key: 'year', width: 90 },

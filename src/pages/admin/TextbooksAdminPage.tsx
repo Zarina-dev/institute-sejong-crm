@@ -15,7 +15,6 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-ki
 import { App, Button, Card, Dropdown, Form, Input, Modal, Space, Switch, Table, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
-import { assetUrl } from '../../api/client'
 import { usePreferences } from '../../app/preferences'
 import { useAllTextbooks, useCreateTextbook, useDeleteTextbook, useReorderTextbooks, useUpdateTextbook } from '../../features/textbooks/queries'
 import type { Textbook } from '../../features/textbooks/types'
@@ -29,6 +28,7 @@ import { useTableLayout } from '../../shared/useTableLayout'
 import { TranslationFields } from '../../shared/TranslationFields'
 import type { Translations } from '../../shared/translations'
 import { useEditLink } from '../../shared/useEditLink'
+import { thumbnailProps } from '../../shared/thumbnail'
 
 const { Text } = Typography
 
@@ -179,7 +179,7 @@ export function TextbooksAdminPage() {
         render: (value: string, textbook) => (
           <Space size={12}>
             {textbook.coverImage ? (
-              <img className="textbook-thumb" src={assetUrl(textbook.coverImage)} alt="" />
+              <img className="textbook-thumb" {...thumbnailProps(textbook.coverImage)} alt="" />
             ) : (
               <span className="textbook-thumb textbook-thumb--empty" aria-hidden="true">
                 <BookOutlined />

@@ -3,10 +3,10 @@ import { App, Button, Upload } from 'antd'
 import type { UploadProps } from 'antd'
 import { useRef, useState } from 'react'
 
-import { assetUrl } from '../api/client'
 import { usePreferences } from '../app/preferences'
 import { IMAGE_ACCEPT, MAX_IMAGE_SIZE, uploadImage } from '../features/uploads/api'
 import { getErrorMessage } from './errors'
+import { thumbnailProps } from './thumbnail'
 
 type ImageListFieldProps = {
   /** Controlled by `Form.Item`: the stored paths, in display order. */
@@ -68,7 +68,7 @@ export function ImageListField({ value = [], onChange, disabled }: ImageListFiel
         <ul className="image-list__items">
           {value.map((image, index) => (
             <li key={image}>
-              <img src={assetUrl(image)} alt="" />
+              <img {...thumbnailProps(image)} alt="" />
 
               <div className="image-list__actions">
                 <Button

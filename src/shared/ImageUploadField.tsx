@@ -3,10 +3,10 @@ import { App, Button, Space, Typography, Upload } from 'antd'
 import type { RcFile } from 'antd/es/upload'
 import { useState } from 'react'
 
-import { assetUrl } from '../api/client'
 import { usePreferences } from '../app/preferences'
 import { IMAGE_ACCEPT, MAX_IMAGE_SIZE, uploadImage } from '../features/uploads/api'
 import { getErrorMessage } from './errors'
+import { thumbnailProps } from './thumbnail'
 
 const { Text } = Typography
 
@@ -54,7 +54,7 @@ export function ImageUploadField({ value, onChange, disabled, shape = 'wide', hi
   return (
     <div className={`image-upload image-upload--${shape}`}>
       {value ? (
-        <img className="image-upload__preview" src={assetUrl(value)} alt="" />
+        <img className="image-upload__preview" {...thumbnailProps(value)} alt="" />
       ) : (
         <div className="image-upload__placeholder" aria-hidden>
           <UploadOutlined />

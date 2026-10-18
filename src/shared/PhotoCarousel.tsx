@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { assetUrl } from '../api/client'
 import { usePreferences } from '../app/preferences'
+import { thumbnailProps } from './thumbnail'
 
 type PhotoCarouselProps = {
   /** Site-relative `/uploads/images/…` paths, in display order. */
@@ -82,7 +83,7 @@ export function PhotoCarousel({ images, label }: PhotoCarouselProps) {
             <img
               className={`photo-carousel__photo${position === index ? ` is-current is-${direction}` : ''}`}
               key={image}
-              src={assetUrl(image)}
+              {...thumbnailProps(image)}
               alt=""
               loading="lazy"
               decoding="async"

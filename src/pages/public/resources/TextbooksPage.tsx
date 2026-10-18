@@ -1,12 +1,12 @@
 import { BookOutlined, ShopOutlined } from '@ant-design/icons'
 import { Card, Col, Empty, Row, Skeleton, Typography } from 'antd'
 
-import { assetUrl } from '../../../api/client'
 import { usePreferences } from '../../../app/preferences'
 import { usePublishedTextbooks } from '../../../features/textbooks/queries'
 import type { Textbook } from '../../../features/textbooks/types'
 import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { PageHeader } from '../../../shared/PageHeader'
+import { thumbnailProps } from '../../../shared/thumbnail'
 
 const { Title, Paragraph, Text } = Typography
 
@@ -19,7 +19,7 @@ function TextbookCard({ textbook }: { textbook: Textbook }) {
   return (
     <Card className="surface-card textbook-card">
       {textbook.coverImage ? (
-        <img className="textbook-card__cover" src={assetUrl(textbook.coverImage)} alt="" loading="lazy" />
+        <img className="textbook-card__cover" {...thumbnailProps(textbook.coverImage)} alt="" loading="lazy" decoding="async" />
       ) : (
         <div className="textbook-card__cover textbook-card__cover--empty" aria-hidden="true">
           <BookOutlined />

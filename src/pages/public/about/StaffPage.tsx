@@ -2,7 +2,6 @@ import { CalendarOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
 import { Avatar, Card, Col, Empty, Row, Skeleton, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 
-import { assetUrl } from '../../../api/client'
 import { usePreferences } from '../../../app/preferences'
 import { usePublishedStaff } from '../../../features/staff/queries'
 import { staffStatus, type StaffStatus } from '../../../features/staff/status'
@@ -13,6 +12,7 @@ import { HeaderSearch } from '../../../shared/HeaderSearch'
 import { matchesQuery } from '../../../shared/search'
 import { PageHeader } from '../../../shared/PageHeader'
 import { translated } from '../../../shared/translations'
+import { thumbnailProps } from '../../../shared/thumbnail'
 
 const { Title, Paragraph, Text } = Typography
 
@@ -40,7 +40,11 @@ function StaffCard({ member, status }: { member: StaffMember; status: StaffStatu
       </span>
 
       <div className="staff-card__head">
-        <Avatar size={72} src={member.photoUrl ? assetUrl(member.photoUrl) : undefined} icon={<UserOutlined />} alt="" />
+        <Avatar
+          size={72}
+          src={member.photoUrl ? <img {...thumbnailProps(member.photoUrl)} alt="" loading="lazy" decoding="async" /> : undefined}
+          icon={<UserOutlined />}
+        />
         <div>
           <Title level={3}>{translated(member, 'name', language)}</Title>
           <Text className="staff-card__position">{translated(member, 'position', language)}</Text>

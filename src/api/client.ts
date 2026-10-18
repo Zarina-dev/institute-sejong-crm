@@ -54,6 +54,22 @@ export function assetUrl(path: string) {
   return media ? `${MEDIA_BASE_URL}/${media[1]}` : `${ASSET_ORIGIN}${path.startsWith('/') ? '' : '/'}${path}`
 }
 
+/** Photos the API keeps a smaller copy of (backend storage/thumbnails.ts); GIFs have none. */
+const THUMBNAILED = /^\/uploads\/images\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.(jpe?g|png|webp)$/i
+
+/**
+ * The thumbnail of an uploaded photo (≤800 px WebP, ~80% lighter) — for
+ * where it is shown small: cards, carousels, avatars, covers in a list.
+ * Its address follows from the photo's; anything without one resolves as
+ * assetUrl. Pair with a fallback to the original (shared/thumbnail.ts).
+ */
+export function thumbnailUrl(path: string) {
+  const match = THUMBNAILED.exec(path)
+  if (!match) return assetUrl(path)
+  const file = `${match[1].toLowerCase()}.webp`
+  return MEDIA_BASE_URL ? `${MEDIA_BASE_URL}/thumbs/${file}` : `${ASSET_ORIGIN}/uploads/thumbs/${file}`
+}
+
 /** The reverse of assetUrl for images and videos — what a record stores. */
 export function storedMediaPath(url: string) {
   for (const base of [MEDIA_BASE_URL, ASSET_ORIGIN].filter(Boolean)) {

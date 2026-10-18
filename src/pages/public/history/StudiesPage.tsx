@@ -2,7 +2,6 @@ import { UserOutlined } from '@ant-design/icons'
 import { Card, Empty, Skeleton, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 
-import { assetUrl } from '../../../api/client'
 import { usePreferences } from '../../../app/preferences'
 import { useStudies } from '../../../features/studies/queries'
 import { otherName, studyText } from '../../../features/studies/text'
@@ -12,6 +11,7 @@ import { ErrorAlert } from '../../../shared/ErrorAlert'
 import { HeaderSearch } from '../../../shared/HeaderSearch'
 import { matchesQuery } from '../../../shared/search'
 import { PageHeader } from '../../../shared/PageHeader'
+import { thumbnailProps } from '../../../shared/thumbnail'
 
 const { Title, Text } = Typography
 
@@ -44,7 +44,9 @@ function StudentCard({ student, number }: { student: StudyAbroad; number: number
   return (
     <Card className="surface-card study-card">
       <div className="study-card__head">
-        <div className="study-card__photo">{student.photo ? <img src={assetUrl(student.photo)} alt="" loading="lazy" /> : <UserOutlined />}</div>
+        <div className="study-card__photo">
+          {student.photo ? <img {...thumbnailProps(student.photo)} alt="" loading="lazy" decoding="async" /> : <UserOutlined />}
+        </div>
 
         <div className="study-card__names">
           <span className="study-card__number">{number}</span>

@@ -11,6 +11,7 @@ import { formatDate } from '../../../shared/format'
 import { PageHeader } from '../../../shared/PageHeader'
 import { RichContent } from '../../../shared/RichContent'
 import { richTextExcerpt } from '../../../shared/richText'
+import { thumbnailPropsForUrl } from '../../../shared/thumbnail'
 
 const { Title, Paragraph, Text } = Typography
 
@@ -70,7 +71,11 @@ export function NoticesPage({ variant }: NoticesPageProps) {
                 onClick={() => setOpenId(post.id)}
               >
                 <span className="notice-row__media">
-                  {thumbnail ? <img src={thumbnail} alt="" loading="lazy" /> : <ReadOutlined aria-hidden="true" />}
+                  {thumbnail ? (
+                    <img {...thumbnailPropsForUrl(thumbnail)} alt="" loading="lazy" decoding="async" />
+                  ) : (
+                    <ReadOutlined aria-hidden="true" />
+                  )}
                 </span>
 
                 <span className="notice-row__body">
