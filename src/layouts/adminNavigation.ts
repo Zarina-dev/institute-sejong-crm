@@ -31,6 +31,9 @@ export const adminTrash: AdminNavItem = { to: '/admin/trash', labelKey: 'adminNa
 /** Below the trash: every change, from every section. */
 export const adminAudit: AdminNavItem = { to: '/admin/audit', labelKey: 'adminNav.audit' }
 
+/** Last: who may sign in. Shown to administrators only, like the journal above it. */
+export const adminAccounts: AdminNavItem = { to: '/admin/accounts', labelKey: 'adminNav.accounts' }
+
 /**
  * The admin menu is the public menu: the same five sections, and under each
  * one the very pages a visitor sees. An admin looking for 인사말 opens

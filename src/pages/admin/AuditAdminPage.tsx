@@ -62,6 +62,8 @@ const SCREEN: Partial<Record<string, string>> = {
  */
 function entryLink(entry: AuditEntry): string | null {
   if (entry.action === 'login' || entry.action === 'login_failed' || entry.action === 'purge' || !entry.entityType) return null
+  // Accounts are removed for good, never moved to the trash.
+  if (entry.entityType === 'accounts') return '/admin/accounts'
   if (entry.action === 'delete') return '/admin/trash'
   if (entry.entityType === 'content') {
     const slug = entry.entityId?.split('/')[0]

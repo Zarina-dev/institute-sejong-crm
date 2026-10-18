@@ -1,8 +1,6 @@
 /**
- * Administrator session.
- *
- * The site has exactly one account, so a session is just "the admin is
- * signed in, here is the API token". It lives in `sessionStorage`, so
+ * Staff session: who is signed in (an account from the API's
+ * staff_accounts) and the API token. It lives in `sessionStorage`, so
  * closing the tab signs out — nothing survives to the next visit.
  * `sessionStorage` is per tab and the admin panel opens in a new tab, so
  * tabs stay in sync over a BroadcastChannel:
@@ -17,11 +15,25 @@
  * forever. We therefore memoise the parse and only redo it when the raw
  * string actually differs.
  */
-export type AdminSession = {
+/** ADMIN also manages accounts, reads 작업 기록 and empties the trash; STAFF edits the site. */
+export type StaffRole = 'ADMIN' | 'STAFF'
+
+/** The signed-in account, as `/auth/login` and `/auth/me` describe it. */
+export type SessionUser = {
+  id: string
   username: string
+  fullName: string
+  role: StaffRole
+}
+
+export type AdminSession = SessionUser & {
   /** API bearer token issued by POST /auth/login (12 h). */
   token: string
 }
+
+/** Sessions stored before accounts lived in the database lack these; their tokens are refused anyway. */
+const isCurrentSession = (value: Partial<AdminSession> | null): value is AdminSession =>
+  !!value && typeof value.token === 'string' && typeof value.id === 'string' && (value.role === 'ADMIN' || value.role === 'STAFF')
 
 const STORAGE_KEY = 'institut-admin-session'
 const LEGACY_STORAGE_KEYS = ['institut-demo-session', 'institut-students', 'institut-catalog']
@@ -73,7 +85,8 @@ export function getSession(): AdminSession | null {
   }
 
   try {
-    cachedSession = JSON.parse(raw) as AdminSession
+    const parsed = JSON.parse(raw) as Partial<AdminSession> | null
+    cachedSession = isCurrentSession(parsed) ? parsed : null
   } catch {
     cachedSession = null
   }
@@ -113,6 +126,23 @@ export function clearSession() {
   writeRaw(null)
   channel?.postMessage({ type: 'clear' } satisfies SessionMessage)
   notify()
+}
+
+/**
+ * Brings the stored name and role up to date with `/auth/me` — an
+ * administrator may have renamed or re-roled the account since sign-in.
+ * Nothing is written (or broadcast) when nothing changed.
+ */
+export function updateSessionUser(user: SessionUser) {
+  const session = getSession()
+
+  if (!session || session.id !== user.id) {
+    return
+  }
+
+  if (session.username !== user.username || session.fullName !== user.fullName || session.role !== user.role) {
+    setSession({ ...session, username: user.username, fullName: user.fullName, role: user.role })
+  }
 }
 
 /** Bearer token for API calls; undefined when signed out. */

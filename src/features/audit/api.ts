@@ -20,6 +20,7 @@ export const AUDIT_TYPES = [
   'meetings',
   'content',
   'gallery',
+  'accounts',
 ] as const
 export type AuditType = (typeof AUDIT_TYPES)[number]
 

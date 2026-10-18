@@ -7,6 +7,7 @@ import {
   HistoryOutlined,
   HomeOutlined,
   IdcardOutlined,
+  KeyOutlined,
   LogoutOutlined,
   PictureOutlined,
   RestOutlined,
@@ -15,17 +16,19 @@ import {
   MoonOutlined,
   NotificationOutlined,
   SunOutlined,
+  TeamOutlined,
 } from '@ant-design/icons'
 import { Avatar, Button, Grid, Layout, Select, Spin, Tooltip, Typography } from 'antd'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { languages, usePreferences } from '../app/preferences'
-import { clearSession } from '../auth/session'
 import { useSession, useSessionResolving } from '../auth/useSession'
+import { ChangePasswordModal } from '../features/auth/ChangePasswordModal'
+import { useLogout, useMe } from '../features/auth/queries'
 import { BrandMark } from '../shared/BrandMark'
 import { useScrollReset } from '../shared/useScrollReset'
-import { adminAudit, adminDashboard, adminNavigation, adminTrash, type AdminNavGroup } from './adminNavigation'
+import { adminAccounts, adminAudit, adminDashboard, adminNavigation, adminTrash, type AdminNavGroup } from './adminNavigation'
 import { PageSuspense } from '../shared/PageSuspense'
 
 const { Content, Header, Sider } = Layout
@@ -90,6 +93,11 @@ export function AdminLayout() {
   // Below lg the rail opens over the page (see .admin-sider): a backdrop
   // closes it, and so does going to another page.
   const narrow = Grid.useBreakpoint().lg === false
+  // Name and role as they are now, not as they were at sign-in; a 401 here
+  // (deactivated, signed out elsewhere) ends this tab's session too.
+  useMe(Boolean(session))
+  const logout = useLogout()
+  const [passwordOpen, setPasswordOpen] = useState(false)
 
   useEffect(() => {
     if (narrow) {
@@ -108,9 +116,10 @@ export function AdminLayout() {
   }
 
   const handleLogout = () => {
-    clearSession()
-    navigate('/login', { replace: true })
+    logout.mutate(undefined, { onSettled: () => navigate('/login', { replace: true }) })
   }
+  const isAdmin = session.role === 'ADMIN'
+  const displayName = session.fullName || session.username
 
   return (
     <Layout className="admin-shell" hasSider>
@@ -185,18 +194,30 @@ export function AdminLayout() {
               <RestOutlined />
               <span>{t(adminTrash.labelKey)}</span>
             </NavLink>
-            <NavLink className="rail-link" to={adminAudit.to}>
-              <HistoryOutlined />
-              <span>{t(adminAudit.labelKey)}</span>
-            </NavLink>
+            {/* The journal and the accounts are the administrators' (the API refuses anyone else). */}
+            {isAdmin ? (
+              <>
+                <NavLink className="rail-link" to={adminAudit.to}>
+                  <HistoryOutlined />
+                  <span>{t(adminAudit.labelKey)}</span>
+                </NavLink>
+                <NavLink className="rail-link" to={adminAccounts.to}>
+                  <TeamOutlined />
+                  <span>{t(adminAccounts.labelKey)}</span>
+                </NavLink>
+              </>
+            ) : null}
           </nav>
 
           <div className="rail-user">
-            <Avatar>{session.username.trim().charAt(0).toUpperCase()}</Avatar>
+            <Avatar>{displayName.trim().charAt(0).toUpperCase()}</Avatar>
             <div>
-              <strong>{session.username}</strong>
-              <small>{t('session.roleAdmin')}</small>
+              <strong title={session.username}>{displayName}</strong>
+              <small>{t(isAdmin ? 'session.roleAdmin' : 'session.roleStaff')}</small>
             </div>
+            <Tooltip title={t('session.changePassword')}>
+              <Button type="text" size="small" aria-label={t('session.changePassword')} icon={<KeyOutlined />} onClick={() => setPasswordOpen(true)} />
+            </Tooltip>
           </div>
         </div>
       </Sider>
@@ -238,7 +259,7 @@ export function AdminLayout() {
               options={languages.map(({ value, label, title }) => ({ value, label, title }))}
             />
 
-            <Button icon={<LogoutOutlined />} onClick={handleLogout} className="logout-button">
+            <Button icon={<LogoutOutlined />} onClick={handleLogout} loading={logout.isPending} className="logout-button">
               <span>{t('session.logout')}</span>
             </Button>
           </div>
@@ -250,6 +271,8 @@ export function AdminLayout() {
           </PageSuspense>
         </Content>
       </Layout>
+
+      <ChangePasswordModal open={passwordOpen} onClose={() => setPasswordOpen(false)} />
     </Layout>
   )
 }

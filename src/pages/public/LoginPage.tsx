@@ -4,26 +4,28 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { usePreferences } from '../../app/preferences'
-import { clearSession, setSession } from '../../auth/session'
+import { setSession } from '../../auth/session'
 import { useSession } from '../../auth/useSession'
-import { useLogin } from '../../features/auth/queries'
+import { useLogin, useLogout } from '../../features/auth/queries'
 import { ErrorAlert } from '../../shared/ErrorAlert'
 import { BrandMark } from '../../shared/BrandMark'
 import { PageHeader } from '../../shared/PageHeader'
 
 const { Title, Paragraph, Text } = Typography
 
-type LoginValues = { username: string; password?: string }
+type LoginValues = { username: string; password: string }
 
 /**
- * Staff sign-in. The site has one account — the administrator — so this is
- * the only door into the admin panel; visitors never need it.
+ * Staff sign-in: the only door into the admin panel, for the accounts made
+ * under 계정 관리 (or the first administrator, from `npm run admin:create`).
+ * Visitors never need it.
  */
 export function LoginPage() {
   const { t } = usePreferences()
   const navigate = useNavigate()
   const session = useSession()
   const login = useLogin()
+  const logout = useLogout()
   // An empty id never reaches the API, so it never appears in `login.error`.
   const [localError, setLocalError] = useState<string | null>(null)
 
@@ -37,8 +39,8 @@ export function LoginPage() {
     }
 
     try {
-      const result = await login.mutateAsync({ username, password: values.password ?? '' })
-      setSession({ username, token: result.token })
+      const result = await login.mutateAsync({ username, password: values.password })
+      setSession({ ...result.user, token: result.token })
       navigate('/admin', { replace: true })
     } catch {
       // Rendered through <ErrorAlert error={login.error}> below.
@@ -46,7 +48,7 @@ export function LoginPage() {
   }
 
   const handleLogout = () => {
-    clearSession()
+    logout.mutate()
     setLocalError(null)
     login.reset()
   }
@@ -64,9 +66,9 @@ export function LoginPage() {
       <Card className="surface-card login-card">
         {session ? (
           <>
-            <Title level={2}>{session.username}</Title>
+            <Title level={2}>{session.fullName || session.username}</Title>
             <Paragraph type="secondary">
-              {t('session.signedInAs')} · {t('session.roleAdmin')}
+              {t('session.signedInAs')} {session.username} · {t(session.role === 'ADMIN' ? 'session.roleAdmin' : 'session.roleStaff')}
             </Paragraph>
             <Space wrap>
               {/* Opens in its own tab, matching the header button; this page stays put. */}
@@ -75,7 +77,9 @@ export function LoginPage() {
                   {t('login.continue')}
                 </Button>
               </Link>
-              <Button onClick={handleLogout}>{t('session.logout')}</Button>
+              <Button onClick={handleLogout} loading={logout.isPending}>
+                {t('session.logout')}
+              </Button>
             </Space>
           </>
         ) : (
@@ -91,7 +95,7 @@ export function LoginPage() {
               <Form.Item label={t('login.idLabel')} name="username" rules={[{ required: true, message: t('login.idRequired') }]}>
                 <Input size="large" autoComplete="username" autoFocus placeholder={t('login.idPlaceholder')} />
               </Form.Item>
-              <Form.Item label={t('login.passwordLabel')} name="password">
+              <Form.Item label={t('login.passwordLabel')} name="password" rules={[{ required: true, message: t('login.passwordRequired') }]}>
                 <Input.Password size="large" autoComplete="current-password" placeholder={t('login.passwordPlaceholder')} />
               </Form.Item>
               <Button type="primary" size="large" block icon={<LockOutlined />} htmlType="submit" loading={login.isPending}>

@@ -4,6 +4,7 @@ import type { TableProps } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences, type TranslationKey } from '../../app/preferences'
+import { useSession } from '../../auth/useSession'
 import { TRASH_TYPES, type TrashItem, type TrashType } from '../../features/trash/api'
 import { usePurgeTrashItem, useRestoreTrashItem, useTrash } from '../../features/trash/queries'
 import { ErrorAlert } from '../../shared/ErrorAlert'
@@ -39,6 +40,8 @@ export function TrashAdminPage() {
   const trash = useTrash()
   const restore = useRestoreTrashItem()
   const purge = usePurgeTrashItem()
+  // Removing for good is the administrators' (the API refuses anyone else).
+  const canPurge = useSession()?.role === 'ADMIN'
   const [type, setType] = useState<TrashType | 'all'>('all')
 
   const items = trash.data ?? NO_ITEMS
@@ -142,14 +145,16 @@ export function TrashAdminPage() {
             >
               {compactActions ? null : t('trash.restore')}
             </Button>
-            <Button size="small" danger icon={<DeleteOutlined />} aria-label={t('trash.purge')} onClick={() => handlePurge(item)}>
-              {compactActions ? null : t('trash.purge')}
-            </Button>
+            {canPurge ? (
+              <Button size="small" danger icon={<DeleteOutlined />} aria-label={t('trash.purge')} onClick={() => handlePurge(item)}>
+                {compactActions ? null : t('trash.purge')}
+              </Button>
+            ) : null}
           </Space>
         ),
       },
     ],
-    [compactActions, handlePurge, handleRestore, language, pinActions, restoringId, t],
+    [canPurge, compactActions, handlePurge, handleRestore, language, pinActions, restoringId, t],
   )
 
   return (
