@@ -2774,6 +2774,12 @@ a.activity-row:hover b {
   pointer-events: none;
 }
 
+/* The editor's frame before it is created (off screen, or its code still
+   loading): the same box, so nothing moves when the editor appears. */
+.rich-editor--pending {
+  background: var(--color-surface-sunken);
+}
+
 .rich-editor__toolbar {
   display: flex;
   flex-wrap: wrap;
