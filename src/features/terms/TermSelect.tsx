@@ -3,7 +3,7 @@ import { Select, Typography } from 'antd'
 import { usePreferences } from '../../app/preferences'
 import { termLabel } from '../courses/terms'
 import { termInProgress } from './current'
-import { termDisplayName, termMemo } from './labels'
+import { termDisplayName } from './labels'
 import type { AcademicTerm } from './types'
 
 const { Text } = Typography
@@ -31,8 +31,6 @@ export function TermSelect({ value, onChange, terms, disabled }: TermSelectProps
       <span className="term-option">
         <span className={`term-led${term.code === live?.code ? ' is-live' : ''}`} aria-hidden="true" />
         <span className="term-option__name">{termDisplayName(term, t)}</span>
-        {/* The office's own memo for it, when there is one. */}
-        {termMemo(term) ? <Text type="secondary">· {termMemo(term)}</Text> : null}
         <Text type="secondary" className="term-option__dates">
           {term.startDate} ~ {term.endDate}
         </Text>

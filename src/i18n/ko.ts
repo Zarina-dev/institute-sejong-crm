@@ -975,8 +975,6 @@ const ko: LocaleDictionary = {
     editTitle: '학기 수정',
     empty: '등록된 학기가 없습니다.',
     code: '코드',
-    name: '학기명',
-    nameHint: '선택 입력 — 관리 화면에서 학기 옆에 함께 보이는 메모입니다. 사이트에는 항상 「2026년 1학기」처럼 표준 이름으로 표시됩니다.',
     yearRequired: '연도를 입력하세요.',
     inProgress: '진행 중',
     currentIs: '진행 중인 학기: {{term}}',

@@ -36,10 +36,3 @@ export function termDisplayName(term: Named, t: TranslateFn): string {
 
   return t(`terms.display.${breakSeason(term)}`, { year: term.year })
 }
-
-/** The memo, when there is one worth showing next to the standard name. */
-export function termMemo(term: Pick<AcademicTerm, 'name' | 'code'>): string | null {
-  const memo = term.name?.trim()
-
-  return memo && memo !== term.code ? memo : null
-}

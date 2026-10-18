@@ -994,9 +994,6 @@ export const en = {
     editTitle: 'Edit the semester',
     empty: 'No semester has been defined yet.',
     code: 'Code',
-    name: 'Name',
-    nameHint:
-      'Optional — a note for the office, shown beside the semester in the admin screens. The site always shows the standard name, such as “Spring semester 2026”.',
     yearRequired: 'Enter the year.',
     inProgress: 'In progress',
     currentIs: 'Now in progress: {{term}}',

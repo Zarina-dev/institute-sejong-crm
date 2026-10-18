@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
 import type { TranslationKey } from '../../app/preferences'
-import { breakSeason, termDisplayName, termMemo } from '../../features/terms/labels'
+import { breakSeason, termDisplayName } from '../../features/terms/labels'
 import { useCreateTerm, useDeleteTerm, useTermUsage, useTerms, useUpdateTerm } from '../../features/terms/queries'
 import { type AcademicTerm, type BreakSeason, type TermKind } from '../../features/terms/types'
 import { ErrorAlert } from '../../shared/ErrorAlert'
@@ -20,7 +20,6 @@ const { Text } = Typography
 type TermFormValues = {
   year: number
   slot: TermSlot
-  name?: string
   startDate: string
   endDate: string
 }
@@ -108,7 +107,7 @@ export function TermsAdminPage() {
   const openEditModal = useCallback(
     (term: AcademicTerm) => {
       setEditingId(term.id)
-      form.setFieldsValue({ year: term.year, slot: toSlot(term), name: term.name, startDate: term.startDate, endDate: term.endDate })
+      form.setFieldsValue({ year: term.year, slot: toSlot(term), startDate: term.startDate, endDate: term.endDate })
       setModalOpen(true)
     },
     [form],
@@ -165,7 +164,6 @@ export function TermsAdminPage() {
         render: (_, term) => (
           <Space size={8}>
             <Text strong>{termDisplayName(term, t)}</Text>
-            {termMemo(term) ? <Text type="secondary">{termMemo(term)}</Text> : null}
             {term.id === current?.id ? <Tag color="green">{t('terms.inProgress')}</Tag> : null}
           </Space>
         ),
@@ -308,9 +306,6 @@ export function TermsAdminPage() {
           <div className="form-row">
             <Form.Item name="year" label={t('terms.year')} rules={[{ required: true, message: t('terms.yearRequired') }]}>
               <InputNumber min={1990} max={2100} style={{ width: '100%' }} />
-            </Form.Item>
-            <Form.Item name="name" label={t('terms.name')} extra={t('terms.nameHint')}>
-              <Input maxLength={120} />
             </Form.Item>
           </div>
 
