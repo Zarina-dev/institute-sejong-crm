@@ -47,6 +47,16 @@ export function ensureHtml(body: string) {
     .join('')
 }
 
+// Photos inside a post or a summary load as they scroll near and decode off
+// the main thread; a long post no longer downloads all its photos up front.
+// Added after the attribute filter, so the allow-list below stays as it is.
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.nodeName === 'IMG') {
+    node.setAttribute('loading', 'lazy')
+    node.setAttribute('decoding', 'async')
+  }
+})
+
 /** Same allow-list as the API's sanitize-html config — defence in depth for stored content. */
 export function sanitizeRichHtml(html: string) {
   return DOMPurify.sanitize(expandAssetUrls(ensureHtml(html)), {

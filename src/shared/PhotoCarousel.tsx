@@ -27,6 +27,14 @@ export function PhotoCarousel({ images, label }: PhotoCarouselProps) {
   const [direction, setDirection] = useState<'next' | 'prev'>('next')
   /** The full-size viewer: open on the photo that was clicked. */
   const [viewing, setViewing] = useState(false)
+  /**
+   * The photos share one frame, so a hidden one is never "off screen" and
+   * `loading="lazy"` cannot hold it back: every photo of every card would
+   * download with the page. Only the photo on show is in the page, and its
+   * neighbours join once the visitor reaches for the carousel (pointer or
+   * focus), so the next photo is ready by the time they press an arrow.
+   */
+  const [engaged, setEngaged] = useState(false)
 
   // A shorter list (an edit, another record) must not leave us out of bounds.
   useEffect(() => {
@@ -38,11 +46,16 @@ export function PhotoCarousel({ images, label }: PhotoCarouselProps) {
   }
 
   const move = (step: 1 | -1) => {
+    setEngaged(true)
     setDirection(step === 1 ? 'next' : 'prev')
     setIndex((current) => (current + step + images.length) % images.length)
   }
 
   const single = images.length === 1
+  const near = (position: number) => {
+    const distance = Math.abs(position - index)
+    return distance === 0 || (engaged && (distance === 1 || distance === images.length - 1))
+  }
 
   return (
     <div
@@ -51,6 +64,8 @@ export function PhotoCarousel({ images, label }: PhotoCarouselProps) {
       aria-roledescription="carousel"
       aria-label={label}
       tabIndex={single ? -1 : 0}
+      onPointerEnter={() => setEngaged(true)}
+      onFocus={() => setEngaged(true)}
       onKeyDown={(event) => {
         if (event.key === 'ArrowRight') {
           move(1)
@@ -62,17 +77,20 @@ export function PhotoCarousel({ images, label }: PhotoCarouselProps) {
       }}
     >
       <div className="photo-carousel__frame">
-        {images.map((image, position) => (
-          <img
-            className={`photo-carousel__photo${position === index ? ` is-current is-${direction}` : ''}`}
-            key={image}
-            src={assetUrl(image)}
-            alt=""
-            loading={position === 0 ? 'eager' : 'lazy'}
-            aria-hidden={position !== index}
-            onClick={() => setViewing(true)}
-          />
-        ))}
+        {images.map((image, position) =>
+          near(position) ? (
+            <img
+              className={`photo-carousel__photo${position === index ? ` is-current is-${direction}` : ''}`}
+              key={image}
+              src={assetUrl(image)}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              aria-hidden={position !== index}
+              onClick={() => setViewing(true)}
+            />
+          ) : null,
+        )}
 
         <Button
           className="photo-carousel__expand"

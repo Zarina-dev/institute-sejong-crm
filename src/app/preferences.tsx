@@ -4,7 +4,6 @@ import { setApiLanguage } from '../api/client'
 import {
   en,
   getLoadedDictionary,
-  isLanguage,
   languages,
   loadDictionary,
   translate,
@@ -14,24 +13,13 @@ import {
   type TranslationKey,
 } from '../i18n'
 import { readStorage, writeStorage } from '../shared/storage'
+import { LANGUAGE_STORAGE_KEY, readLanguage } from './language'
 
 export type { Language, TranslationKey }
 export { languages }
 export type ThemeMode = 'light' | 'dark'
 
-const LANGUAGE_STORAGE_KEY = 'institut-language'
 const THEME_STORAGE_KEY = 'institut-theme'
-
-function readLanguage(): Language {
-  const stored = readStorage('local', LANGUAGE_STORAGE_KEY)
-
-  if (isLanguage(stored)) {
-    return stored
-  }
-
-  const browserLanguage = navigator.language.slice(0, 2).toLowerCase()
-  return isLanguage(browserLanguage) ? browserLanguage : 'en'
-}
 
 function readTheme(): ThemeMode {
   const stored = readStorage('local', THEME_STORAGE_KEY)

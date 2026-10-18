@@ -1,6 +1,6 @@
 import { CalendarOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { Alert, App, Button, Card, Form, Input, InputNumber, Modal, Segmented, Space, Table, Tag, Tooltip, Typography } from 'antd'
+import { Alert, App, Button, Card, Form, Input, InputNumber, Modal, Segmented, Space, Tag, Tooltip, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
@@ -15,6 +15,8 @@ import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useEditLink } from '../../shared/useEditLink'
 import { toIsoDate } from '../../features/courses/week'
+import { AdminTable } from '../../shared/AdminTable'
+import { useStableCallback } from '../../shared/useStableCallback'
 
 const { Text } = Typography
 
@@ -144,19 +146,16 @@ export function TermsAdminPage() {
     }
   }
 
-  const handleDelete = useCallback(
-    (term: AcademicTerm) => {
-      confirmDelete({
-        target: termDisplayName(term, t),
-        onConfirm: () =>
-          deleteTerm.mutateAsync(term.id).then(
-            () => message.success(t('terms.deleted')),
-            (err) => message.error(getErrorMessage(err, t('terms.deleteFailed'))),
-          ),
-      })
-    },
-    [confirmDelete, deleteTerm, message, t],
-  )
+  const handleDelete = useStableCallback((term: AcademicTerm) => {
+    confirmDelete({
+      target: termDisplayName(term, t),
+      onConfirm: () =>
+        deleteTerm.mutateAsync(term.id).then(
+          () => message.success(t('terms.deleted')),
+          (err) => message.error(getErrorMessage(err, t('terms.deleteFailed'))),
+        ),
+    })
+  })
 
   const columns = useMemo<NonNullable<TableProps<AcademicTerm>['columns']>>(
     () => [
@@ -253,16 +252,7 @@ export function TermsAdminPage() {
       <ErrorAlert error={terms.error} fallback={t('terms.loadFailed')} />
 
       <Card className="surface-card">
-        <Table
-          className="admin-table"
-          columns={columns}
-          dataSource={rows}
-          rowKey="id"
-          loading={terms.isPending}
-          pagination={false}
-          scroll={{ x: 'max-content' }}
-          locale={{ emptyText: t('terms.empty') }}
-        />
+        <AdminTable columns={columns} dataSource={rows} rowKey="id" loading={terms.isPending} emptyText={t('terms.empty')} />
       </Card>
 
       <Modal

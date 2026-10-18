@@ -372,6 +372,11 @@
   max-width: var(--layout-container);
   margin-inline: auto;
   padding: var(--space-10) var(--layout-gutter) var(--space-16);
+  /* At least a screen tall: while a page and its data load, the footer
+     stays below the fold instead of sitting on screen and then jumping
+     down when the content arrives (most of the measured layout shift). */
+  min-height: 100vh;
+  min-height: 100svh;
 }
 
 /* ==========================================================================
@@ -3867,6 +3872,14 @@ a.activity-row:hover b {
 .meeting-card .ant-card-body {
   display: grid;
   gap: var(--space-5);
+}
+
+/* A year of 행사·대회 (or 전체: ~180 cards) is laid out and painted only
+   where the visitor scrolls; `auto` remembers each card's real height once
+   seen, so the scrollbar settles instead of jumping. */
+.competition-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 520px;
 }
 
 /* The facts of the day sit beside the photo; the results run full width. */

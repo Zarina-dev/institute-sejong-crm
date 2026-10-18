@@ -35,8 +35,15 @@ const filledLanguages = (value?: Translations) =>
  */
 export function TranslationFields({ fields, extra }: TranslationFieldsProps) {
   const { t } = usePreferences()
-  const value = Form.useWatch<Translations | undefined>('translations', { preserve: true })
-  const filled = filledLanguages(value)
+  // Only the label needs watching, so the watch returns the label's input:
+  // typing re-renders this component when a language gains or loses its
+  // first text, not on every key (which redrew all three tabs' editors).
+  const form = Form.useFormInstance()
+  const filledKey = Form.useWatch((values: { translations?: Translations }) => filledLanguages(values.translations).join(','), {
+    form,
+    preserve: true,
+  })
+  const filled = filledKey ? (filledKey.split(',') as TranslationLanguage[]) : []
 
   return (
     <Collapse

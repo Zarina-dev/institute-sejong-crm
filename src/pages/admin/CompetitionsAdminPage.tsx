@@ -1,6 +1,6 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, MinusCircleOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, Button, Card, Collapse, Dropdown, Form, Input, InputNumber, Modal, Space, Switch, Table, Tag, Typography } from 'antd'
+import { App, Button, Card, Collapse, Dropdown, Form, Input, InputNumber, Modal, Space, Switch, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
@@ -21,6 +21,8 @@ import { ALL_YEARS, YearSelect } from '../../shared/YearSelect'
 import { TranslationFields } from '../../shared/TranslationFields'
 import type { TranslationLanguage, Translations } from '../../shared/translations'
 import { useEditLink } from '../../shared/useEditLink'
+import { AdminTable } from '../../shared/AdminTable'
+import { useStableCallback } from '../../shared/useStableCallback'
 
 const { Text } = Typography
 
@@ -183,29 +185,23 @@ export function CompetitionsAdminPage() {
     }
   }
 
-  const handleTogglePublished = useCallback(
-    (record: Competition) => {
-      updateCompetition.mutate(
-        { id: record.id, payload: { isPublished: !record.isPublished } },
-        { onError: (err) => message.error(getErrorMessage(err, t('competitions.saveFailed'))) },
-      )
-    },
-    [message, t, updateCompetition],
-  )
+  const handleTogglePublished = useStableCallback((record: Competition) => {
+    updateCompetition.mutate(
+      { id: record.id, payload: { isPublished: !record.isPublished } },
+      { onError: (err) => message.error(getErrorMessage(err, t('competitions.saveFailed'))) },
+    )
+  })
 
-  const handleDelete = useCallback(
-    (record: Competition) => {
-      confirmDelete({
-        target: record.title,
-        onConfirm: () =>
-          deleteCompetition.mutateAsync(record.id).then(
-            () => message.success(t('competitions.deleted')),
-            (err) => message.error(getErrorMessage(err, t('competitions.deleteFailed'))),
-          ),
-      })
-    },
-    [confirmDelete, deleteCompetition, message, t],
-  )
+  const handleDelete = useStableCallback((record: Competition) => {
+    confirmDelete({
+      target: record.title,
+      onConfirm: () =>
+        deleteCompetition.mutateAsync(record.id).then(
+          () => message.success(t('competitions.deleted')),
+          (err) => message.error(getErrorMessage(err, t('competitions.deleteFailed'))),
+        ),
+    })
+  })
 
   const columns = useMemo<NonNullable<TableProps<Competition>['columns']>>(
     () => [
@@ -304,16 +300,7 @@ export function CompetitionsAdminPage() {
       <ErrorAlert error={competitions.error} fallback={t('competitions.loadFailed')} />
 
       <Card className="surface-card">
-        <Table
-          className="admin-table"
-          columns={columns}
-          dataSource={rows}
-          rowKey="id"
-          loading={competitions.isPending}
-          pagination={false}
-          scroll={{ x: 'max-content' }}
-          locale={{ emptyText: t('competitions.empty') }}
-        />
+        <AdminTable columns={columns} dataSource={rows} rowKey="id" loading={competitions.isPending} emptyText={t('competitions.empty')} />
       </Card>
 
       <Modal

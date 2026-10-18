@@ -40,7 +40,9 @@ export function DashboardPage() {
   // Counted on the server: this page used to download every course and
   // every post (~24 MB at twelve years of history) to count them here.
   const summary = useDashboard()
-  const materials = useMaterials({ page: 1, limit: 1, published: 'all' })
+  // The same request as the recent-activity feed (useRecentActivity), so the
+  // two share one response; only its `total` is read here.
+  const materials = useMaterials({ page: 1, limit: 20, published: 'all', sortBy: 'updatedAt' })
   const staff = useAllStaff()
 
   const courses = summary.data?.courses

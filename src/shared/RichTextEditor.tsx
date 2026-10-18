@@ -21,7 +21,7 @@ import { Color, FontSize, TextStyle } from '@tiptap/extension-text-style'
 import { EditorContent, useEditor, useEditorState, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { App, Button, ColorPicker, Divider, Input, Popover, Segmented, Select, Tooltip } from 'antd'
-import { useCallback, useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 
 import { assetUrl } from '../api/client'
 import { usePreferences } from '../app/preferences'
@@ -65,6 +65,26 @@ const AlignedImage = Image.extend({
 
 const FONT_SIZES = ['14px', '16px', '18px', '20px', '24px', '28px', '32px']
 
+/**
+ * Built once for every editor. useEditor compares its options on each
+ * render and calls setOptions() — re-applying every prop to ProseMirror —
+ * when anything differs by reference; extensions created inside the
+ * component did, so every keystroke reconfigured the editor.
+ */
+const EXTENSIONS = [
+  StarterKit.configure({
+    heading: { levels: [2, 3] },
+    link: { openOnClick: false, autolink: true, defaultProtocol: 'https' },
+    codeBlock: false,
+    code: false,
+  }),
+  TextStyle,
+  FontSize,
+  Color,
+  TextAlign.configure({ types: ['heading', 'paragraph'] }),
+  AlignedImage.configure({ allowBase64: false }),
+]
+
 type RichTextEditorProps = {
   /** Stored HTML (site-relative image paths). Undefined/empty renders an empty editor. */
   value?: string
@@ -89,28 +109,23 @@ export function RichTextEditor({ value, onChange, disabled, minHeight = 320 }: R
   const [uploading, setUploading] = useState(false)
   // The last HTML we emitted — lets us tell "form set a new value" apart from our own echo.
   const lastEmitted = useRef<string>('')
+  // onUpdate is fixed at creation (useEditor does not compare callbacks); it
+  // reaches the current onChange through this.
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+  // The content to start from; later values arrive through the effect below.
+  const [initialContent] = useState(() => expandAssetUrls(ensureHtml(value ?? '')))
+  const editorProps = useMemo(() => ({ attributes: { class: 'rich-content rich-editor__content', style: `min-height:${minHeight}px` } }), [minHeight])
 
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: { levels: [2, 3] },
-        link: { openOnClick: false, autolink: true, defaultProtocol: 'https' },
-        codeBlock: false,
-        code: false,
-      }),
-      TextStyle,
-      FontSize,
-      Color,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      AlignedImage.configure({ allowBase64: false }),
-    ],
-    content: expandAssetUrls(ensureHtml(value ?? '')),
+    extensions: EXTENSIONS,
+    content: initialContent,
     editable: !disabled,
-    editorProps: { attributes: { class: 'rich-content rich-editor__content', style: `min-height:${minHeight}px` } },
+    editorProps,
     onUpdate: ({ editor: instance }) => {
       const html = instance.isEmpty ? '' : collapseAssetUrls(instance.getHTML())
       lastEmitted.current = html
-      onChange?.(html)
+      onChangeRef.current?.(html)
     },
   })
 

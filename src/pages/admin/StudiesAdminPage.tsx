@@ -1,6 +1,6 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, MoreOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, AutoComplete, Avatar, Button, Card, Dropdown, Form, Input, InputNumber, Modal, Switch, Table, Tag, Typography } from 'antd'
+import { App, AutoComplete, Avatar, Button, Card, Dropdown, Form, Input, InputNumber, Modal, Switch, Tag, Typography } from 'antd'
 import { Fragment, useCallback, useMemo, useState } from 'react'
 
 import { assetUrl } from '../../api/client'
@@ -16,6 +16,8 @@ import { PageHeader } from '../../shared/PageHeader'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
 import { useEditLink } from '../../shared/useEditLink'
+import { AdminTable } from '../../shared/AdminTable'
+import { useStableCallback } from '../../shared/useStableCallback'
 
 const { Text } = Typography
 
@@ -153,29 +155,23 @@ export function StudiesAdminPage() {
     }
   }
 
-  const handleTogglePublished = useCallback(
-    (student: StudyAbroad) => {
-      updateStudy.mutate(
-        { id: student.id, payload: { isPublished: !student.isPublished } },
-        { onError: (err) => message.error(getErrorMessage(err, t('studies.saveFailed'))) },
-      )
-    },
-    [message, t, updateStudy],
-  )
+  const handleTogglePublished = useStableCallback((student: StudyAbroad) => {
+    updateStudy.mutate(
+      { id: student.id, payload: { isPublished: !student.isPublished } },
+      { onError: (err) => message.error(getErrorMessage(err, t('studies.saveFailed'))) },
+    )
+  })
 
-  const handleDelete = useCallback(
-    (student: StudyAbroad) => {
-      confirmDelete({
-        target: student.name || student.nameKy,
-        onConfirm: () =>
-          deleteStudy.mutateAsync(student.id).then(
-            () => message.success(t('studies.deleted')),
-            (err) => message.error(getErrorMessage(err, t('studies.deleteFailed'))),
-          ),
-      })
-    },
-    [confirmDelete, deleteStudy, message, t],
-  )
+  const handleDelete = useStableCallback((student: StudyAbroad) => {
+    confirmDelete({
+      target: student.name || student.nameKy,
+      onConfirm: () =>
+        deleteStudy.mutateAsync(student.id).then(
+          () => message.success(t('studies.deleted')),
+          (err) => message.error(getErrorMessage(err, t('studies.deleteFailed'))),
+        ),
+    })
+  })
 
   const columns = useMemo<NonNullable<TableProps<StudyAbroad & { number: number }>['columns']>>(
     () => [
@@ -194,7 +190,11 @@ export function StudiesAdminPage() {
         width: 76,
         align: 'center',
         responsive: ['sm'],
-        render: (photo: string | null) => <Avatar size={44} src={photo ? assetUrl(photo) : undefined} icon={<UserOutlined />} alt="" />,
+        // A lazy <img>: the list is shown whole (~90 rows), and each avatar is
+        // an original upload — they now load as the rows scroll into view.
+        render: (photo: string | null) => (
+          <Avatar size={44} src={photo ? <img src={assetUrl(photo)} alt="" loading="lazy" decoding="async" /> : undefined} icon={<UserOutlined />} />
+        ),
       },
       { title: t('studies.form.year'), dataIndex: 'year', key: 'year', width: 90 },
       {
@@ -345,16 +345,7 @@ export function StudiesAdminPage() {
       <ErrorAlert error={studies.error} fallback={t('studies.loadFailed')} />
 
       <Card className="surface-card">
-        <Table
-          className="admin-table"
-          columns={columns}
-          dataSource={shown}
-          rowKey="id"
-          loading={studies.isPending}
-          pagination={false}
-          scroll={{ x: 'max-content' }}
-          locale={{ emptyText: t('studies.empty') }}
-        />
+        <AdminTable columns={columns} dataSource={shown} rowKey="id" loading={studies.isPending} emptyText={t('studies.empty')} />
       </Card>
 
       <Modal

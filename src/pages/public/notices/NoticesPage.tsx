@@ -31,6 +31,10 @@ export function NoticesPage({ variant }: NoticesPageProps) {
     [news.data, variant],
   )
 
+  // Each row's thumbnail and excerpt are read out of the post's HTML once per
+  // list, not again on every render (opening the reader re-rendered them all).
+  const rows = useMemo(() => posts.map((post) => ({ post, thumbnail: newsThumbnail(post), excerpt: richTextExcerpt(post.body, 200) })), [posts])
+
   const open = posts.find((post) => post.id === openId) ?? null
 
   return (
@@ -56,9 +60,7 @@ export function NoticesPage({ variant }: NoticesPageProps) {
         </div>
       ) : posts.length > 0 ? (
         <div className="notice-list">
-          {posts.map((post) => {
-            const thumbnail = newsThumbnail(post)
-
+          {rows.map(({ post, thumbnail, excerpt }) => {
             return (
               <button
                 type="button"
@@ -86,7 +88,7 @@ export function NoticesPage({ variant }: NoticesPageProps) {
 
                   <Title level={3}>{post.title}</Title>
                   <Paragraph type="secondary" className="notice-row__excerpt">
-                    {richTextExcerpt(post.body, 200)}
+                    {excerpt}
                   </Paragraph>
                 </span>
 

@@ -14,12 +14,26 @@
     <meta name="theme-color" content="#ffffff" />
     <meta name="color-scheme" content="light dark" />
 
+    <!--
+      Web fonts never hold the page up or move it:
+      - the stylesheet loads without blocking the first paint (preload, then
+        applied once it arrives);
+      - display=optional: a font that is not there almost at once is not
+        swapped in later on this page (the swap moved the header, menu and
+        footer — most of the layout shift); it is cached for the next one;
+      - one variable font per family covers every weight in use (400–800).
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Noto+Sans+KR:wght@400..800&display=optional"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Noto+Sans+KR:wght@400..800&display=optional" />
+    </noscript>
   </head>
   <body>
     <div id="root"></div>

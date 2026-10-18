@@ -2,8 +2,8 @@ import { apiDelete, apiGet, apiPatch, apiPost } from '../../api/client'
 import type { MaterialListResponse } from './types'
 import type { MaterialsFilters } from './types'
 
-export async function getMaterials(filters: MaterialsFilters = {}) {
-  return apiGet<MaterialListResponse>('/materials', filters)
+export async function getMaterials(filters: MaterialsFilters = {}, signal?: AbortSignal) {
+  return apiGet<MaterialListResponse>('/materials', filters, { signal })
 }
 
 export async function createMaterial(formData: FormData) {

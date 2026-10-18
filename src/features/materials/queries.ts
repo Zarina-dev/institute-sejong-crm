@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 
 import { createMaterial, deleteMaterial, getMaterials, publishMaterial, unpublishMaterial, updateMaterial } from './api'
 import type { MaterialsFilters } from './types'
+import { useDebouncedValue } from '../../shared/useDebouncedValue'
 
 /**
  * Query-key factory. Every key for this feature starts with `all`, so one
@@ -20,9 +21,15 @@ type MaterialsQueryOptions = {
 }
 
 export function useMaterials(filters: MaterialsFilters, { enabled = true }: MaterialsQueryOptions = {}) {
+  // The search box updates on every key; the request waits for a pause in
+  // typing, and a superseded one is cancelled (the signal) rather than left
+  // to finish and race the newer answer.
+  const search = useDebouncedValue(filters.search)
+  const settled = { ...filters, search }
+
   return useQuery({
-    queryKey: materialKeys.list(filters),
-    queryFn: () => getMaterials(filters),
+    queryKey: materialKeys.list(settled),
+    queryFn: ({ signal }) => getMaterials(settled, signal),
     // Paging/filtering keeps the previous page on screen until the next one
     // arrives, instead of collapsing the grid to a spinner between pages.
     placeholderData: keepPreviousData,

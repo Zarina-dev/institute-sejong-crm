@@ -163,8 +163,9 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
   return undefined as T
 }
 
-export function apiGet<T>(endpoint: string, params: QueryParams = {}): Promise<T> {
-  return apiRequest<T>(`${endpoint}${buildQueryString(params)}`)
+/** `signal`: TanStack Query's, so a request nobody waits for any more is aborted. */
+export function apiGet<T>(endpoint: string, params: QueryParams = {}, { signal }: { signal?: AbortSignal } = {}): Promise<T> {
+  return apiRequest<T>(`${endpoint}${buildQueryString(params)}`, { signal })
 }
 
 export function apiPost<T>(endpoint: string, body?: BodyInit | Record<string, unknown>): Promise<T> {

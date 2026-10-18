@@ -1,5 +1,5 @@
 import { EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons'
-import { Button, Card, Typography } from 'antd'
+import { Button, Card, Skeleton, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 
 import { contact, phoneHref } from '../../../app/contact'
@@ -69,8 +69,16 @@ export function CoursesPage({ category }: CoursesPageProps) {
 
       <ErrorAlert error={courses.error ?? terms.error} fallback={t('courses.loadFailed')} />
 
-      {/* The same semester picker as 학사 일정, so both open on the same term. */}
-      {defined.length > 0 ? (
+      {/* The same semester picker as 학사 일정, so both open on the same term.
+          Its place is held while the semesters load, so the classes below do
+          not jump down when it appears. */}
+      {terms.isPending ? (
+        <Card className="surface-card filter-card">
+          <div className="filter-footer">
+            <Skeleton.Input active />
+          </div>
+        </Card>
+      ) : defined.length > 0 ? (
         <Card className="surface-card filter-card">
           <div className="filter-footer">
             <TermPicker terms={defined} active={active} onSelect={select} counts={counts.data} emptyHint={t('terms.noClasses')} />

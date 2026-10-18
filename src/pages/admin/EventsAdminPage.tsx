@@ -1,6 +1,6 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { Alert, App, Button, Card, Dropdown, Form, Input, Modal, Select, Switch, Table, Tag, Typography } from 'antd'
+import { Alert, App, Button, Card, Dropdown, Form, Input, Modal, Select, Switch, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
@@ -19,6 +19,8 @@ import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
 import { useEditLink } from '../../shared/useEditLink'
 import { toIsoDate } from '../../features/courses/week'
+import { AdminTable } from '../../shared/AdminTable'
+import { useStableCallback } from '../../shared/useStableCallback'
 
 const { Text } = Typography
 
@@ -163,29 +165,23 @@ export function EventsAdminPage() {
     }
   }
 
-  const handleTogglePublished = useCallback(
-    (event: ScheduleEvent) => {
-      updateEvent.mutate(
-        { id: event.id, payload: { isPublished: !event.isPublished } },
-        { onError: (err) => message.error(getErrorMessage(err, t('events.saveFailed'))) },
-      )
-    },
-    [message, t, updateEvent],
-  )
+  const handleTogglePublished = useStableCallback((event: ScheduleEvent) => {
+    updateEvent.mutate(
+      { id: event.id, payload: { isPublished: !event.isPublished } },
+      { onError: (err) => message.error(getErrorMessage(err, t('events.saveFailed'))) },
+    )
+  })
 
-  const handleDelete = useCallback(
-    (event: ScheduleEvent) => {
-      confirmDelete({
-        target: event.title,
-        onConfirm: () =>
-          deleteEvent.mutateAsync(event.id).then(
-            () => message.success(t('events.deleted')),
-            (err) => message.error(getErrorMessage(err, t('events.deleteFailed'))),
-          ),
-      })
-    },
-    [confirmDelete, deleteEvent, message, t],
-  )
+  const handleDelete = useStableCallback((event: ScheduleEvent) => {
+    confirmDelete({
+      target: event.title,
+      onConfirm: () =>
+        deleteEvent.mutateAsync(event.id).then(
+          () => message.success(t('events.deleted')),
+          (err) => message.error(getErrorMessage(err, t('events.deleteFailed'))),
+        ),
+    })
+  })
 
   const columns = useMemo<NonNullable<TableProps<ScheduleEvent>['columns']>>(
     () => [
@@ -285,16 +281,7 @@ export function EventsAdminPage() {
       <ErrorAlert error={events.error} fallback={t('events.loadFailed')} />
 
       <Card className="surface-card">
-        <Table
-          className="admin-table"
-          columns={columns}
-          dataSource={rows}
-          rowKey="id"
-          loading={events.isPending || terms.isPending}
-          pagination={false}
-          scroll={{ x: 'max-content' }}
-          locale={{ emptyText: t('events.empty') }}
-        />
+        <AdminTable columns={columns} dataSource={rows} rowKey="id" loading={events.isPending || terms.isPending} emptyText={t('events.empty')} />
       </Card>
 
       <Modal

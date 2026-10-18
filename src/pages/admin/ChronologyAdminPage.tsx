@@ -1,6 +1,6 @@
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FlagFilled, MoreOutlined, PlusOutlined } from '@ant-design/icons'
 import type { TableProps } from 'antd'
-import { App, Button, Card, Dropdown, Form, Input, InputNumber, Modal, Space, Switch, Table, Tag, Typography } from 'antd'
+import { App, Button, Card, Dropdown, Form, Input, InputNumber, Modal, Space, Switch, Tag, Typography } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
 
 import { usePreferences } from '../../app/preferences'
@@ -14,6 +14,8 @@ import { useTableLayout } from '../../shared/useTableLayout'
 import { TranslationFields } from '../../shared/TranslationFields'
 import type { Translations } from '../../shared/translations'
 import { useEditLink } from '../../shared/useEditLink'
+import { AdminTable } from '../../shared/AdminTable'
+import { useStableCallback } from '../../shared/useStableCallback'
 
 const { Text } = Typography
 
@@ -107,29 +109,23 @@ export function ChronologyAdminPage() {
     }
   }
 
-  const handleTogglePublished = useCallback(
-    (entry: ChronologyEntry) => {
-      updateEntry.mutate(
-        { id: entry.id, payload: { isPublished: !entry.isPublished } },
-        { onError: (err) => message.error(getErrorMessage(err, t('chronology.saveFailed'))) },
-      )
-    },
-    [message, t, updateEntry],
-  )
+  const handleTogglePublished = useStableCallback((entry: ChronologyEntry) => {
+    updateEntry.mutate(
+      { id: entry.id, payload: { isPublished: !entry.isPublished } },
+      { onError: (err) => message.error(getErrorMessage(err, t('chronology.saveFailed'))) },
+    )
+  })
 
-  const handleDelete = useCallback(
-    (entry: ChronologyEntry) => {
-      confirmDelete({
-        target: entry.title,
-        onConfirm: () =>
-          deleteEntry.mutateAsync(entry.id).then(
-            () => message.success(t('chronology.deleted')),
-            (err) => message.error(getErrorMessage(err, t('chronology.deleteFailed'))),
-          ),
-      })
-    },
-    [confirmDelete, deleteEntry, message, t],
-  )
+  const handleDelete = useStableCallback((entry: ChronologyEntry) => {
+    confirmDelete({
+      target: entry.title,
+      onConfirm: () =>
+        deleteEntry.mutateAsync(entry.id).then(
+          () => message.success(t('chronology.deleted')),
+          (err) => message.error(getErrorMessage(err, t('chronology.deleteFailed'))),
+        ),
+    })
+  })
 
   const columns = useMemo<NonNullable<TableProps<ChronologyEntry>['columns']>>(
     () => [
@@ -212,16 +208,7 @@ export function ChronologyAdminPage() {
       <ErrorAlert error={chronology.error} fallback={t('chronology.loadFailed')} />
 
       <Card className="surface-card">
-        <Table
-          className="admin-table"
-          columns={columns}
-          dataSource={rows}
-          rowKey="id"
-          loading={chronology.isPending}
-          pagination={false}
-          scroll={{ x: 'max-content' }}
-          locale={{ emptyText: t('chronology.empty') }}
-        />
+        <AdminTable columns={columns} dataSource={rows} rowKey="id" loading={chronology.isPending} emptyText={t('chronology.empty')} />
       </Card>
 
       <Modal
