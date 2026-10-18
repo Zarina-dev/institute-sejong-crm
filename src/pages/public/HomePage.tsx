@@ -21,7 +21,7 @@ import { contact, phoneHref } from '../../app/contact'
 import { usePreferences, type TranslationKey } from '../../app/preferences'
 import { groupCourses } from '../../features/courses/grouping'
 import { useCourses, useTimetable } from '../../features/courses/queries'
-import { startOfWeek, toIsoDate, weekRange } from '../../features/courses/week'
+import { addDays, toIsoDate } from '../../features/courses/week'
 import { usePublishedNews } from '../../features/news/queries'
 import { useTerms } from '../../features/terms/queries'
 import type { AcademicTerm } from '../../features/terms/types'
@@ -60,6 +60,9 @@ function SectionHead({ title, to, label }: { title: string; to?: string; label?:
   )
 }
 
+/** How far ahead the timetable looks for the next day with classes. */
+const UPCOMING_DAYS = 14
+
 /**
  * The landing page, laid out the way institute sites are read here: a key
  * visual, 바로가기 tiles, then the boards — 공지사항 beside this week's
@@ -74,7 +77,9 @@ export function HomePage() {
   const terms = useTerms()
   const currentTerm = useMemo(() => termInProgress(terms.data ?? NO_TERMS) ?? terms.data?.[0] ?? null, [terms.data])
   const courses = useCourses(true, { term: currentTerm?.code }, !terms.isPending)
-  const week = useTimetable(useMemo(() => weekRange(startOfWeek(new Date())), []))
+  // Two weeks from today, not "this week": on a Sunday this week has nothing
+  // left, but Monday's classes are what a visitor wants to see.
+  const week = useTimetable(useMemo(() => ({ from: toIsoDate(new Date()), to: toIsoDate(addDays(new Date(), UPCOMING_DAYS - 1)) }), []))
 
   const programmes = useMemo(() => groupCourses(courses.data), [courses.data])
   const notices = (news.data ?? []).filter((post) => post.category !== 'press').slice(0, 5)
@@ -82,7 +87,7 @@ export function HomePage() {
   const today = toIsoDate(new Date())
   const now = new Date().toTimeString().slice(0, 5)
 
-  /** Today's remaining classes, else the next day that has any. */
+  /** Today's remaining classes, else the next day (within two weeks) that has any. */
   const upcoming = useMemo(() => {
     const entries = week.data ?? []
     const todays = entries.filter((item) => item.date === today && item.endTime >= now)
@@ -166,7 +171,17 @@ export function HomePage() {
             <Skeleton active paragraph={{ rows: 4 }} />
           ) : upcoming ? (
             <>
-              <Text className="board-date">{formatDate(upcoming.date, language)}</Text>
+              <Text className="board-date">
+                {/* Which day this is, before the date: 오늘 · 내일 · 다음 수업. */}
+                <span className="board-date__when">
+                  {upcoming.date === today
+                    ? t('home.today')
+                    : upcoming.date === toIsoDate(addDays(new Date(), 1))
+                      ? t('home.tomorrow')
+                      : t('home.nextClass')}
+                </span>
+                {formatDate(upcoming.date, language)}
+              </Text>
               <ul className="class-board">
                 {upcoming.items.slice(0, 4).map((item) => (
                   <li key={item.id}>
@@ -189,7 +204,7 @@ export function HomePage() {
               </ul>
             </>
           ) : (
-            <Empty description={t('schedule.emptyWeek')} />
+            <Empty description={t('home.noUpcoming')} />
           )}
         </Card>
       </section>

@@ -815,6 +815,17 @@
   color: var(--color-text-muted);
 }
 
+/* The timetable's day: 오늘 / 내일 / 다음 수업, then the date. */
+.board-date__when {
+  margin-right: var(--space-2);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-text);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+}
+
 /* 행사 일정: the event's name in the reader's language, under the Korean. */
 .event-table__translation {
   color: var(--color-text-muted);
