@@ -81,6 +81,9 @@ function RouteFallback() {
  */
 function usePrefetchPublicPages() {
   useEffect(() => {
+    // Data saver or a slow mobile link: each page's code comes when it is opened.
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection
+    if (connection?.saveData || /(^|-)(2g|3g)$/.test(connection?.effectiveType ?? '')) return
     const prefetch = () => Object.values(publicPages).forEach((load) => void load().catch(() => {}))
     if ('requestIdleCallback' in window) {
       const id = window.requestIdleCallback(prefetch, { timeout: 4000 })
