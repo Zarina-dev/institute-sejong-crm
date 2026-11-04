@@ -6,7 +6,13 @@ import { upcomingRange } from '../features/courses/week'
 import { publishedNewsQuery } from '../features/news/queries'
 import { homeTerm } from '../features/terms/current'
 import { termsQuery } from '../features/terms/queries'
-import { setApiLanguage } from '../api/client'
+import { apiGet, setApiLanguage } from '../api/client'
+import { getTimetable } from '../features/courses/api'
+import { getPublishedNews } from '../features/news/api'
+import { getTerms } from '../features/terms/api'
+import type { CourseRecord, TimetableEntry } from '../features/courses/types'
+import type { NewsPost } from '../features/news/types'
+import type { AcademicTerm } from '../features/terms/types'
 import { queryClient } from './queryClient'
 import type { Language } from './preferences'
 
@@ -48,26 +54,67 @@ async function restoreCache() {
   })
 }
 
+/** `GET /api/home`: each part exactly what its own route answers (backend/src/home/home.controller.ts). */
+type HomeData = {
+  terms: AcademicTerm[]
+  news: NewsPost[]
+  newsLimit: number
+  term: string | null
+  courses: CourseRecord[]
+  range: { from: string; to: string }
+  timetable: TimetableEntry[]
+}
+
 /**
- * Starts the home page's requests now, in parallel with the dictionary and
- * the first render, instead of when HomePage mounts (after all code has
- * loaded and rendered). The courses need the semester, so they follow the
- * terms request — the one unavoidable step; the news and timetable do not
- * wait for it. Same query options as the hooks, so they share one request.
+ * Starts the home page's data now, in parallel with the dictionary and the
+ * first render, instead of when HomePage mounts (after all code has loaded
+ * and rendered) — and as one request: the server picks the semester and
+ * answers terms, news, its courses and the timetable together, so the
+ * courses no longer wait for the terms to come back first. Each part is
+ * filed under the query its hook reads, so the hooks find it there and
+ * other pages reuse it. A part the hook asks for differently (a visitor
+ * whose calendar day is not Osh's) is simply fetched by the hook itself.
  */
 function prefetchHome(language: Language) {
   if (window.location.pathname !== '/') return
 
   setApiLanguage(language) // the first render has not run PreferencesProvider yet
-  void queryClient.prefetchQuery(publishedNewsQuery(6))
-  void queryClient.prefetchQuery(timetableQuery(upcomingRange()))
-  void queryClient
-    .fetchQuery(termsQuery())
-    .then((terms) => {
-      const term = homeTerm(terms)
-      if (term) void queryClient.prefetchQuery(coursesQuery(true, { term: term.code }))
-    })
-    .catch(() => {})
+  const home = apiGet<HomeData>('/home')
+  const range = upcomingRange()
+  // The courses are filed first (callbacks run in the order they are added):
+  // HomePage asks for them as soon as the terms below resolve.
+  home.then(
+    (data) => {
+      if (data.term) queryClient.setQueryData(coursesQuery(true, { term: data.term }).queryKey, data.courses)
+    },
+    () => {},
+  )
+  // The queries are in flight from now on, answered by /home: a hook that
+  // mounts before it is back waits for it rather than sending its own.
+  // /home failing (an older API): each part is asked for on its own.
+  void queryClient.prefetchQuery({ ...publishedNewsQuery(6), queryFn: () => home.then((data) => data.news, () => getPublishedNews(6)) })
+  void queryClient.prefetchQuery({
+    ...termsQuery(),
+    queryFn: () =>
+      home.then(
+        (data) => data.terms,
+        () =>
+          getTerms().then((terms) => {
+            const term = homeTerm(terms)
+            if (term) void queryClient.prefetchQuery(coursesQuery(true, { term: term.code }))
+            return terms
+          }),
+      ),
+  })
+  // Osh's two weeks — the visitor's too, unless their calendar day differs.
+  void queryClient.prefetchQuery({
+    ...timetableQuery(range),
+    queryFn: () =>
+      home.then(
+        (data) => (data.range.from === range.from && data.range.to === range.to ? data.timetable : getTimetable(range)),
+        () => getTimetable(range),
+      ),
+  })
 }
 
 /** Resolves once the saved cache is in place; the prefetch it starts is not awaited. */
