@@ -1,5 +1,8 @@
 /// <reference types="vite/client" />
 
+/** Set per build in vite.config.ts; busts the persisted query cache. */
+declare const __BUILD_ID__: string
+
 interface ImportMetaEnv {
   /** Base URL of the NestJS API, e.g. http://localhost:3000/api */
   readonly VITE_API_BASE_URL?: string

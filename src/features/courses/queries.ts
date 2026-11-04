@@ -1,4 +1,4 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { dashboardKeys } from '../dashboard/queries'
 import {
@@ -36,12 +36,14 @@ const timetableKeys = {
  * history comes down. `enabled: false` while the page is still deciding which
  * semester it is on, so it does not fetch everything first.
  */
+export const coursesQuery = (publishedOnly: boolean, filters: CourseListFilters = {}) =>
+  queryOptions({ queryKey: courseKeys.list(publishedOnly, filters), queryFn: () => getCourses(publishedOnly, filters) })
+
 export function useCourses(publishedOnly: boolean, filters: CourseListFilters = {}, enabled = true) {
   const { language } = usePreferences()
 
   return useQuery({
-    queryKey: courseKeys.list(publishedOnly, filters),
-    queryFn: () => getCourses(publishedOnly, filters),
+    ...coursesQuery(publishedOnly, filters),
     // The public site reads the visitor's language; the admin (all courses) the Korean.
     select: publishedOnly ? (courses) => courses.map((course) => localizeCourse(course, language)) : undefined,
     enabled,
@@ -59,12 +61,14 @@ export function useCourseTermCounts(publishedOnly: boolean, category?: CourseLis
   })
 }
 
+export const timetableQuery = (filters: TimetableFilters) =>
+  queryOptions({ queryKey: timetableKeys.list(filters), queryFn: () => getTimetable(filters) })
+
 export function useTimetable(filters: TimetableFilters) {
   const { language } = usePreferences()
 
   return useQuery({
-    queryKey: timetableKeys.list(filters),
-    queryFn: () => getTimetable(filters),
+    ...timetableQuery(filters),
     select: (entries) => entries.map((entry) => localizeTimetableEntry(entry, language)),
   })
 }

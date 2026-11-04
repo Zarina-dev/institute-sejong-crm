@@ -1,9 +1,39 @@
 ﻿import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
-  plugins: [react()],
+/**
+ * Opens the connections to the API and to the R2 media bucket while the
+ * browser is still reading the HTML: DNS + TCP + TLS is ~230 ms from
+ * Kyrgyzstan, and otherwise it starts only when the first request is made.
+ * Built from the same env vars the app uses, so no address is written twice.
+ * The API is read with fetch (CORS: `crossorigin`); images are plain <img>
+ * (no CORS), which use a separate connection pool, hence no attribute there.
+ */
+function preconnectOrigins(mode: string): Plugin {
+  const env = loadEnv(mode, process.cwd(), 'VITE_')
+  const origin = (value?: string) => {
+    try {
+      return value ? new URL(value).origin : null
+    } catch {
+      return null // relative (/api) or unset: same origin, nothing to connect to
+    }
+  }
+  const api = origin(env.VITE_API_BASE_URL)
+  const media = origin(env.VITE_MEDIA_BASE_URL)
+
+  return {
+    name: 'preconnect-origins',
+    transformIndexHtml: () => [
+      ...(api ? [{ tag: 'link', attrs: { rel: 'preconnect', href: api, crossorigin: '' }, injectTo: 'head-prepend' as const }] : []),
+      ...(media && media !== api ? [{ tag: 'link', attrs: { rel: 'preconnect', href: media }, injectTo: 'head-prepend' as const }] : []),
+    ],
+  }
+}
+
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), preconnectOrigins(mode)],
+  define: { __BUILD_ID__: JSON.stringify(Date.now().toString(36)) },
   resolve: {
     alias: {
       // tsconfig.app.json already declares this path mapping, but Vite had no
@@ -51,4 +81,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

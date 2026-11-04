@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { dashboardKeys } from '../dashboard/queries'
 import { createNews, deleteNews, getAllNews, getNewsPost, getPublishedNews, setNewsPublished, updateNews } from './api'
@@ -13,11 +13,14 @@ export const newsKeys = {
   detail: (id: string) => [...newsKeys.all, 'detail', id] as const,
 }
 
+/** Shared with the prefetch in main.tsx, so both hit the same cache entry. */
+export const publishedNewsQuery = (limit?: number) =>
+  queryOptions({ queryKey: newsKeys.published(limit), queryFn: () => getPublishedNews(limit) })
+
 export function usePublishedNews(limit?: number) {
   const { language } = usePreferences()
   return useQuery({
-    queryKey: newsKeys.published(limit),
-    queryFn: () => getPublishedNews(limit),
+    ...publishedNewsQuery(limit),
     select: (posts) => posts.map((post) => localizePost(post, language)),
   })
 }

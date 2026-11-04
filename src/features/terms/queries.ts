@@ -1,12 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { createTerm, deleteTerm, getTermUsage, getTerms, updateTerm } from './api'
 import type { AcademicTermInput } from './types'
 
 const termKeys = { all: ['terms'] as const, usage: ['terms', 'usage'] as const }
 
+/** Shared with the prefetch in main.tsx, so both hit the same cache entry. */
+export const termsQuery = () => queryOptions({ queryKey: termKeys.all, queryFn: getTerms, staleTime: 5 * 60_000 })
+
 export function useTerms() {
-  return useQuery({ queryKey: termKeys.all, queryFn: getTerms, staleTime: 5 * 60_000 })
+  return useQuery(termsQuery())
 }
 
 /**

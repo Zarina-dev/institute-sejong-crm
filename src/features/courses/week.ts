@@ -24,3 +24,9 @@ export function addDays(date: Date, days: number): Date {
 export function weekRange(monday: Date): { from: string; to: string } {
   return { from: toIsoDate(monday), to: toIsoDate(addDays(monday, 6)) }
 }
+
+/**
+ * The home page's "next classes" window: today and the 13 days after it.
+ * Shared with the prefetch in main.tsx, which must ask for exactly this range.
+ */
+export const upcomingRange = (days = 14) => ({ from: toIsoDate(new Date()), to: toIsoDate(addDays(new Date(), days - 1)) })

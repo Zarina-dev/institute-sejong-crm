@@ -21,11 +21,11 @@ import { contact, phoneHref } from '../../app/contact'
 import { usePreferences, type TranslationKey } from '../../app/preferences'
 import { groupCourses } from '../../features/courses/grouping'
 import { useCourses, useTimetable } from '../../features/courses/queries'
-import { addDays, toIsoDate } from '../../features/courses/week'
+import { addDays, toIsoDate, upcomingRange } from '../../features/courses/week'
 import { usePublishedNews } from '../../features/news/queries'
 import { useTerms } from '../../features/terms/queries'
 import type { AcademicTerm } from '../../features/terms/types'
-import { termInProgress } from '../../features/terms/current'
+import { homeTerm } from '../../features/terms/current'
 import { academicYear } from '../../shared/academicYear'
 import { CallButton } from '../../shared/CallButton'
 import { formatDate } from '../../shared/format'
@@ -60,9 +60,6 @@ function SectionHead({ title, to, label }: { title: string; to?: string; label?:
   )
 }
 
-/** How far ahead the timetable looks for the next day with classes. */
-const UPCOMING_DAYS = 14
-
 /**
  * The landing page, laid out the way institute sites are read here: a key
  * visual, 바로가기 tiles, then the boards — 공지사항 beside this week's
@@ -75,11 +72,11 @@ export function HomePage() {
   // "On offer" means the semester in progress — always, whatever a visitor
   // last picked on 강좌 안내; this section has no picker of its own.
   const terms = useTerms()
-  const currentTerm = useMemo(() => termInProgress(terms.data ?? NO_TERMS) ?? terms.data?.[0] ?? null, [terms.data])
+  const currentTerm = useMemo(() => homeTerm(terms.data ?? NO_TERMS), [terms.data])
   const courses = useCourses(true, { term: currentTerm?.code }, !terms.isPending)
   // Two weeks from today, not "this week": on a Sunday this week has nothing
   // left, but Monday's classes are what a visitor wants to see.
-  const week = useTimetable(useMemo(() => ({ from: toIsoDate(new Date()), to: toIsoDate(addDays(new Date(), UPCOMING_DAYS - 1)) }), []))
+  const week = useTimetable(useMemo(() => upcomingRange(), []))
 
   const programmes = useMemo(() => groupCourses(courses.data), [courses.data])
   const notices = (news.data ?? []).filter((post) => post.category !== 'press').slice(0, 5)

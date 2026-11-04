@@ -11,6 +11,7 @@ import { readLanguage } from './app/language'
 import { PreferencesProvider, usePreferences, type Language } from './app/preferences'
 import { queryClient } from './app/queryClient'
 import { getAntdTheme } from './app/theme'
+import { startPublicData } from './app/publicData'
 import { loadDictionary } from './i18n'
 import './styles/index.css'
 
@@ -81,5 +82,7 @@ const render = () =>
  * a slow one does not keep the page blank for more than a moment.
  */
 const language = readLanguage()
-const ready = Promise.all([loadDictionary(language), loadAntdLocale(language)]).catch(() => {})
+// The saved public data is put back and the home page's requests start in
+// parallel with those two files — not after the first render.
+const ready = Promise.all([loadDictionary(language), loadAntdLocale(language), startPublicData(language)]).catch(() => {})
 void Promise.race([ready, new Promise((resolve) => setTimeout(resolve, 1500))]).then(render)

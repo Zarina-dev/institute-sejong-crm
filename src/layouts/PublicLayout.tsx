@@ -9,12 +9,12 @@ import {
   SunOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
-import { Button, Drawer, Dropdown, Layout, Select, Typography } from 'antd'
+import { Button, Drawer, Dropdown, Layout, Typography } from 'antd'
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 
 import { contact, phoneHref } from '../app/contact'
-import { languages, usePreferences } from '../app/preferences'
+import { languages, usePreferences, type Language } from '../app/preferences'
 import { useSession } from '../auth/useSession'
 import { BrandMark } from '../shared/BrandMark'
 import { useScrollReset } from '../shared/useScrollReset'
@@ -23,6 +23,40 @@ import { PageSuspense } from '../shared/PageSuspense'
 
 const { Header, Content, Footer } = Layout
 const { Text } = Typography
+
+/**
+ * Language menu. A Dropdown + Button, not antd's Select: Select drags
+ * rc-select and rc-virtual-list into the entry chunk every visitor downloads
+ * before anything is drawn, and these four options need neither search nor
+ * virtual scrolling. `compact` shows the short code (EN) in the header strip;
+ * the drawer shows the full name on a full-width button.
+ */
+function LanguagePicker({ compact, language, label, onChange }: { compact?: boolean; language: Language; label: string; onChange: (language: Language) => void }) {
+  const current = languages.find((item) => item.value === language)
+
+  return (
+    <Dropdown
+      trigger={['click']}
+      placement={compact ? 'bottomRight' : 'bottom'}
+      menu={{
+        selectedKeys: [language],
+        items: languages.map(({ value, title }) => ({ key: value, label: title })),
+        onClick: ({ key }) => onChange(key as Language),
+      }}
+    >
+      <Button
+        className={compact ? 'language-select' : undefined}
+        type={compact ? 'text' : 'default'}
+        size={compact ? 'small' : 'middle'}
+        block={!compact}
+        aria-label={label}
+        aria-haspopup="menu"
+      >
+        {compact ? current?.label : current?.title} <DownOutlined className="language-select__caret" />
+      </Button>
+    </Dropdown>
+  )
+}
 
 export function PublicLayout() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -79,15 +113,7 @@ export function PublicLayout() {
                 icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
                 onClick={toggleTheme}
               />
-              <Select
-                aria-label={t('language.label')}
-                className="language-select"
-                size="small"
-                variant="borderless"
-                value={language}
-                onChange={setLanguage}
-                options={languages.map(({ value, label, title }) => ({ value, label, title }))}
-              />
+              <LanguagePicker compact language={language} label={t('language.label')} onChange={setLanguage} />
               <NavLink to={portal.to} {...portalLinkProps}>
                 <Button type="primary" size="small" icon={portal.icon}>
                   {portal.label}
@@ -177,12 +203,7 @@ export function PublicLayout() {
             </Button>
           </NavLink>
           <Button block aria-label={t('theme.label')} icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />} onClick={toggleTheme} />
-          <Select
-            aria-label={t('language.label')}
-            value={language}
-            onChange={setLanguage}
-            options={languages.map(({ value, title }) => ({ value, label: title }))}
-          />
+          <LanguagePicker language={language} label={t('language.label')} onChange={setLanguage} />
         </div>
       </Drawer>
 

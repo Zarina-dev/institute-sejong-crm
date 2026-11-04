@@ -361,6 +361,16 @@
   width: 68px;
 }
 
+/* A Button stands in for antd's Select (see LanguagePicker): same width, a small quiet arrow. */
+.language-select.ant-btn {
+  padding-inline: var(--space-2);
+}
+
+.language-select__caret {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
 /* Specificity has to match `.icon-button.ant-btn` below, which also sets
    `display`, or the button would never hide on desktop. */
 .menu-button.ant-btn {
