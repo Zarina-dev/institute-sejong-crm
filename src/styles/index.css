@@ -3894,21 +3894,46 @@ a.activity-row:hover b {
    where the visitor scrolls; `auto` remembers each card's real height once
    seen, so the scrollbar settles instead of jumping. */
 .competition-card {
+  min-width: 0;
   content-visibility: auto;
-  contain-intrinsic-size: auto 520px;
+  /* Height only: `contain-intrinsic-size: auto 520px` would also give a card
+     not yet on screen a 520px *width*, and on a phone that widened the whole
+     list past the screen (the page scrolled sideways). */
+  contain-intrinsic-block-size: auto 520px;
 }
 
-/* The facts of the day sit beside the photo; the results run full width. */
+/* The tracks may shrink below their content, so a long title, a wide
+   results table or a photo never pushes the list wider than the page. */
+.competition-list {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* The facts of the day sit beside the photo; the results run full width.
+   The photo column grows with the card, within reason, so on a wide screen
+   the text is not a narrow strip beside a large empty card. */
 .competition-card__head {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-columns: clamp(200px, 30%, 320px) minmax(0, 1fr);
   gap: var(--space-5);
   align-items: start;
 }
 
-.competition-card__head:only-child,
-.competition-card__head > div:only-child {
+/* No photo: the text takes the whole width. */
+.competition-card__head--text {
   grid-template-columns: minmax(0, 1fr);
+}
+
+/* A phone: the card's own padding gives the photo and the results back
+   ~20px of a 320–390px screen. */
+@media (max-width: 480px) {
+  .competition-card .ant-card-body {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+}
+
+.competition-card h3.ant-typography {
+  overflow-wrap: anywhere;
 }
 
 .competition-card__cover {

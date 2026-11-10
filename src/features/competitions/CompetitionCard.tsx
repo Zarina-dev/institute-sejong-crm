@@ -39,11 +39,18 @@ function Winners({ winners: source }: { winners: CompetitionWinner[] }) {
         title: t('competitions.rank'),
         dataIndex: 'rank',
         key: 'rank',
-        // Wide enough for "1 место" with its cup.
-        width: 116,
+        // Wide enough for "1 место" with its cup. On a phone the column is
+        // squeezed below that and "2-орун" was cut off: the column is headed
+        // 순위 already, so the tag shows the cup and the number, and the full
+        // label stays for screen readers.
+        width: wide ? 116 : 64,
         render: (rank: number) => (
-          <Tag color={RANK_COLOUR[rank - 1] ?? 'default'} icon={rank <= 3 ? <TrophyOutlined /> : undefined}>
-            {t('competitions.rankLabel', { rank })}
+          <Tag
+            color={RANK_COLOUR[rank - 1] ?? 'default'}
+            icon={rank <= 3 ? <TrophyOutlined /> : undefined}
+            aria-label={wide ? undefined : t('competitions.rankLabel', { rank })}
+          >
+            {wide ? t('competitions.rankLabel', { rank }) : rank}
           </Tag>
         ),
       },
@@ -98,7 +105,7 @@ export function CompetitionCard({ record }: { record: Competition }) {
 
   return (
     <Card className="surface-card competition-card">
-      <div className="competition-card__head">
+      <div className={photos.length ? 'competition-card__head' : 'competition-card__head competition-card__head--text'}>
         {/* One frame whatever the photos are: they slide, the layout does not. */}
         <PhotoCarousel images={photos} label={title} />
 
