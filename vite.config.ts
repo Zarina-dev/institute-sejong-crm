@@ -31,8 +31,63 @@ function preconnectOrigins(mode: string): Plugin {
   }
 }
 
+/**
+ * The public pages search engines should list — the routes of the public
+ * site in src/app/router.tsx, without the old addresses that only redirect.
+ * A page added to the public menu belongs here too.
+ */
+const PUBLIC_PAGES = [
+  '/',
+  '/about',
+  '/about/staff',
+  '/about/location',
+  '/programmes',
+  '/programmes/culture',
+  '/programmes/calendar',
+  '/notices',
+  '/notices/events',
+  '/notices/press',
+  '/notices/faq',
+  '/resources',
+  '/resources/materials',
+  '/resources/links',
+  '/history',
+  '/history/studies',
+  '/history/graduates',
+]
+
+/**
+ * What search engines read first: robots.txt (everything public may be
+ * crawled; the admin panel and sign-in not) and sitemap.xml (every public
+ * page). Both are written at build time from VITE_SITE_URL, the site's own
+ * address, which index.html also uses (%SITE_URL%) for its canonical link,
+ * preview tags and organisation data — a new domain is one setting.
+ */
+function searchEngineFiles(mode: string): Plugin {
+  const env = loadEnv(mode, process.cwd(), 'VITE_')
+  const site = (env.VITE_SITE_URL || 'https://osh1-sejong-hakdang.vercel.app').replace(/\/+$/, '')
+
+  return {
+    name: 'search-engine-files',
+    transformIndexHtml: (html) => html.replaceAll('%SITE_URL%', site),
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'robots.txt',
+        source: ['User-agent: *', 'Allow: /', 'Disallow: /admin', 'Disallow: /login', '', `Sitemap: ${site}/sitemap.xml`, ''].join('\n'),
+      })
+      const urls = PUBLIC_PAGES.map((path) => `  <url><loc>${site}${path}</loc></url>`).join('\n')
+      this.emitFile({
+        type: 'asset',
+        fileName: 'sitemap.xml',
+        source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`,
+      })
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), preconnectOrigins(mode)],
+  plugins: [react(), preconnectOrigins(mode), searchEngineFiles(mode)],
   define: { __BUILD_ID__: JSON.stringify(Date.now().toString(36)) },
   resolve: {
     alias: {

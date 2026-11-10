@@ -2,6 +2,7 @@ import { Typography } from 'antd'
 import { memo, type ReactNode } from 'react'
 
 import { Breadcrumbs } from './Breadcrumbs'
+import { useDocumentTitle } from './useDocumentTitle'
 import { useBreadcrumbTrail } from './useBreadcrumbTrail'
 
 const { Title, Text } = Typography
@@ -27,6 +28,8 @@ type PageHeaderProps = {
  */
 export const PageHeader = memo(function PageHeader({ kicker, title, description, extra, level = 1 }: PageHeaderProps) {
   const trail = useBreadcrumbTrail()
+  // The page's own heading names the tab (a nested h2 does not).
+  useDocumentTitle(level === 1 && typeof title === 'string' ? title : undefined)
 
   return (
     <header className="page-heading">

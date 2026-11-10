@@ -5,11 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <title>오시 1 세종학당 · King Sejong Institute Osh 1</title>
+    <!--
+      What a search engine and a shared link show before the site's script
+      runs: the institute's name the way people type it in every language
+      it is known by (Седжон хакдан, Сежоң, 세종학당, King Sejong). Once the
+      app is running, each page names the tab in the visitor's language
+      (shared/useDocumentTitle.ts). %SITE_URL% is VITE_SITE_URL (vite.config.ts).
+    -->
+    <title>Институт короля Седжона Ош 1 · 오시 1 세종학당 · King Sejong Institute Osh 1</title>
     <meta
       name="description"
-      content="King Sejong Institute Osh 1 (오시 1 세종학당), Kyrgyzstan — Korean language and culture courses, class timetable, learning materials and news."
+      content="Институт короля Седжона Ош 1 (Седжон хакдан, Ош 1 Сежоң институту) — курсы корейского языка и культуры в Оше, Кыргызстан: расписание, новости, мероприятия, учебные материалы. 오시 1 세종학당 · King Sejong Institute Osh 1."
     />
+    <link rel="canonical" href="%SITE_URL%/" />
+
+    <!-- The preview a link gets in Telegram, WhatsApp, Instagram, Facebook. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Институт короля Седжона Ош 1 · 오시 1 세종학당" />
+    <meta property="og:title" content="Институт короля Седжона Ош 1 · 오시 1 세종학당" />
+    <meta property="og:description" content="Корейский язык и культура в Оше: курсы, расписание, новости и мероприятия института." />
+    <meta property="og:url" content="%SITE_URL%/" />
+    <meta property="og:image" content="%SITE_URL%/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Институт короля Седжона Ош 1 · 오시 1 세종학당" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:locale:alternate" content="ky_KG" />
+    <meta property="og:locale:alternate" content="ko_KR" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- The organisation card a search engine may show: name in every language, address, phone, Instagram (src/app/contact.ts). -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "EducationalOrganization",
+        "name": "Институт короля Седжона Ош 1",
+        "alternateName": ["오시 1 세종학당", "King Sejong Institute Osh 1", "Ош 1 Сежоң институту", "Седжон хакдан Ош", "KSI Osh 1"],
+        "url": "%SITE_URL%/",
+        "logo": "%SITE_URL%/ksi-symbol.svg",
+        "image": "%SITE_URL%/og-image.png",
+        "description": "Курсы корейского языка и культуры в Оше, Кыргызстан.",
+        "telephone": "+996 779 390 376",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Isanova 81",
+          "addressLocality": "Osh",
+          "postalCode": "723503",
+          "addressCountry": "KG"
+        },
+        "geo": { "@type": "GeoCoordinates", "latitude": 40.4875114, "longitude": 72.8321974 },
+        "sameAs": ["https://www.instagram.com/osh1sejonghakdang"],
+        "parentOrganization": { "@type": "Organization", "name": "King Sejong Institute Foundation", "url": "https://www.ksif.or.kr" }
+      }
+    </script>
     <!-- Kept in sync with the active theme by PreferencesProvider. -->
     <meta name="theme-color" content="#ffffff" />
     <meta name="color-scheme" content="light dark" />

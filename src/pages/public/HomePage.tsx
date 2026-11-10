@@ -19,6 +19,7 @@ import { Link } from 'react-router-dom'
 
 import { contact, phoneHref } from '../../app/contact'
 import { usePreferences, type TranslationKey } from '../../app/preferences'
+import { useDocumentTitle } from '../../shared/useDocumentTitle'
 import { groupCourses } from '../../features/courses/grouping'
 import { useCourses, useTimetable } from '../../features/courses/queries'
 import { addDays, toIsoDate, upcomingRange } from '../../features/courses/week'
@@ -68,6 +69,7 @@ function SectionHead({ title, to, label }: { title: string; to?: string; label?:
  */
 export function HomePage() {
   const { t, language } = usePreferences()
+  useDocumentTitle()
   const news = usePublishedNews(6)
   // "On offer" means the semester in progress — always, whatever a visitor
   // last picked on 강좌 안내; this section has no picker of its own.
