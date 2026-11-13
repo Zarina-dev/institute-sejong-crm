@@ -20,6 +20,7 @@ import { useTableLayout } from '../../shared/useTableLayout'
 import { ALL_YEARS, YearSelect } from '../../shared/YearSelect'
 import { TranslationFields } from '../../shared/TranslationFields'
 import type { TranslationLanguage, Translations } from '../../shared/translations'
+import { useUnsavedChanges } from '../../shared/useConfirmDiscard'
 import { useEditLink } from '../../shared/useEditLink'
 import { AdminTable } from '../../shared/AdminTable'
 import { useStableCallback } from '../../shared/useStableCallback'
@@ -101,6 +102,7 @@ export function CompetitionsAdminPage() {
   /** Whether the optional participants/results section is open. */
   const [resultsOpen, setResultsOpen] = useState(false)
   const [form] = Form.useForm<CompetitionFormValues>()
+  const unsaved = useUnsavedChanges()
   const saving = createCompetition.isPending || updateCompetition.isPending
 
   // Every kind of event is managed together; the filter is a view, not a
@@ -124,8 +126,9 @@ export function CompetitionsAdminPage() {
     // No 구분 preselected unless the list is filtered: most events are not contests.
     form.setFieldsValue({ kind: kind === ALL_KINDS ? undefined : kind, year: new Date().getFullYear() })
     setResultsOpen(false)
+    unsaved.markClean()
     setModalOpen(true)
-  }, [form, kind])
+  }, [form, kind, unsaved])
 
   const openEditModal = useCallback(
     (record: Competition) => {
@@ -147,9 +150,10 @@ export function CompetitionsAdminPage() {
         translations: record.translations ?? {},
       })
       setResultsOpen(record.participants != null || record.winners.length > 0)
+      unsaved.markClean()
       setModalOpen(true)
     },
-    [form],
+    [form, unsaved],
   )
 
   // 작업 기록 links here with ?edit=<id>: open that record.
@@ -307,7 +311,7 @@ export function CompetitionsAdminPage() {
         title={editingId ? t('competitions.editTitle') : t('competitions.addTitle')}
         open={modalOpen}
         onOk={submitForm}
-        onCancel={() => setModalOpen(false)}
+        onCancel={() => unsaved.guard(() => setModalOpen(false))}
         okText={editingId ? t('common.save') : t('common.add')}
         cancelText={t('common.cancel')}
         confirmLoading={saving}
@@ -315,7 +319,13 @@ export function CompetitionsAdminPage() {
         width={860}
         className="editor-modal"
       >
-        <Form form={form} layout="vertical" disabled={saving} initialValues={{ isPublished: true, coverImage: null, images: [], winners: [] }}>
+        <Form
+          form={form}
+          layout="vertical"
+          disabled={saving}
+          onValuesChange={unsaved.onValuesChange}
+          initialValues={{ isPublished: true, coverImage: null, images: [], winners: [] }}
+        >
           {/* Pick a competition, or name one the institute has just started. */}
           <Form.Item
             name="kind"

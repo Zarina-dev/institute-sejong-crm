@@ -22,7 +22,8 @@ export const MaterialCard = memo(function MaterialCard({ item }: { item: Materia
         <FileTextOutlined />
       </div>
       <Tag>{item.subject}</Tag>
-      <Title level={4}>{item.title}</Title>
+      {/* h2: the card sits right under the page h1, and its size comes from .material-card h2 (an h4 skipped levels and missed that rule). */}
+      <Title level={2}>{item.title}</Title>
       <Paragraph type="secondary" ellipsis={{ rows: 3, tooltip: item.description ?? undefined }}>
         {item.description || t('materials.noDescription')}
       </Paragraph>

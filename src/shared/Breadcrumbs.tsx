@@ -14,7 +14,9 @@ export function Breadcrumbs({ trail }: { trail: BreadcrumbStep[] }) {
   }
 
   return (
-    <nav className="breadcrumbs" aria-label={t('nav.navigation')}>
+    // Its own name, not the main menu's: two navs both called "Navigation"
+    // are indistinguishable in a screen reader's landmark list.
+    <nav className="breadcrumbs" aria-label={t('nav.breadcrumbs')}>
       <Link to="/" aria-label={t('siteNav.home')}>
         <HomeOutlined />
       </Link>

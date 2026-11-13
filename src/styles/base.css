@@ -62,6 +62,14 @@ video {
   border-radius: var(--radius-xs);
 }
 
+/* AntD's <App> resets `.ant-app a:focus { outline: 0 }`, which outranks the
+   bare :focus-visible above — every link (header contacts, the logo, menus,
+   cards) lost its ring for keyboard users. The extra `html` wins it back. */
+html .ant-app a:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
 .ant-select-focused .ant-select-selector {
   outline: 3px solid var(--color-focus-ring);
   outline-offset: 2px;

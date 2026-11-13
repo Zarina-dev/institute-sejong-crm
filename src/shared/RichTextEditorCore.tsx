@@ -148,7 +148,9 @@ export function RichTextEditorCore({ value, onChange, disabled, minHeight = 320 
   }, [editor, value])
 
   useEffect(() => {
-    if (editor && !editor.isDestroyed) editor.setEditable(!disabled)
+    // No update event: toggling editability is not an edit, and emitting one
+    // would mark the form field as changed by the admin.
+    if (editor && !editor.isDestroyed) editor.setEditable(!disabled, false)
   }, [editor, disabled])
 
   const handleFileChange = useCallback(

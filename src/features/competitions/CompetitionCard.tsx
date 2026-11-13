@@ -13,8 +13,12 @@ import { translated } from '../../shared/translations'
 
 const { Title, Text } = Typography
 
-/** 1·2·3위 get a colour; the rest stay neutral. */
-const RANK_COLOUR = ['gold', 'silver', '#cd7f32'] as const
+/**
+ * 1·2·3위 get a colour; the rest stay neutral. Silver and bronze are deep
+ * tones, not CSS `silver` / #cd7f32: AntD draws a hex tag with white text,
+ * and those read at 1.8:1 and 3.1:1 — the 12px "2위" all but vanished.
+ */
+const RANK_COLOUR = ['gold', '#6b7280', '#8a5a2b'] as const
 
 function Winners({ winners: source }: { winners: CompetitionWinner[] }) {
   const { t, language } = usePreferences()

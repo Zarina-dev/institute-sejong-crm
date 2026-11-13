@@ -22,10 +22,14 @@ export function useTermUsage() {
 
 function useInvalidateTerms() {
   const queryClient = useQueryClient()
-  // Courses carry a term, so their lists are stale too once the dates move.
+  // Courses carry a term, so their lists are stale too once the dates move;
+  // the server also re-files events by date, and the timetable is generated
+  // from the term's weeks, so both are refreshed as well.
   return () => {
     queryClient.invalidateQueries({ queryKey: termKeys.all })
     queryClient.invalidateQueries({ queryKey: ['courses'] })
+    queryClient.invalidateQueries({ queryKey: ['events'] })
+    queryClient.invalidateQueries({ queryKey: ['timetable'] })
   }
 }
 

@@ -87,7 +87,10 @@
 
   --color-text: var(--neutral-900);
   --color-text-muted: var(--neutral-600);
-  --color-text-subtle: var(--neutral-500);
+  /* Not --neutral-500 (#71809a): that is 4.0:1 on white and 3.8:1 on the
+     canvas, below WCAG AA for the 11-13px dates and captions this colour
+     is used for. #5f6d85 keeps the same cool grey at 4.9:1+ on both. */
+  --color-text-subtle: #5f6d85;
   --color-text-faint: var(--neutral-400);
   --color-text-inverse: var(--neutral-0);
 

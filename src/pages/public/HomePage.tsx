@@ -114,7 +114,7 @@ export function HomePage() {
           <Paragraph className="hero-copy">{t('home.heroCopy')}</Paragraph>
           <div className="hero-actions">
             <Link to="/programmes">
-              <Button type="primary" size="large" icon={<SolutionOutlined />}>
+              <Button tabIndex={-1} type="primary" size="large" icon={<SolutionOutlined />}>
                 {t('home.explore')}
               </Button>
             </Link>

@@ -1,10 +1,11 @@
 import { ArrowRightOutlined, SearchOutlined } from '@ant-design/icons'
-import { Alert, Button, Card, Col, Input, Popover, Row, Select, Table, Tag, Tooltip, Typography } from 'antd'
+import { Alert, Button, Card, Col, Input, Popover, Result, Row, Select, Table, Tag, Tooltip, Typography } from 'antd'
 import type { TableProps } from 'antd'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { usePreferences, type TranslationKey } from '../../app/preferences'
+import { useSession } from '../../auth/useSession'
 import { AUDIT_ACTIONS, AUDIT_PAGE_SIZE, AUDIT_TYPES, type AuditAction, type AuditEntry, type AuditType } from '../../features/audit/api'
 import { changeHeadline, describeChange, entryChanges } from '../../features/audit/changes'
 import { useAudit } from '../../features/audit/queries'
@@ -175,6 +176,19 @@ function ChangeCard({ entry, kind }: { entry: AuditEntry; kind: string }) {
  * kept for a year.
  */
 export function AuditAdminPage() {
+  const session = useSession()
+  const { t } = usePreferences()
+
+  // The menu hides 작업 기록 from STAFF and the API refuses them; an address
+  // typed by hand lands here rather than on an empty journal and an error.
+  if (session?.role !== 'ADMIN') {
+    return <Result status="403" title={t('accounts.forbiddenTitle')} subTitle={t('audit.forbidden')} />
+  }
+
+  return <AuditJournal />
+}
+
+function AuditJournal() {
   const { language, t } = usePreferences()
   const navigate = useNavigate()
   const [page, setPage] = useState(1)

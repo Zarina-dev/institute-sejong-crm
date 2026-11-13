@@ -91,7 +91,7 @@ export function NoticesPage({ variant }: NoticesPageProps) {
                     </Text>
                   </span>
 
-                  <Title level={3}>{post.title}</Title>
+                  <Title level={2}>{post.title}</Title>
                   <Paragraph type="secondary" className="notice-row__excerpt">
                     {excerpt}
                   </Paragraph>
@@ -119,7 +119,7 @@ export function NoticesPage({ variant }: NoticesPageProps) {
         extra={
           open ? (
             <Link to={`/notices/${open.id}`}>
-              <Button icon={<LinkOutlined />}>{t('news.openPage')}</Button>
+              <Button tabIndex={-1} icon={<LinkOutlined />}>{t('news.openPage')}</Button>
             </Link>
           ) : null
         }

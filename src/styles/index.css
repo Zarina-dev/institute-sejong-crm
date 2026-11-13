@@ -1207,7 +1207,7 @@
   font-size: var(--text-xs);
 }
 
-.material-card h3.ant-typography {
+.material-card h2.ant-typography {
   margin: var(--space-3) 0 var(--space-1);
   color: var(--color-text);
   font-size: var(--text-xl);
@@ -1392,7 +1392,7 @@
    breaks between words (keep-all keeps Korean words whole), and only a
    word longer than the line may break inside. The lede below is what gets
    shortened. */
-.notice-row h3.ant-typography {
+.notice-row h2.ant-typography {
   margin: 0;
   color: var(--color-text);
   font-size: var(--text-xl);
@@ -1454,7 +1454,7 @@
     display: none;
   }
 
-  .notice-row h3.ant-typography {
+  .notice-row h2.ant-typography {
     font-size: var(--text-lg);
   }
 }
@@ -1753,6 +1753,11 @@
   align-items: center;
   gap: var(--space-4);
   justify-self: start;
+  /* On a 320px phone the Foundation logo and the longer ru/ky wording do
+     not fit on one line; the text drops under the logo instead of running
+     past the card's edge. */
+  flex-wrap: wrap;
+  max-width: 100%;
   color: var(--color-primary-text);
   font-weight: var(--weight-semibold);
   text-decoration: none;
@@ -1827,6 +1832,12 @@
 
 .staff-status.is-current {
   background: var(--color-success-soft);
+  /* The deeper green: --color-success on its own soft tint is 4.1:1, short
+     of AA for this 12px label. */
+  color: var(--emerald-600);
+}
+
+[data-theme='dark'] .staff-status.is-current {
   color: var(--color-success);
 }
 
@@ -3790,7 +3801,7 @@ a.activity-row:hover b {
   height: 100%;
 }
 
-.textbook-card h3.ant-typography {
+.textbook-card h2.ant-typography {
   margin: 0 0 var(--space-2);
   color: var(--color-text);
   font-size: var(--text-xl);
@@ -4818,7 +4829,9 @@ button.attachment-chip:hover {
 
 .board-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  /* min(…, 100%): below 380px of room the one column shrinks to fit
+     instead of pushing the page sideways on a 320px phone. */
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
   gap: var(--space-5);
 }
 
@@ -5034,7 +5047,9 @@ button.attachment-chip:hover {
 
 .info-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  /* min(…, 100%): the strip's own padding leaves under 260px on a 320px
+     phone, and a fixed minimum would overflow it. */
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
   gap: var(--space-5);
   padding: var(--space-6) var(--space-7);
   border: 1px solid var(--color-border);
@@ -5616,6 +5631,19 @@ body:has(.photo-viewer .ant-image-preview-wrap:not([style*='display: none'])) .b
   margin-bottom: var(--space-2);
 }
 
+/* AntD's preset tags print their 7th shade on the 1st: gold, cyan, orange,
+   green and volcano land at 2.7-3.9:1 for 12px text, below WCAG AA. In the
+   light theme the competition kind and rank tags take a deeper shade of the
+   same hue (4.5:1+). */
+html:not([data-theme='dark']) .competition-card .ant-tag-gold { color: #874d00; }
+html:not([data-theme='dark']) .competition-card .ant-tag-cyan { color: #006d75; }
+html:not([data-theme='dark']) .competition-card .ant-tag-orange { color: #ad4e00; }
+html:not([data-theme='dark']) .competition-card .ant-tag-green { color: #237804; }
+html:not([data-theme='dark']) .competition-card .ant-tag-volcano { color: #ad2102; }
+/* In the dark theme purple and geekblue are the ones under 4.5:1. */
+[data-theme='dark'] .competition-card .ant-tag-purple { color: #b37feb; }
+[data-theme='dark'] .competition-card .ant-tag-geekblue { color: #85a5ff; }
+
 /* ==========================================================================
    한국 유학 현황 — the institute keeps this as a numbered list on the wall:
    a portrait, the year, the name, the university, the major. Read from the
@@ -5657,7 +5685,9 @@ body:has(.photo-viewer .ant-image-preview-wrap:not([style*='display: none'])) .b
 /* Wide enough that a long Kyrgyz value wraps once, not word by word. */
 .study-year__cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  /* min(…, 100%): a 320px phone has 288px of room; a fixed 320px
+     minimum pushed every card past the right edge. */
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: var(--space-4);
 }
 

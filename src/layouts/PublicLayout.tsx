@@ -49,7 +49,9 @@ function LanguagePicker({ compact, language, label, onChange }: { compact?: bool
         type={compact ? 'text' : 'default'}
         size={compact ? 'small' : 'middle'}
         block={!compact}
-        aria-label={label}
+        // The name starts with what is on the button ("KO", "한국어"), so
+        // voice control can target it, then says what it is for (WCAG 2.5.3).
+        aria-label={`${compact ? current?.label : current?.title} — ${label}`}
         aria-haspopup="menu"
       >
         {compact ? current?.label : current?.title} <DownOutlined className="language-select__caret" />
@@ -114,8 +116,11 @@ export function PublicLayout() {
                 onClick={toggleTheme}
               />
               <LanguagePicker compact language={language} label={t('language.label')} onChange={setLanguage} />
+              {/* The link is the one tab stop: a focusable button inside it
+                  made keyboard users tab twice to the same place (the same
+                  tabIndex={-1} is used wherever a Link wraps a Button). */}
               <NavLink to={portal.to} {...portalLinkProps}>
-                <Button type="primary" size="small" icon={portal.icon}>
+                <Button tabIndex={-1} type="primary" size="small" icon={portal.icon}>
                   {portal.label}
                 </Button>
               </NavLink>
@@ -125,7 +130,10 @@ export function PublicLayout() {
 
         <Header className="site-header">
           <div className="header-inner">
-            <NavLink to="/" className="brand" aria-label={t('brand.name')}>
+            {/* No aria-label: the visible wordmark is the name, and a label
+                that differs from what is on screen breaks voice control
+                ("click 오시 1 세종학당") — WCAG 2.5.3. */}
+            <NavLink to="/" className="brand">
               <BrandMark />
               <span>
                 <strong className="brand-name--full">{t('brand.name')}</strong>
@@ -198,7 +206,7 @@ export function PublicLayout() {
 
         <div className="drawer-preferences">
           <NavLink to={portal.to} onClick={closeMenu} {...portalLinkProps}>
-            <Button type="primary" block icon={portal.icon}>
+            <Button tabIndex={-1} type="primary" block icon={portal.icon}>
               {portal.label}
             </Button>
           </NavLink>

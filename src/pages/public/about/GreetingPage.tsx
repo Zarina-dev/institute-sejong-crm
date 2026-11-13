@@ -125,7 +125,7 @@ export function GreetingPage() {
               </Button>
             </a>
             <Link to="/programmes">
-              <Button icon={<ArrowRightOutlined />} iconPosition="end">
+              <Button tabIndex={-1} icon={<ArrowRightOutlined />} iconPosition="end">
                 {t('about.osh.coursesLink')}
               </Button>
             </Link>

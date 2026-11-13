@@ -11,6 +11,7 @@ import { ErrorAlert } from '../../shared/ErrorAlert'
 import { getErrorMessage } from '../../shared/errors'
 import { PageHeader } from '../../shared/PageHeader'
 import { RichTextEditor } from '../../shared/RichTextEditor'
+import { useUnsavedChanges } from '../../shared/useConfirmDiscard'
 
 const { Text } = Typography
 
@@ -47,6 +48,7 @@ export function ContentAdminPage() {
 
   const [locale, setLocale] = useState<string>(language)
   const [form] = Form.useForm<ContentFormValues>()
+  const unsaved = useUnsavedChanges()
 
   // Spell the block out even when the page was opened without one, so the
   // menu can mark the entry the admin is on.
@@ -59,10 +61,17 @@ export function ContentAdminPage() {
   const byKey = useMemo(() => new Map((rows.data ?? []).map((row) => [`${row.slug}:${row.locale}`, row])), [rows.data])
   const current = byKey.get(`${slug}:${locale}`)
 
-  // Switching block or language reloads the editor with that row's text.
+  // Switching block or language reloads the editor with that row's text,
+  // which is then the text as stored — nothing to lose yet.
+  const { markClean } = unsaved
   useEffect(() => {
     form.setFieldsValue({ title: current?.title ?? '', body: current?.body ?? '' })
-  }, [current, form, slug, locale])
+    markClean()
+  }, [current, form, markClean, slug, locale])
+
+  // The editor holds one language at a time, so leaving a tab with unsaved
+  // text would silently drop it — ask first.
+  const changeLocale = (next: string) => unsaved.guard(() => setLocale(next))
 
   const submit = async () => {
     const values = await form.validateFields().catch(() => null)
@@ -74,6 +83,8 @@ export function ContentAdminPage() {
     try {
       await saveContent.mutateAsync({ slug, locale, title: values.title ?? '', body: values.body ?? '' })
       message.success(t('content.saved'))
+      // Saved: the text on screen is now the stored one.
+      unsaved.markClean()
     } catch (err) {
       message.error(getErrorMessage(err, t('content.saveFailed')))
     }
@@ -90,7 +101,7 @@ export function ContentAdminPage() {
             has been written. */}
         <Tabs
           activeKey={locale}
-          onChange={setLocale}
+          onChange={changeLocale}
           items={languages.map(({ value, title }) => ({
             key: value,
             label: (
@@ -101,7 +112,7 @@ export function ContentAdminPage() {
           }))}
         />
 
-        <Form form={form} layout="vertical" disabled={saveContent.isPending}>
+        <Form form={form} layout="vertical" disabled={saveContent.isPending} onValuesChange={unsaved.onValuesChange}>
           <Form.Item name="title" label={t('content.titleLabel')}>
             <Input maxLength={255} />
           </Form.Item>

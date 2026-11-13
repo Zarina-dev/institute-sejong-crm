@@ -73,7 +73,7 @@ export function LoginPage() {
             <Space wrap>
               {/* Opens in its own tab, matching the header button; this page stays put. */}
               <Link to="/admin" target="_blank">
-                <Button type="primary" icon={<TeamOutlined />}>
+                <Button tabIndex={-1} type="primary" icon={<TeamOutlined />}>
                   {t('login.continue')}
                 </Button>
               </Link>

@@ -328,7 +328,7 @@ export function CoursesAdminPage() {
   const handleDelete = useCallback(
     (record: CourseRecord) => {
       confirmDelete({
-        target: record.title,
+        target: record.subject || record.title,
         onConfirm: () =>
           deleteCourse.mutateAsync(record.id).then(
             () => message.success(t('courses.deleted')),

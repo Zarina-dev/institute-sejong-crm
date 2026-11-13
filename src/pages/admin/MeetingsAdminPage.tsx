@@ -59,6 +59,7 @@ import { PageHeader } from '../../shared/PageHeader'
 import { RichTextEditor } from '../../shared/RichTextEditor'
 import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { YearSelect } from '../../shared/YearSelect'
+import { useUnsavedChanges } from '../../shared/useConfirmDiscard'
 import { useEditLink } from '../../shared/useEditLink'
 import { toIsoDate } from '../../features/courses/week'
 
@@ -171,6 +172,7 @@ export function MeetingsAdminPage() {
   const [uploading, setUploading] = useState<'attachment' | 'original' | null>(null)
   const [exporting, setExporting] = useState(false)
   const [form] = Form.useForm<MeetingFormValues>()
+  const unsaved = useUnsavedChanges()
   const queryClient = useQueryClient()
   const [loadingMeeting, setLoadingMeeting] = useState(false)
   const loadingId = useRef<string | null>(null)
@@ -234,8 +236,9 @@ export function MeetingsAdminPage() {
       attachments: [],
       original: null,
     })
+    unsaved.markClean()
     setModalOpen(true)
-  }, [form])
+  }, [form, unsaved])
 
   /**
    * The form opens at once with what the row has, disabled until the notes
@@ -261,6 +264,7 @@ export function MeetingsAdminPage() {
         attachments: meeting.attachments ?? [],
         original: meeting.original,
       })
+      unsaved.markClean()
       setModalOpen(true)
       setLoadingMeeting(true)
 
@@ -281,7 +285,7 @@ export function MeetingsAdminPage() {
           setLoadingMeeting(false)
         })
     },
-    [form, message, queryClient, staffList, t],
+    [form, message, queryClient, staffList, t, unsaved],
   )
 
   // The form sits under an open drawer (it is pre-rendered, so its layer is
@@ -601,11 +605,13 @@ export function MeetingsAdminPage() {
         title={editingId ? t('meetings.editTitle') : t('meetings.addTitle')}
         open={modalOpen}
         onOk={submitForm}
-        onCancel={() => {
-          loadingId.current = null
-          setLoadingMeeting(false)
-          setModalOpen(false)
-        }}
+        onCancel={() =>
+          unsaved.guard(() => {
+            loadingId.current = null
+            setLoadingMeeting(false)
+            setModalOpen(false)
+          })
+        }
         okText={editingId ? t('common.save') : t('common.add')}
         cancelText={t('common.cancel')}
         confirmLoading={saving}
@@ -614,7 +620,7 @@ export function MeetingsAdminPage() {
         width={920}
         className="editor-modal"
       >
-        <Form form={form} layout="vertical" disabled={saving || loadingMeeting} className="meeting-form">
+        <Form form={form} layout="vertical" disabled={saving || loadingMeeting} onValuesChange={unsaved.onValuesChange} className="meeting-form">
           <Form.Item name="mode" label={t('meetings.form.mode')}>
             <Segmented
               block

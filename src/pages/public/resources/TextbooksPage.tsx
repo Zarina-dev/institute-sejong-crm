@@ -27,7 +27,7 @@ function TextbookCard({ textbook }: { textbook: Textbook }) {
       )}
 
       <div className="textbook-card__body">
-        <Title level={3}>{textbook.title}</Title>
+        <Title level={2}>{textbook.title}</Title>
         <Paragraph className="textbook-card__description">{textbook.description || t('textbooks.noDescription')}</Paragraph>
 
         <div className="textbook-card__purchase">

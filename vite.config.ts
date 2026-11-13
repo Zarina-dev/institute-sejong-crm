@@ -120,7 +120,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    sourcemap: true,
+    sourcemap: 'hidden', // maps are built but not referenced by the bundles, so they are not served to visitors
     // The rich-text editor and the document exporters (docx, jspdf) are each
     // ~400 kB, loaded only by the admin when used; the warning would fire on
     // them with nothing to act on.

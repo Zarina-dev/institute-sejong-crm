@@ -57,6 +57,8 @@ export function MaterialsPage() {
                 value={search}
                 onChange={(event) => patchFilters({ search: event.target.value })}
                 placeholder={t('materials.searchPlaceholder')}
+                // A placeholder is gone once typing starts; the field keeps a name.
+                aria-label={t('common.search')}
                 prefix={<SearchOutlined />}
               />
               <Button type="text" icon={<CloseOutlined />} aria-label={t('common.cancel')} onClick={closeSearch} />

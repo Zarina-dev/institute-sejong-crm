@@ -78,6 +78,10 @@ export function getAntdTheme(mode: ThemeMode): ThemeConfig {
 
       colorText: isDark ? palette.darkText : palette.text,
       colorTextSecondary: isDark ? palette.darkTextMuted : palette.textMuted,
+      // Typography type="secondary" draws in colorTextDescription, which
+      // otherwise falls back to AntD's 45% black (3.3:1 on the canvas —
+      // below WCAG AA). Same muted tone as colorTextSecondary.
+      colorTextDescription: isDark ? palette.darkTextMuted : palette.textMuted,
       colorBorder: isDark ? palette.darkBorder : palette.border,
       colorBorderSecondary: isDark ? palette.darkBorder : palette.border,
       colorBgBase: isDark ? palette.darkCanvas : palette.surface,
@@ -87,6 +91,12 @@ export function getAntdTheme(mode: ThemeMode): ThemeConfig {
     },
     components: {
       ...sharedComponents,
+      // The dark theme lifts primary to a light blue; white text on it read
+      // at 2.6-3.4:1 (sign-in, call, download buttons). Ink on it reads at 5.5:1+.
+      Button: {
+        ...sharedComponents.Button,
+        primaryColor: isDark ? palette.darkCanvas : '#ffffff',
+      },
       // The navigation rails are always dark, in both modes, so their AntD
       // children need dark-surface values regardless of `mode`.
       Layout: {

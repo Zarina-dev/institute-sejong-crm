@@ -91,6 +91,10 @@ export function LocationPage() {
             title={t('pageCopy.locationTitle')}
             src={mapEmbed(language)}
             referrerPolicy="no-referrer-when-downgrade"
+            // The embed draws a fullscreen control and checks the permission;
+            // without it Safari logs "Permission policy 'Fullscreen' check
+            // failed" and the button does nothing.
+            allowFullScreen
             onLoad={() => setMapReady(true)}
           />
         </Card>

@@ -20,6 +20,7 @@ import { useConfirmDelete } from '../../shared/useConfirmDelete'
 import { useTableLayout } from '../../shared/useTableLayout'
 import { TranslationFields } from '../../shared/TranslationFields'
 import type { Translations } from '../../shared/translations'
+import { useUnsavedChanges } from '../../shared/useConfirmDiscard'
 import { useEditLink } from '../../shared/useEditLink'
 
 const { Text } = Typography
@@ -52,6 +53,7 @@ export function NewsAdminPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form] = Form.useForm<NewsFormValues>()
+  const unsaved = useUnsavedChanges()
   const queryClient = useQueryClient()
   const [loadingPost, setLoadingPost] = useState(false)
   const loadingId = useRef<string | null>(null)
@@ -83,8 +85,9 @@ export function NewsAdminPage() {
     form.resetFields()
     // A post written on the 보도 자료 view belongs there.
     form.setFieldValue('category', view === 'press' ? 'press' : 'campus')
+    unsaved.markClean()
     setModalOpen(true)
-  }, [form, view])
+  }, [form, unsaved, view])
 
   /**
    * The list carries no bodies, so the post is fetched when it is opened.
@@ -105,6 +108,7 @@ export function NewsAdminPage() {
         isFeatured: post.isFeatured,
         translations: post.translations ?? {},
       })
+      unsaved.markClean()
       setModalOpen(true)
       setLoadingPost(true)
 
@@ -127,7 +131,7 @@ export function NewsAdminPage() {
           setLoadingPost(false)
         })
     },
-    [form, message, queryClient, t],
+    [form, message, queryClient, t, unsaved],
   )
 
   // 작업 기록 links here with ?edit=<id>: open that record.
@@ -284,11 +288,13 @@ export function NewsAdminPage() {
         title={editingId ? t('news.editTitle') : t('news.addTitle')}
         open={modalOpen}
         onOk={submitForm}
-        onCancel={() => {
-          loadingId.current = null
-          setLoadingPost(false)
-          setModalOpen(false)
-        }}
+        onCancel={() =>
+          unsaved.guard(() => {
+            loadingId.current = null
+            setLoadingPost(false)
+            setModalOpen(false)
+          })
+        }
         okText={editingId ? t('common.save') : t('common.add')}
         cancelText={t('common.cancel')}
         confirmLoading={saving}
@@ -301,6 +307,7 @@ export function NewsAdminPage() {
           form={form}
           layout="vertical"
           disabled={saving || loadingPost}
+          onValuesChange={unsaved.onValuesChange}
           initialValues={{ category: 'campus', isPublished: false, isFeatured: false, coverImage: null }}
         >
           <Form.Item name="title" label={t('news.form.title')} rules={[{ required: true, message: t('news.form.titleRequired') }]}>
